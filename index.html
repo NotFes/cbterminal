@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Киберпанк Сеть v5</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background-color: #0f0f0f;
+            color: #00ff00;
+            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+            width: 100%;
+        }
+        .terminal-input {
+            background-color: #000;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 0.5rem;
+            outline: none;
+            width: 100%;
+        }
+        .terminal-output {
+            white-space: pre-wrap;
+            word-break: break-all;
+            margin-top: 1rem;
+            min-height: 200px;
+            border: 1px dashed #00ff00;
+            padding: 0.5rem;
+            overflow-y: auto;
+            max-height: 60vh;
+        }
+        .terminal-alert {
+            color: #ff0000;
+            border-color: #ff0000;
+        }
+         .terminal-alert .terminal-input {
+             color: #ff0000;
+             border-color: #ff0000;
+         }
+        .nav-link {
+            cursor: pointer;
+            text-decoration: none;
+            color: #00ffff;
+            margin-right: 1rem;
+            transition: color 0.3s ease;
+        }
+        .nav-link:hover {
+            color: #ffff00;
+        }
+        .page-section {
+            display: none;
+        }
+        .page-section.active {
+            display: block;
+        }
+        h1, h2 {
+            color: #ff00ff;
+            text-shadow: 0 0 5px #ff00ff;
+            margin-bottom: 1rem;
+        }
+        .page-content {
+            background-color: #1a1a1a;
+            border: 1px solid #00ff00;
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+        .page-content p {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        .page-content ul {
+            list-style: disc;
+            margin-left: 1.5rem;
+        }
+        .page-content li {
+            margin-bottom: 0.5rem;
+        }
+        .map-image {
+            max-width: 100%;
+            height: auto;
+            border: 2px solid #00ffff;
+            margin-top: 1.5rem;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            cursor: pointer;
+        }
+        #login-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #1a1a1a;
+            border: 2px solid #00ffff;
+            padding: 3rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+        #login-screen input {
+            background-color: #000;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            outline: none;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1rem;
+            width: 250px;
+        }
+        #login-screen button {
+            background-color: #ff00ff;
+            color: #0f0f0f;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1rem;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        #login-screen button:hover {
+            background-color: #ffff00;
+            color: #0f0f0f;
+        }
+        #login-message {
+            color: #ff0000;
+            margin-top: 1rem;
+            min-height: 1.5rem;
+        }
+        #main-content {
+            display: none;
+        }
+        .file-entry {
+            margin-bottom: 1rem;
+            border: 1px solid #00ff00;
+            padding: 0.75rem;
+            border-radius: 5px;
+            background-color: #0d0d0d;
+        }
+        .file-entry summary {
+            cursor: pointer;
+            outline: none;
+            color: #00ffff;
+            font-weight: bold;
+        }
+        .file-content {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px dashed #00ff00;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .hidden-file {
+            display: none;
+        }
+        .control-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .control-button {
+            padding: 1rem;
+            border: 2px solid;
+            border-radius: 5px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+            text-align: center;
+        }
+        .button-active {
+            background-color: #00ff00;
+            color: #0f0f0f;
+            border-color: #00ff00;
+        }
+        .button-restricted {
+            background-color: #ff0000;
+            color: #0f0f0f;
+            border-color: #ff0000;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+         .button-unlocked {
+            background-color: #ffff00;
+            color: #0f0f0f;
+            border-color: #ffff00;
+        }
+        .button-toggled {
+            background-color: #00ffff;
+            color: #0f0f0f;
+            border-color: #00ffff;
+        }
+        .button-active:hover:not(.button-toggled):not(.button-restricted) {
+             background-color: #00cc00;
+        }
+         .button-unlocked:hover:not(.button-toggled):not(.button-restricted) {
+             background-color: #cccc00;
+        }
+         .button-toggled:hover:not(.button-restricted) {
+             background-color: #00cccc;
+         }
+        .cabinet-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px dashed #00ff00;
+        }
+        .cabinet-section:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .cabinet-data-area {
+            background-color: #000;
+            border: 1px solid #00ff00;
+            padding: 0.75rem;
+            min-height: 80px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            overflow-y: auto;
+            max-height: 200px;
+            line-height: 1.4;
+            font-size: 0.95rem;
+            resize: vertical;
+        }
+        .cabinet-data-area[contenteditable="true"] {
+            border-color: #ffff00;
+            background-color: #0a0a0a;
+            color: #ffff00;
+        }
+        .cabinet-input {
+            background-color: #000;
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            padding: 0.5rem;
+            outline: none;
+            width: 200px;
+            font-family: 'Roboto Mono', monospace;
+        }
+        .cabinet-input-account {
+            width: 100px;
+            border-color: #ff00ff;
+            color: #ff00ff;
+        }
+        .cabinet-button {
+            background-color: #ff00ff;
+            color: #0f0f0f;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Roboto Mono', monospace;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .cabinet-button:hover {
+            background-color: #ffff00;
+        }
+        .cabinet-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .cabinet-message {
+            color: #00ffff;
+            margin-top: 0.5rem;
+            min-height: 1.2rem;
+            font-size: 0.9rem;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.8);
+            padding-top: 60px;
+        }
+        .modal-content {
+            background-color: #1a1a1a;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #00ff00;
+            width: 80%;
+            box-shadow: 0 0 15px #00ff00;
+            position: relative;
+        }
+        .close-button {
+            color: #aaaaaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .json-textarea {
+            width: 100%;
+            height: 300px;
+            background-color: #000;
+            border: 1px solid #00ffff;
+            color: #00ff00;
+            padding: 10px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.9rem;
+            resize: vertical;
+        }
+        .copy-json-button {
+            background-color: #00ffff;
+            color: #0f0f0f;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Roboto Mono', monospace;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+        }
+        .copy-json-button:hover {
+            background-color: #00cccc;
+        }
+
+        /* Стиль для экрана выбора терминала */
+        #terminal-selection-screen {
+            display: flex; /* Показываем изначально */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #1a1a1a;
+            border: 2px solid #00ffff;
+            padding: 3rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        #terminal-selection-screen .terminal-option {
+            background-color: #ff00ff; /* Пурпурная кнопка */
+            color: #0f0f0f; /* Темный текст на кнопке */
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1.1rem;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            margin-bottom: 1rem;
+            width: 300px; /* Фиксированная ширина */
+        }
+        #terminal-selection-screen .terminal-option:hover {
+            background-color: #ffff00; /* Желтая при наведении */
+            color: #0f0f0f;
+        }
+        #terminal-selection-screen p {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-top: -0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="terminal-selection-screen">
+        <h2 class="text-2xl mb-4">/// ВЫБОР ТЕРМИНАЛА ///</h2>
+        <div id="terminal-options-container" class="flex flex-col items-center">
+            </div>
+    </div>
+
+
+    <div id="login-screen" style="display: none;">
+        <h2 class="text-2xl mb-4" id="login-terminal-title"></h2>
+        <input type="text" id="username" placeholder="Логин">
+        <input type="password" id="password" placeholder="Пароль">
+        <button id="login-button">ВОЙТИ</button>
+        <div id="login-message"></div>
+    </div>
+
+    <div id="main-content" class="container mt-8" style="display: none;">
+        <header class="mb-8 border-b border-green-500 pb-4">
+            <h1 class="text-3xl font-bold text-center" id="main-terminal-header"></h1>
+            <nav class="mt-4 text-center" id="main-nav-links">
+                </nav>
+        </header>
+
+        <section id="terminal" class="page-section active">
+            <div class="page-content">
+                <h2 class="text-2xl" id="terminal-section-title"></h2>
+                <div id="terminal-output" class="terminal-output"></div>
+                <div class="flex items-center mt-4">
+                    <span class="mr-2 text-green-500">></span>
+                    <input type="text" id="terminal-input" class="terminal-input flex-grow" autofocus>
+                </div>
+            </div>
+        </section>
+
+        <section id="filesystem" class="page-section">
+            <div class="page-content">
+                <h2 class="text-2xl" id="filesystem-section-title"></h2>
+                <p id="filesystem-intro-text"></p>
+                <div id="filesystem-files-container">
+                    </div>
+            </div>
+        </section>
+
+         <section id="control" class="page-section">
+            <div class="page-content">
+                <h2 class="text-2xl" id="control-section-title"></h2>
+                <p id="control-intro-text"></p>
+                <div class="control-buttons" id="control-buttons-container">
+                    </div>
+                 <div id="control-message" class="mt-4 text-center text-yellow-400 min-h-[1.5rem]"></div>
+            </div>
+        </section>
+
+        <section id="cabinet" class="page-section">
+            <div class="page-content">
+                <h2 class="text-2xl" id="cabinet-section-title"></h2>
+                <p id="cabinet-intro-text"></p>
+
+                <div class="cabinet-section">
+                    <h3 class="text-xl text-purple-400 mb-2" id="cabinet-account-id-label"></h3>
+                    <input type="text" id="cabinet-account-id" class="cabinet-input cabinet-input-account" placeholder="">
+                    <p class="text-xs text-gray-400 mt-1" id="cabinet-account-id-help"></p>
+                </div>
+
+                <div class="cabinet-section">
+                    <h3 class="text-xl text-purple-400 mb-2" id="cabinet-password-label"></h3>
+                    <div class="flex items-center gap-2">
+                        <input type="password" id="cabinet-password" class="cabinet-input" placeholder="">
+                        <button id="load-cabinet-data" class="cabinet-button"></button>
+                        <button id="save-cabinet-data" class="cabinet-button"></button>
+                    </div>
+                    <div id="cabinet-password-message" class="cabinet-message text-red-500"></div>
+                </div>
+
+                <div class="cabinet-section">
+                    <h3 class="text-xl text-purple-400 mb-2" id="cabinet-tasks-label"></h3>
+                    <div id="task-list-display" class="cabinet-data-area" contenteditable="false"></div>
+                    <button id="edit-tasks-button" class="cabinet-button"></button>
+                    <div id="task-message" class="cabinet-message"></div>
+                </div>
+
+                <div class="cabinet-section">
+                    <h3 class="text-xl text-purple-400 mb-2" id="cabinet-personal-info-label"></h3>
+                    <div id="personal-info-display" class="cabinet-data-area" contenteditable="false"></div>
+                    <button id="edit-personal-info-button" class="cabinet-button"></button>
+                    <div id="personal-info-message" class="cabinet-message"></div>
+                </div>
+
+                <div class="cabinet-section">
+                    <h3 class="text-xl text-purple-400 mb-2" id="cabinet-finances-label"></h3>
+                    <div id="finances-display" class="cabinet-data-area" contenteditable="false"></div>
+                    <button id="edit-finances-button" class="cabinet-button"></button>
+                    <div id="finances-message" class="cabinet-message"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="characters" class="page-section">
+            <div class="page-content">
+                <h2 class="text-2xl" id="characters-section-title"></h2>
+                <p id="characters-intro-text"></p>
+                <ul id="characters-list-container">
+                    </ul>
+            </div>
+        </section>
+
+        <section id="dossiers" class="page-section">
+            <div class="page-content">
+                <h2 class="text-2xl" id="dossiers-section-title"></h2>
+                <p id="dossiers-intro-text"></p>
+                <div id="dossiers-list-container">
+                    </div>
+            </div>
+        </section>
+
+        <section id="map" class="page-section">
+            <div class="page-content">
+                <h2 class="text-2xl" id="map-section-title"></h2>
+                <p id="map-intro-text"></p>
+                <a href="#" target="_blank" id="map-image-link">
+                    <img src="" alt="" class="map-image" id="map-image">
+                </a>
+                <p class="mt-4" id="map-description-heading"></p>
+                <div id="map-locations-container">
+                    </div>
+            </div>
+        </section>
+
+    </div>
+
+    <div id="jsonModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2 class="text-2xl text-center text-purple-400 mb-4" id="modal-title"></h2>
+            <p class="text-yellow-400 mb-2" id="modal-instructions"></p>
+            <textarea id="jsonOutput" class="json-textarea" readonly></textarea>
+            <button id="copyJsonButton" class="copy-json-button"></button>
+        </div>
+    </div>
+
+
+    <script>
+        // --- Элементы интерфейса (Теперь их меньше, и они более общие) ---
+        const terminalSelectionScreen = document.getElementById('terminal-selection-screen');
+        const terminalOptionsContainer = document.getElementById('terminal-options-container');
+        const loginScreen = document.getElementById('login-screen');
+        const mainContent = document.getElementById('main-content');
+
+        const loginTerminalTitle = document.getElementById('login-terminal-title');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const loginButton = document.getElementById('login-button');
+        const loginMessage = document.getElementById('login-message');
+
+        const mainTerminalHeader = document.getElementById('main-terminal-header');
+        const mainNavLinks = document.getElementById('main-nav-links');
+        const pageSections = document.querySelectorAll('.page-section'); // Получаем все секции
+        const terminalInput = document.getElementById('terminal-input');
+        const terminalOutput = document.getElementById('terminal-output');
+        const controlMessageElement = document.getElementById('control-message');
+
+        // Элементы, которые будут наполняться динамически
+        const terminalSectionTitle = document.getElementById('terminal-section-title');
+
+        const filesystemSectionTitle = document.getElementById('filesystem-section-title');
+        const filesystemIntroText = document.getElementById('filesystem-intro-text');
+        const filesystemFilesContainer = document.getElementById('filesystem-files-container');
+        let secretFileElement; // Будет найдено после загрузки данных
+
+        const controlSectionTitle = document.getElementById('control-section-title');
+        const controlIntroText = document.getElementById('control-intro-text');
+        const controlButtonsContainer = document.getElementById('control-buttons-container');
+        let controlButtons; // Будет найдено после генерации кнопок
+
+        const cabinetSectionTitle = document.getElementById('cabinet-section-title');
+        const cabinetIntroText = document.getElementById('cabinet-intro-text');
+        const cabinetAccountIdInput = document.getElementById('cabinet-account-id');
+        const cabinetAccountIdLabel = document.getElementById('cabinet-account-id-label');
+        const cabinetAccountIdHelp = document.getElementById('cabinet-account-id-help');
+        const cabinetPasswordInput = document.getElementById('cabinet-password');
+        const cabinetPasswordLabel = document.getElementById('cabinet-password-label');
+        const loadCabinetDataButton = document.getElementById('load-cabinet-data');
+        const saveCabinetDataButton = document.getElementById('save-cabinet-data');
+        const cabinetPasswordMessage = document.getElementById('cabinet-password-message');
+
+        const taskListDisplay = document.getElementById('task-list-display');
+        const cabinetTasksLabel = document.getElementById('cabinet-tasks-label');
+        const editTasksButton = document.getElementById('edit-tasks-button');
+        const taskMessage = document.getElementById('task-message');
+
+        const personalInfoDisplay = document.getElementById('personal-info-display');
+        const cabinetPersonalInfoLabel = document.getElementById('cabinet-personal-info-label');
+        const editPersonalInfoButton = document.getElementById('edit-personal-info-button');
+        const personalInfoMessage = document.getElementById('personal-info-message');
+
+        const financesDisplay = document.getElementById('finances-display');
+        const cabinetFinancesLabel = document.getElementById('cabinet-finances-label');
+        const editFinancesButton = document.getElementById('edit-finances-button');
+        const financesMessage = document.getElementById('finances-message');
+
+        const charactersSectionTitle = document.getElementById('characters-section-title');
+        const charactersIntroText = document.getElementById('characters-intro-text');
+        const charactersListContainer = document.getElementById('characters-list-container');
+
+        const dossiersSectionTitle = document.getElementById('dossiers-section-title');
+        const dossiersIntroText = document.getElementById('dossiers-intro-text');
+        const dossiersListContainer = document.getElementById('dossiers-list-container');
+
+        const mapSectionTitle = document.getElementById('map-section-title');
+        const mapIntroText = document.getElementById('map-intro-text');
+        const mapImageLink = document.getElementById('map-image-link');
+        const mapImage = document.getElementById('map-image');
+        const mapDescriptionHeading = document.getElementById('map-description-heading');
+        const mapLocationsContainer = document.getElementById('map-locations-container');
+
+        // Модальное окно и связанные элементы
+        const jsonModal = document.getElementById('jsonModal');
+        const closeButton = document.querySelector('.close-button');
+        const jsonOutputTextarea = document.getElementById('jsonOutput');
+        const copyJsonButton = document.getElementById('copyJsonButton');
+        const modalTitle = document.getElementById('modal-title');
+        const modalInstructions = document.getElementById('modal-instructions');
+
+
+        // --- Глобальные переменные для данных терминала ---
+        let currentTerminalData = null; // Здесь будут храниться все данные выбранного терминала
+        let isHacked = false;
+        let hackAttempts = 0;
+        let isHackMinigameActive = false;
+        let currentHackPhrase = '';
+        let hackTimer = 0;
+        let hackTimerInterval = null;
+        let controlStates = {}; // Состояние кнопок управления
+
+
+        // --- Функции инициализации UI из данных ---
+
+        // Заполняет динамический HTML из JSON
+        function populateUI(data) {
+            // Заголовки
+            mainTerminalHeader.textContent = data.terminal_title;
+            loginTerminalTitle.textContent = data.terminal_title;
+            terminalSectionTitle.textContent = data.page_content.terminal.title || "/// СИСТЕМНЫЙ ТЕРМИНАЛ ///";
+
+            // Навигация
+            mainNavLinks.innerHTML = ''; // Очищаем старые ссылки
+            const navPages = [
+                { id: "terminal", label: "ТЕРМИНАЛ" },
+                { id: "filesystem", label: "ФАЙЛОВАЯ СИСТЕМА" },
+                { id: "control", label: "УПРАВЛЕНИЕ" },
+                { id: "cabinet", label: "КАБИНЕТ" },
+                { id: "characters", label: "ПЕРСОНАЖИ" },
+                { id: "dossiers", label: "ДОСЬЕ" },
+                { id: "map", label: "КАРТА" }
+            ];
+            navPages.forEach(page => {
+                const link = document.createElement('a');
+                link.href = `#${page.id}`;
+                link.classList.add('nav-link');
+                link.setAttribute('data-page', page.id);
+                link.textContent = `/// ${page.label} ///`;
+                mainNavLinks.appendChild(link);
+            });
+            // Добавляем обработчики для новых ссылок
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const pageId = link.getAttribute('data-page');
+                    showPage(pageId);
+                });
+            });
+
+
+            // Файловая система
+            filesystemSectionTitle.textContent = data.page_content.filesystem.title;
+            filesystemIntroText.textContent = data.page_content.filesystem.intro;
+            filesystemFilesContainer.innerHTML = ''; // Очищаем контейнер
+            data.page_content.filesystem.files.forEach(file => {
+                const details = document.createElement('details');
+                details.classList.add('file-entry');
+                if (file.is_secret) {
+                    details.classList.add('hidden-file');
+                    details.id = 'secret-file'; // Назначаем ID для доступа
+                }
+                const summary = document.createElement('summary');
+                summary.textContent = file.summary;
+                const contentDiv = document.createElement('div');
+                contentDiv.classList.add('file-content');
+                contentDiv.innerHTML = file.content.replace(/\n/g, '<br>'); // Заменяем \n на <br> для HTML
+
+                details.appendChild(summary);
+                details.appendChild(contentDiv);
+                filesystemFilesContainer.appendChild(details);
+            });
+            secretFileElement = document.getElementById('secret-file'); // Перезаписываем глобальную ссылку
+
+            // Управление
+            controlSectionTitle.textContent = data.page_content.control.title;
+            controlIntroText.textContent = data.page_content.control.intro;
+            controlButtonsContainer.innerHTML = ''; // Очищаем контейнер
+            controlStates = {}; // Сбрасываем состояние кнопок
+            data.page_content.control.buttons.forEach(buttonConfig => {
+                const button = document.createElement('button');
+                button.classList.add('control-button');
+                button.setAttribute('data-target', buttonConfig.target);
+                button.textContent = buttonConfig.label;
+                controlButtonsContainer.appendChild(button);
+                controlStates[buttonConfig.target] = false; // Инициализируем состояние
+            });
+            controlButtons = document.querySelectorAll('.control-button'); // Обновляем NodeList
+            controlButtons.forEach(button => { // Добавляем обработчики
+                button.addEventListener('click', handleControlButtonClick);
+            });
+
+
+            // Кабинет
+            cabinetSectionTitle.textContent = data.page_content.cabinet.title;
+            cabinetIntroText.textContent = data.page_content.cabinet.intro;
+
+            cabinetAccountIdLabel.textContent = data.page_content.cabinet.sections.account_id.label;
+            cabinetAccountIdInput.placeholder = data.page_content.cabinet.sections.account_id.placeholder;
+            cabinetAccountIdHelp.textContent = data.page_content.cabinet.sections.account_id.help_text;
+
+            cabinetPasswordLabel.textContent = data.page_content.cabinet.sections.password.label;
+            cabinetPasswordInput.placeholder = data.page_content.cabinet.sections.password.placeholder;
+            loadCabinetDataButton.textContent = data.page_content.cabinet.sections.password.load_button;
+            saveCabinetDataButton.textContent = data.page_content.cabinet.sections.password.save_button;
+
+            cabinetTasksLabel.textContent = data.page_content.cabinet.sections.tasks.label;
+            editTasksButton.textContent = data.page_content.cabinet.sections.tasks.edit_button;
+            taskListDisplay.textContent = data.page_content.cabinet.sections.tasks.initial_content;
+
+            cabinetPersonalInfoLabel.textContent = data.page_content.cabinet.sections.personal_info.label;
+            editPersonalInfoButton.textContent = data.page_content.cabinet.sections.personal_info.edit_button;
+            personalInfoDisplay.textContent = data.page_content.cabinet.sections.personal_info.initial_content;
+
+            cabinetFinancesLabel.textContent = data.page_content.cabinet.sections.finances.label;
+            editFinancesButton.textContent = data.page_content.cabinet.sections.finances.edit_button;
+            financesDisplay.textContent = data.page_content.cabinet.sections.finances.initial_content;
+
+
+            // Персонажи
+            charactersSectionTitle.textContent = data.page_content.characters.title;
+            charactersIntroText.textContent = data.page_content.characters.intro;
+            charactersListContainer.innerHTML = '';
+            data.page_content.characters.list.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                charactersListContainer.appendChild(li);
+            });
+
+            // Досье
+            dossiersSectionTitle.textContent = data.page_content.dossiers.title;
+            dossiersIntroText.textContent = data.page_content.dossiers.intro;
+            dossiersListContainer.innerHTML = '';
+            data.page_content.dossiers.dossiers_list.forEach(dossier => {
+                const pHeading = document.createElement('p');
+                pHeading.innerHTML = `<strong>${dossier.heading}</strong>`;
+                const pContent = document.createElement('p');
+                pContent.textContent = dossier.content;
+                dossiersListContainer.appendChild(pHeading);
+                dossiersListContainer.appendChild(pContent);
+            });
+
+            // Карта
+            mapSectionTitle.textContent = data.page_content.map.title;
+            mapIntroText.textContent = data.page_content.map.intro;
+            mapImageLink.href = data.page_content.map.image_link;
+            mapImage.src = data.page_content.map.image_src;
+            mapImage.alt = data.page_content.map.image_alt;
+            mapDescriptionHeading.textContent = data.page_content.map.description_heading;
+            mapLocationsContainer.innerHTML = '';
+            data.page_content.map.locations.forEach(location => {
+                const pHeading = document.createElement('p');
+                pHeading.innerHTML = `<strong>${location.heading}</strong>`;
+                const pContent = document.createElement('p');
+                pContent.textContent = location.content;
+                mapLocationsContainer.appendChild(pHeading);
+                mapLocationsContainer.appendChild(pContent);
+            });
+
+            // Модальное окно JSON
+            modalTitle.textContent = data.modal_messages.title;
+            modalInstructions.innerHTML = data.modal_messages.instructions.replace('{terminal_id}', data.terminal_id);
+            copyJsonButton.textContent = data.modal_messages.copy_button;
+
+            // Инициализация терминала
+            terminalOutput.innerHTML = data.initial_message + '\n> ';
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        }
+
+
+        // --- Основные функции ---
+
+        // Загружает конфигурацию терминалов
+        let terminalsConfig = [];
+        async function loadTerminalConfig() {
+            try {
+                const response = await fetch('terminals_config.json');
+                if (!response.ok) {
+                    throw new Error(`Ошибка загрузки terminals_config.json: ${response.statusText}`);
+                }
+                terminalsConfig = await response.json();
+                console.log("Конфигурация терминалов загружена:", terminalsConfig);
+                displayTerminalSelection(); // Показываем экран выбора
+            } catch (e) {
+                console.error("Не удалось загрузить конфигурацию терминалов.", e);
+                terminalSelectionScreen.innerHTML = `<h2 class="text-2xl mb-4 text-red-500">!!! ОШИБКА ЗАГРУЗКИ КОНФИГУРАЦИИ !!!</h2><p class="text-red-400">Не удалось загрузить список терминалов. Проверьте файл 'terminals_config.json'.</p>`;
+            }
+        }
+
+        // Отображает экран выбора терминала
+        function displayTerminalSelection() {
+            terminalOptionsContainer.innerHTML = '';
+            terminalsConfig.forEach(term => {
+                const button = document.createElement('button');
+                button.classList.add('terminal-option');
+                button.textContent = term.name;
+                button.setAttribute('data-terminal-id', term.id);
+                button.addEventListener('click', () => selectTerminal(term));
+
+                const description = document.createElement('p');
+                description.textContent = term.description;
+                description.classList.add('text-center', 'text-gray-400', 'mb-4');
+
+                const wrapper = document.createElement('div');
+                wrapper.classList.add('flex', 'flex-col', 'items-center', 'mb-6');
+                wrapper.appendChild(button);
+                wrapper.appendChild(description);
+                terminalOptionsContainer.appendChild(wrapper);
+            });
+            terminalSelectionScreen.style.display = 'flex';
+            loginScreen.style.display = 'none';
+            mainContent.style.display = 'none';
+        }
+
+        // Выбирает и загружает данные конкретного терминала
+        async function selectTerminal(terminal) {
+            terminalSelectionScreen.style.display = 'none'; // Скрываем выбор
+            loginScreen.style.display = 'flex'; // Показываем экран логина
+            loginTerminalTitle.textContent = terminal.name; // Устанавливаем заголовок
+            usernameInput.focus(); // Фокус на логин
+
+            try {
+                const response = await fetch(terminal.dataFile);
+                if (!response.ok) {
+                    throw new Error(`Ошибка загрузки данных терминала (${terminal.id}): ${response.statusText}`);
+                }
+                currentTerminalData = await response.json();
+                console.log("Данные терминала загружены:", currentTerminalData);
+                // Теперь можно заполнить UI элементами и текстами из currentTerminalData
+                populateUI(currentTerminalData);
+            } catch (e) {
+                console.error(`Не удалось загрузить данные для терминала ${terminal.id}.`, e);
+                loginMessage.textContent = `Ошибка: Не удалось загрузить данные для терминала "${terminal.name}".`;
+                terminalSelectionScreen.style.display = 'flex'; // Вернуть экран выбора, если ошибка
+                loginScreen.style.display = 'none';
+            }
+        }
+
+
+        // Функция для переключения страниц
+        function showPage(pageId) {
+            pageSections.forEach(section => {
+                section.classList.remove('active');
+            });
+            const targetSection = document.getElementById(pageId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+                history.pushState(null, '', `#${pageId}`);
+            } else {
+                showPage('terminal');
+                terminalOutput.innerHTML += `\n> navigate ${pageId}\n${currentTerminalData.error_messages.page_not_found.replace('{page_id}', pageId)}\n> `;
+                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            }
+        }
+
+        // Функция для обработки логина
+        function handleLogin() {
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            if (!currentTerminalData) {
+                loginMessage.textContent = "Ошибка: Данные терминала не загружены. Выберите терминал.";
+                return;
+            }
+
+            // Мастер-обход
+            if (username === currentTerminalData.login_credentials.master_username && password === currentTerminalData.login_credentials.master_password) {
+                 loginScreen.style.display = 'none';
+                 mainContent.style.display = 'block';
+                 loginMessage.textContent = '';
+                 showPage('terminal');
+                 terminalInput.focus();
+                 updateControlButtonsState();
+                 terminalOutput.classList.remove('terminal-alert');
+                 terminalInput.classList.remove('terminal-alert');
+                 terminalInput.disabled = false;
+                 terminalOutput.innerHTML = currentTerminalData.login_messages.master_access + '\n> ';
+                 terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            }
+            // Обычный логин
+            else if (username === currentTerminalData.login_credentials.username && password === currentTerminalData.login_credentials.password) {
+                loginScreen.style.display = 'none';
+                mainContent.style.display = 'block';
+                loginMessage.textContent = '';
+                showPage('terminal');
+                terminalInput.focus();
+                updateControlButtonsState();
+                terminalOutput.classList.remove('terminal-alert');
+                terminalInput.classList.remove('terminal-alert');
+                terminalInput.disabled = false;
+                terminalOutput.innerHTML = currentTerminalData.login_messages.welcome + '\n> ';
+                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            } else {
+                loginMessage.textContent = currentTerminalData.login_messages.access_denied;
+                usernameInput.value = '';
+                passwordInput.value = '';
+                usernameInput.focus();
+            }
+        }
+
+        // Функция для сброса состояния взлома и возврата на экран логина
+        function resetHackAndLogout(messageKey) {
+            isHacked = false;
+            hackAttempts = 0;
+            isHackMinigameActive = false;
+            currentHackPhrase = '';
+            clearInterval(hackTimerInterval);
+            hackTimer = 0;
+
+            mainContent.style.display = 'none';
+            loginScreen.style.display = 'flex';
+            loginMessage.textContent = currentTerminalData.error_messages[messageKey];
+
+            for (const key in controlStates) {
+                controlStates[key] = false;
+            }
+            updateControlButtonsState();
+
+            if (secretFileElement) {
+                 secretFileElement.style.display = 'none';
+            }
+
+            usernameInput.value = '';
+            passwordInput.value = '';
+            usernameInput.focus();
+
+            terminalOutput.innerHTML = currentTerminalData.error_messages.login_blocked_alert + '\n';
+            terminalOutput.classList.add('terminal-alert');
+            terminalInput.classList.add('terminal-alert');
+            terminalInput.disabled = true;
+        }
+
+
+        // Функция для обновления состояния кнопок управления (визуально)
+        function updateControlButtonsState() {
+            if (!controlButtons) return; // Проверка на случай, если кнопки еще не сгенерированы
+            controlButtons.forEach(button => {
+                const target = button.getAttribute('data-target');
+                button.classList.remove('button-active', 'button-restricted', 'button-unlocked', 'button-toggled');
+
+                // Находим исходную конфигурацию кнопки из JSON
+                const buttonConfig = currentTerminalData.page_content.control.buttons.find(btn => btn.target === target);
+                if (!buttonConfig) return; // Если по какой-то причине нет конфига
+
+                if (!buttonConfig.restricted) { // Если кнопка изначально не ограничена (например, дверь)
+                    button.classList.add('button-active');
+                } else { // Если изначально ограничена (турель, камеры)
+                    if (isHacked) {
+                        button.classList.add('button-unlocked');
+                    } else {
+                        button.classList.add('button-restricted');
+                    }
+                }
+
+                if ((!buttonConfig.restricted || isHacked) && controlStates[target]) {
+                     button.classList.add('button-toggled');
+                }
+
+                 if (button.classList.contains('button-restricted')) {
+                     button.style.cursor = 'not-allowed';
+                 } else {
+                     button.style.cursor = 'pointer';
+                 }
+            });
+        }
+
+        function handleControlButtonClick() {
+            const target = this.getAttribute('data-target');
+            let message = '';
+
+            if (this.classList.contains('button-restricted')) {
+                message = currentTerminalData.page_content.control.messages.access_denied.replace('{target_upper}', target.toUpperCase());
+            } else {
+                controlStates[target] = !controlStates[target];
+                updateControlButtonsState(); // Обновляем вид кнопки сразу
+
+                if (controlStates[target]) {
+                    message = currentTerminalData.page_content.control.messages.activated.replace('{target_upper}', target.toUpperCase());
+                } else {
+                    message = currentTerminalData.page_content.control.messages.deactivated.replace('{target_upper}', target.toUpperCase());
+                }
+            }
+            controlMessageElement.textContent = message;
+        }
+
+
+        // --- Логика Кабинета ---
+
+        // Загрузка данных конкретного аккаунта
+        async function loadCabinetData() {
+            const accountId = cabinetAccountIdInput.value.trim();
+            const password = cabinetPasswordInput.value.trim();
+
+            if (!accountId) {
+                cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.no_account_id;
+                return;
+            }
+            if (!password) {
+                cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.no_password;
+                return;
+            }
+            cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.loading;
+
+            const account = currentTerminalData.cabinet_accounts_data.find(acc => acc.id === accountId);
+
+            if (account) {
+                if (account.password === password) {
+                    taskListDisplay.textContent = account.tasks || currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
+                    personalInfoDisplay.textContent = account.personalInfo || currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
+                    financesDisplay.textContent = account.finances || currentTerminalData.page_content.cabinet.sections.finances.initial_content;
+                    cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.loaded_success.replace('{account_id}', accountId);
+                } else {
+                    cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.wrong_password;
+                }
+            } else {
+                cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.not_found.replace('{account_id}', accountId);
+                taskListDisplay.textContent = currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
+                personalInfoDisplay.textContent = currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
+                financesDisplay.textContent = currentTerminalData.page_content.cabinet.sections.finances.initial_content;
+            }
+        }
+
+        // Сохранение данных и отображение JSON в модальном окне
+        function saveCabinetData() {
+            const accountId = cabinetAccountIdInput.value.trim();
+            const password = cabinetPasswordInput.value.trim();
+
+            if (!accountId) {
+                cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.no_account_id;
+                return;
+            }
+            if (!password) {
+                cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.no_password;
+                return;
+            }
+            cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.saving;
+
+            let accountIndex = currentTerminalData.cabinet_accounts_data.findIndex(acc => acc.id === accountId);
+
+            const dataToSave = {
+                id: accountId,
+                password: password,
+                tasks: taskListDisplay.textContent.trim(),
+                personalInfo: personalInfoDisplay.textContent.trim(),
+                finances: financesDisplay.textContent.trim()
+            };
+
+            if (accountIndex !== -1) {
+                currentTerminalData.cabinet_accounts_data[accountIndex] = dataToSave;
+            } else {
+                currentTerminalData.cabinet_accounts_data.push(dataToSave);
+            }
+
+            // Форматируем ВЕСЬ currentTerminalData для вывода
+            const jsonString = JSON.stringify(currentTerminalData, null, 2);
+            jsonOutputTextarea.value = jsonString;
+
+            jsonModal.style.display = 'block';
+            cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.ready_to_copy.replace('{account_id}', accountId);
+        }
+
+        // Переключение режима редактирования для Кабинета
+        function toggleEditMode(displayElement, messageElement, buttonElement, sectionKey) {
+            const isEditable = displayElement.contentEditable === 'true';
+            displayElement.contentEditable = !isEditable;
+            buttonElement.textContent = isEditable ? currentTerminalData.page_content.cabinet.sections[sectionKey].edit_button : currentTerminalData.page_content.cabinet.sections[sectionKey].save_button;
+            if (isEditable) {
+                messageElement.textContent = currentTerminalData.page_content.cabinet.sections[sectionKey].messages.saved_local;
+                displayElement.classList.remove('cabinet-data-area-editing');
+            } else {
+                messageElement.textContent = currentTerminalData.page_content.cabinet.sections[sectionKey].messages.editing;
+                displayElement.focus();
+                displayElement.classList.add('cabinet-data-area-editing');
+            }
+        }
+
+
+        // --- Обработка команд терминала ---
+
+        function maybePrintRandomMessage() {
+            const chance = 0.15;
+            if (Math.random() < chance && currentTerminalData && currentTerminalData.random_system_messages) {
+                const randomMessage = currentTerminalData.random_system_messages[Math.floor(Math.random() * currentTerminalData.random_system_messages.length)];
+                terminalOutput.innerHTML += randomMessage + '\n';
+                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            }
+        }
+
+        terminalInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const command = terminalInput.value.trim();
+                const rawCommand = terminalInput.value;
+                terminalInput.value = '';
+
+                if (!currentTerminalData) {
+                    terminalOutput.innerHTML += "> " + command + "\nОшибка: Терминал не загружен. Выберите терминал.\n> ";
+                    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                    return;
+                }
+
+                if (isHackMinigameActive) {
+                    clearInterval(hackTimerInterval);
+                    hackTimer = 0;
+                    terminalOutput.innerHTML = terminalOutput.innerHTML.replace(/Таймер: \d+...\n?/, '');
+
+                    if (rawCommand.toLowerCase() === 'q') {
+                         terminalOutput.innerHTML += '> q\n';
+                         terminalOutput.innerHTML += currentTerminalData.hack_game.override_success + '\n> ';
+                         isHackMinigameActive = false;
+                         isHacked = true;
+                         hackAttempts = 0;
+                         if (secretFileElement) {
+                             secretFileElement.style.display = 'block';
+                         }
+                         updateControlButtonsState();
+                         terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                         terminalInput.focus();
+                         return;
+                    }
+
+                    if (rawCommand.trim() === '') {
+                        terminalOutput.innerHTML += '> [ПУСТОЙ ВВОД]\n';
+                        hackAttempts++;
+                        if (hackAttempts >= currentTerminalData.hack_game.max_attempts) {
+                            resetHackAndLogout('too_many_hack_attempts');
+                        } else {
+                            terminalOutput.innerHTML += currentTerminalData.error_messages.empty_hack_input.replace('{attempts_left}', currentTerminalData.hack_game.max_attempts - hackAttempts) + '\n> ';
+                            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                            terminalInput.focus();
+                        }
+                        isHackMinigameActive = false; // Выключаем мини-игру
+                        return;
+                    }
+
+                    terminalOutput.innerHTML += command + '\n';
+
+                    if (command.toLowerCase() === currentHackPhrase.toLowerCase()) {
+                        isHackMinigameActive = false;
+                        isHacked = true;
+                        hackAttempts = 0;
+                        if (secretFileElement) {
+                            secretFileElement.style.display = 'block';
+                        }
+                        updateControlButtonsState();
+                        terminalOutput.innerHTML += currentTerminalData.hack_game.success_message + '\n> ';
+                        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                        terminalInput.focus();
+                    } else {
+                        hackAttempts++;
+                        if (hackAttempts >= currentTerminalData.hack_game.max_attempts) {
+                            resetHackAndLogout('too_many_hack_attempts');
+                        } else {
+                            terminalOutput.innerHTML += currentTerminalData.hack_game.failure_message.replace('{attempts_left}', currentTerminalData.hack_game.max_attempts - hackAttempts) + '\n> ';
+                            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                            terminalInput.focus();
+                        }
+                    }
+                    return;
+                }
+
+                let commandOutput = '> ' + command + '\n';
+
+                switch (command.toLowerCase()) {
+                    case 'help':
+                        commandOutput += 'Доступные команды:\n';
+                        currentTerminalData.commands.forEach(cmd => {
+                            commandOutput += `  ${cmd.name} - ${cmd.description}\n`;
+                        });
+                        break;
+                    case 'clear':
+                        terminalOutput.innerHTML = '> clear\n';
+                        break;
+                    case 'status':
+                        commandOutput += currentTerminalData.command_outputs.status.default;
+                        if (isHacked) {
+                             commandOutput += currentTerminalData.command_outputs.status.hacked;
+                        }
+                        break;
+                    case 'navigate filesystem':
+                    case 'navigate control':
+                    case 'navigate cabinet':
+                    case 'navigate characters':
+                    case 'navigate dossiers':
+                    case 'navigate map':
+                    case 'navigate terminal':
+                        const pageId = command.split(' ')[1];
+                        showPage(pageId);
+                        commandOutput += `Переход на страницу: ${pageId.charAt(0).toUpperCase() + pageId.slice(1)}`; // Простая капитализация
+                        if (pageId === 'control') controlMessageElement.textContent = '';
+                        // Очистка сообщений кабинета при переходе
+                        if (pageId === 'cabinet') {
+                            cabinetPasswordMessage.textContent = '';
+                            taskMessage.textContent = '';
+                            personalInfoMessage.textContent = '';
+                            financesMessage.textContent = '';
+                        }
+                        break;
+                    case 'message':
+                        if (currentTerminalData.command_outputs.message.default) {
+                            commandOutput += currentTerminalData.command_outputs.message.default.join('\n');
+                        }
+                        if (isHacked && currentTerminalData.command_outputs.message.hacked) {
+                            commandOutput += '\n' + currentTerminalData.command_outputs.message.hacked.join('\n');
+                        }
+                        break;
+                    case 'info':
+                        if (currentTerminalData.command_outputs.info.default) {
+                            commandOutput += currentTerminalData.command_outputs.info.default.join('\n');
+                        }
+                        if (isHacked && currentTerminalData.command_outputs.info.hacked) {
+                            commandOutput += '\n' + currentTerminalData.command_outputs.info.hacked.join('\n');
+                        }
+                        break;
+                    case 'hack':
+                        if (isHacked) {
+                            commandOutput += currentTerminalData.command_outputs.hack.already_hacked;
+                            terminalOutput.innerHTML += commandOutput + '\n';
+                            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                            maybePrintRandomMessage();
+                            terminalOutput.innerHTML += '> ';
+                            terminalInput.focus();
+                            return;
+                        } else if (!isHackMinigameActive) {
+                            isHackMinigameActive = true;
+                            hackAttempts = 0;
+
+                            const shuffledWords = currentTerminalData.hack_game.words.sort(() => 0.5 - Math.random());
+                            currentHackPhrase = shuffledWords.slice(0, 5).join(' ');
+
+                            let hackStartOutput = '> ' + command + '\n';
+                            hackStartOutput += currentTerminalData.hack_game.start_message
+                                .replace('{timer_duration}', currentTerminalData.hack_game.timer_duration)
+                                .replace('{phrase}', currentHackPhrase.toUpperCase())
+                                .replace('{timer_value}', currentTerminalData.hack_game.timer_duration);
+
+                            terminalOutput.innerHTML += hackStartOutput;
+                            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                            terminalInput.focus();
+
+                            hackTimer = currentTerminalData.hack_game.timer_duration;
+                            hackTimerInterval = setInterval(() => {
+                                hackTimer--;
+                                const lines = terminalOutput.innerHTML.split('\n');
+                                let timerLineIndex = -1;
+                                for(let i = lines.length - 1; i >= 0; i--) {
+                                    if (lines[i].startsWith('Таймер:')) {
+                                        timerLineIndex = i;
+                                        break;
+                                    }
+                                }
+
+                                if (timerLineIndex !== -1) {
+                                     lines[timerLineIndex] = 'Таймер: ' + hackTimer + '...\n';
+                                     terminalOutput.innerHTML = lines.join('\n');
+                                } else {
+                                     terminalOutput.innerHTML += 'Таймер: ' + hackTimer + '...\n';
+                                }
+                                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+
+                                if (hackTimer <= 0) {
+                                    clearInterval(hackTimerInterval);
+                                    isHackMinigameActive = false;
+                                     const currentLines = terminalOutput.innerHTML.split('\n');
+                                     let lastTimerLineIndex = -1;
+                                     for(let i = currentLines.length - 1; i >= 0; i--) {
+                                        if (currentLines[i].startsWith('Таймер:')) {
+                                            lastTimerLineIndex = i;
+                                            break;
+                                        }
+                                     }
+                                     if (lastTimerLineIndex !== -1) {
+                                         currentLines.splice(lastTimerLineIndex, 1);
+                                         terminalOutput.innerHTML = currentLines.join('\n');
+                                     }
+                                    hackAttempts++;
+                                    if (hackAttempts >= currentTerminalData.hack_game.max_attempts) {
+                                        resetHackAndLogout('too_many_hack_attempts');
+                                    } else {
+                                        terminalOutput.innerHTML += currentTerminalData.hack_game.timeout_message.replace('{attempts_left}', currentTerminalData.hack_game.max_attempts - hackAttempts) + '\n> ';
+                                        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                                        terminalInput.focus();
+                                    }
+                                }
+                            }, 1000);
+                            return;
+                        } else {
+                             commandOutput += currentTerminalData.command_outputs.hack.in_progress;
+                             terminalOutput.innerHTML += commandOutput + '\n';
+                             terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                             return;
+                        }
+                    default:
+                        commandOutput += currentTerminalData.error_messages.command_not_found;
+                        break;
+                }
+
+                if (command.toLowerCase() !== 'clear' && command.toLowerCase() !== 'hack') {
+                     terminalOutput.innerHTML += commandOutput + '\n';
+                     terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                     maybePrintRandomMessage();
+                     terminalOutput.innerHTML += '> ';
+                     terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                     terminalInput.focus();
+                }
+            }
+        });
+
+
+        // --- Инициализация и обработчики событий ---
+
+        // Обработчик нажатия Enter на полях ввода логина/пароля
+        usernameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                passwordInput.focus();
+            }
+        });
+
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleLogin();
+            }
+        });
+
+        // Обработчик клика по кнопке входа
+        loginButton.addEventListener('click', handleLogin);
+
+        // Обработчики для кнопок Кабинета
+        loadCabinetDataButton.addEventListener('click', loadCabinetData);
+        saveCabinetDataButton.addEventListener('click', saveCabinetData);
+
+        editTasksButton.addEventListener('click', () => toggleEditMode(taskListDisplay, taskMessage, editTasksButton, 'tasks'));
+        editPersonalInfoButton.addEventListener('click', () => toggleEditMode(personalInfoDisplay, personalInfoMessage, editPersonalInfoButton, 'personal_info'));
+        editFinancesButton.addEventListener('click', () => toggleEditMode(financesDisplay, financesMessage, editFinancesButton, 'finances'));
+
+        // Обработчики для модального окна JSON
+        closeButton.addEventListener('click', () => {
+            jsonModal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target === jsonModal) {
+                jsonModal.style.display = 'none';
+            }
+        });
+
+        copyJsonButton.addEventListener('click', () => {
+            jsonOutputTextarea.select();
+            document.execCommand('copy'); // Legacy, but widely supported
+            // navigator.clipboard.writeText(jsonOutputTextarea.value).then(() => { ... }); // Modern, but requires HTTPS for some browsers
+            alert(currentTerminalData.modal_messages.copy_alert.replace('{terminal_id}', currentTerminalData.terminal_id));
+            jsonModal.style.display = 'none';
+        });
+
+        // При загрузке страницы сначала загружаем конфигурацию терминалов
+        window.onload = async () => {
+            await loadTerminalConfig();
+        };
+
+    </script>
+
+</body>
+</html>
