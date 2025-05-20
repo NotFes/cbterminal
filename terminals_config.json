@@ -1,0 +1,26 @@
+[
+    {
+        "id": "trauma_team",
+        "name": "Trauma Team Dispatch",
+        "description": "Система диспетчерского центра Trauma Team.",
+        "dataFile": "data/trauma_team_data.json"
+    },
+    {
+        "id": "arasaka",
+        "name": "Arasaka Security Hub",
+        "description": "Центр безопасности корпорации Арасака.",
+        "dataFile": "data/arasaka_data.json"
+    },
+    {
+        "id": "store",
+        "name": "Night Market Kiosk",
+        "description": "Автомат для покупок и продажи на Черном Рынке.",
+        "dataFile": "data/store_data.json"
+    },
+    {
+        "id": "militech",
+        "name": "Militech Ops Center",
+        "description": "Операционный центр Милитех.",
+        "dataFile": "data/militech_data.json"
+    }
+]
