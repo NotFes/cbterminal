@@ -619,7 +619,8 @@
             // Заголовки
             mainTerminalHeader.textContent = data.terminal_title;
             loginTerminalTitle.textContent = data.terminal_title;
-            terminalSectionTitle.textContent = data.page_content.terminal.title || "/// СИСТЕМНЫЙ ТЕРМИНАЛ ///";
+            // ИСПРАВЛЕНИЕ: Используем data.terminal_title, так как page_content.terminal.title отсутствует
+            terminalSectionTitle.textContent = data.terminal_title;
 
             // Навигация
             mainNavLinks.innerHTML = ''; // Очищаем старые ссылки
@@ -632,13 +633,17 @@
                 { id: "dossiers", label: "ДОСЬЕ" },
                 { id: "map", label: "КАРТА" }
             ];
-            navPages.forEach(page => {
+            navPages.forEach((page, index) => {
                 const link = document.createElement('a');
                 link.href = `#${page.id}`;
                 link.classList.add('nav-link');
                 link.setAttribute('data-page', page.id);
                 link.textContent = `/// ${page.label} ///`;
                 mainNavLinks.appendChild(link);
+                // Добавляем перенос строки после "УПРАВЛЕНИЕ"
+                if (page.id === 'control') {
+                    mainNavLinks.appendChild(document.createElement('br'));
+                }
             });
             // Добавляем обработчики для новых ссылок
             document.querySelectorAll('.nav-link').forEach(link => {
@@ -831,7 +836,7 @@
                 populateUI(currentTerminalData);
             } catch (e) {
                 console.error(`Не удалось загрузить данные для терминала ${terminal.id}.`, e);
-                loginMessage.textContent = `Ошибка: Не удалось загрузить данные для терминала "${terminal.name}".`;
+                loginMessage.textContent = `Ошибка: Не удалось загрузить данные для терминала "${terminal.name}". Проверьте консоль.`;
                 terminalSelectionScreen.style.display = 'flex'; // Вернуть экран выбора, если ошибка
                 loginScreen.style.display = 'none';
             }
@@ -1040,21 +1045,23 @@
 
             const dataToSave = {
                 id: accountId,
-                password: password,
+                password: password, // ВНИМАНИЕ: Пароль хранится в открытом виде. Для реальных приложений это небезопасно!
                 tasks: taskListDisplay.textContent.trim(),
                 personalInfo: personalInfoDisplay.textContent.trim(),
                 finances: financesDisplay.textContent.trim()
             };
 
             if (accountIndex !== -1) {
+                // Обновляем существующий аккаунт
                 currentTerminalData.cabinet_accounts_data[accountIndex] = dataToSave;
             } else {
+                // Создаем новый аккаунт
                 currentTerminalData.cabinet_accounts_data.push(dataToSave);
             }
 
             // Форматируем ВЕСЬ currentTerminalData для вывода
             const jsonString = JSON.stringify(currentTerminalData, null, 2);
-            jsonOutputTextarea.value = jsonString;
+            jsonOutputTextarea.value = jsonString; // Помещаем JSON в текстовое поле модального окна
 
             jsonModal.style.display = 'block';
             cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.ready_to_copy.replace('{account_id}', accountId);
@@ -1065,10 +1072,10 @@
             const isEditable = displayElement.contentEditable === 'true';
             displayElement.contentEditable = !isEditable;
             buttonElement.textContent = isEditable ? currentTerminalData.page_content.cabinet.sections[sectionKey].edit_button : currentTerminalData.page_content.cabinet.sections[sectionKey].save_button;
-            if (isEditable) {
+            if (isEditable) { // Если выходим из режима редактирования
                 messageElement.textContent = currentTerminalData.page_content.cabinet.sections[sectionKey].messages.saved_local;
                 displayElement.classList.remove('cabinet-data-area-editing');
-            } else {
+            } else { // Если входим в режим редактирования
                 messageElement.textContent = currentTerminalData.page_content.cabinet.sections[sectionKey].messages.editing;
                 displayElement.focus();
                 displayElement.classList.add('cabinet-data-area-editing');
