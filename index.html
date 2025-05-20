@@ -3,9 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Киберпанк Сеть v4</title>
+    <title>Киберпанк Сеть v5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Глобальные переменные для Firebase
+        window.firebaseApp = null;
+        window.db = null;
+        window.auth = null;
+        window.currentUserId = null;
+
+        // Инициализация Firebase
+        async function initFirebase() {
+            try {
+                // __firebase_config и __app_id предоставляются средой Canvas
+                const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+                if (Object.keys(firebaseConfig).length === 0) {
+                    console.error("Firebase config is missing. Data persistence will not work.");
+                    return;
+                }
+
+                window.firebaseApp = initializeApp(firebaseConfig);
+                window.db = getFirestore(window.firebaseApp);
+                window.auth = getAuth(window.firebaseApp);
+
+                // Аутентификация
+                if (typeof __initial_auth_token !== 'undefined') {
+                    await signInWithCustomToken(window.auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(window.auth);
+                }
+
+                onAuthStateChanged(window.auth, (user) => {
+                    if (user) {
+                        window.currentUserId = user.uid;
+                        console.log("Firebase initialized. User ID:", window.currentUserId);
+                    } else {
+                        window.currentUserId = null;
+                        console.log("Firebase: No user signed in.");
+                    }
+                });
+
+            } catch (error) {
+                console.error("Error initializing Firebase:", error);
+            }
+        }
+
+        // Вызываем инициализацию Firebase при загрузке скрипта
+        initFirebase();
+    </script>
     <style>
         body {
             font-family: 'Roboto Mono', monospace; /* Применяем шрифт */
@@ -242,7 +294,75 @@
              background-color: #00cccc; /* Темнее голубой при наведении */
          }
 
+        /* Стили для Кабинета */
+        .cabinet-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px dashed #00ff00;
+        }
 
+        .cabinet-section:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .cabinet-data-area {
+            background-color: #000;
+            border: 1px solid #00ff00;
+            padding: 0.75rem;
+            min-height: 80px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            overflow-y: auto;
+            max-height: 200px;
+            line-height: 1.4;
+            font-size: 0.95rem;
+            resize: vertical; /* Разрешаем изменение размера по вертикали */
+        }
+
+        .cabinet-data-area[contenteditable="true"] {
+            border-color: #ffff00; /* Желтая рамка при редактировании */
+            background-color: #0a0a0a;
+            color: #ffff00;
+        }
+
+        .cabinet-input {
+            background-color: #000;
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            padding: 0.5rem;
+            outline: none;
+            width: 200px;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        .cabinet-button {
+            background-color: #ff00ff;
+            color: #0f0f0f;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Roboto Mono', monospace;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .cabinet-button:hover {
+            background-color: #ffff00;
+        }
+        .cabinet-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .cabinet-message {
+            color: #00ffff;
+            margin-top: 0.5rem;
+            min-height: 1.2rem;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -261,8 +381,8 @@
             <nav class="mt-4 text-center">
                 <a href="#terminal" class="nav-link" data-page="terminal">/// ТЕРМИНАЛ ///</a>
                 <a href="#filesystem" class="nav-link" data-page="filesystem">/// ФАЙЛОВАЯ СИСТЕМА ///</a>
-                 <a href="#control" class="nav-link" data-page="control">/// УПРАВЛЕНИЕ ///</a>
-                <a href="#characters" class="nav-link" data-page="characters">/// ПЕРСОНАЖИ ///</a>
+                <a href="#control" class="nav-link" data-page="control">/// УПРАВЛЕНИЕ ///</a>
+                <a href="#cabinet" class="nav-link" data-page="cabinet">/// КАБИНЕТ ///</a> <a href="#characters" class="nav-link" data-page="characters">/// ПЕРСОНАЖИ ///</a>
                 <a href="#dossiers" class="nav-link" data-page="dossiers">/// ДОСЬЕ ///</a>
                 <a href="#map" class="nav-link" data-page="map">/// КАРТА ///</a>
             </nav>
@@ -342,6 +462,58 @@
             </div>
         </section>
 
+        <section id="cabinet" class="page-section">
+            <div class="page-content">
+                <h2 class="text-2xl">/// ЛИЧНЫЙ КАБИНЕТ ///</h2>
+                <p>Управление персональными данными.</p>
+
+                <div class="cabinet-section">
+                    <h3 class="text-xl text-purple-400 mb-2">Пароль для доступа к данным:</h3>
+                    <div class="flex items-center gap-2">
+                        <input type="password" id="cabinet-password" class="cabinet-input" placeholder="Введите пароль">
+                        <button id="load-cabinet-data" class="cabinet-button">Загрузить</button>
+                        <button id="save-cabinet-data" class="cabinet-button">Сохранить</button>
+                    </div>
+                    <div id="cabinet-password-message" class="cabinet-message text-red-500"></div>
+                </div>
+
+                <div class="cabinet-section">
+                    <h3 class="text-xl text-purple-400 mb-2">Список заданий:</h3>
+                    <div id="task-list-display" class="cabinet-data-area" contenteditable="false">
+                        Задание 1: Взломать корпоративный сервер Арес.
+Задание 2: Найти информацию о проекте "Феникс".
+Задание 3: Встретиться с информатором в "Синем Лотосе".
+                    </div>
+                    <button id="edit-tasks-button" class="cabinet-button">Изменить</button>
+                    <div id="task-message" class="cabinet-message"></div>
+                </div>
+
+                <div class="cabinet-section">
+                    <h3 class="text-xl text-purple-400 mb-2">Личная информация:</h3>
+                    <div id="personal-info-display" class="cabinet-data-area" contenteditable="false">
+                        Имя: Призрак
+Псевдоним: Ghost
+Профессия: Нейрохакер, фрилансер
+Контакты: [Зашифровано]
+                    </div>
+                    <button id="edit-personal-info-button" class="cabinet-button">Изменить</button>
+                    <div id="personal-info-message" class="cabinet-message"></div>
+                </div>
+
+                <div class="cabinet-section">
+                    <h3 class="text-xl text-purple-400 mb-2">Финансы и Имущество:</h3>
+                    <div id="finances-display" class="cabinet-data-area" contenteditable="false">
+                        Кредиты: 15,000 евродолларов
+Банковский счет: [Оффлайн]
+Квартира: Найт-Сити, Сектор Б, трущобы
+Транспорт: Мотоцикл "Красный Дракон"
+                    </div>
+                    <button id="edit-finances-button" class="cabinet-button">Изменить</button>
+                    <div id="finances-message" class="cabinet-message"></div>
+                </div>
+            </div>
+        </section>
+
 
         <section id="characters" class="page-section">
             <div class="page-content">
@@ -380,7 +552,9 @@
 
     </div>
 
-    <script>
+    <script type="module">
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
         const navLinks = document.querySelectorAll('.nav-link');
         const pageSections = document.querySelectorAll('.page-section');
         const terminalInput = document.getElementById('terminal-input');
@@ -391,9 +565,27 @@
         const passwordInput = document.getElementById('password');
         const loginButton = document.getElementById('login-button');
         const loginMessage = document.getElementById('login-message');
-        const secretFileElement = document.getElementById('secret-file'); // Скрытый файл
-        const controlButtons = document.querySelectorAll('.control-button'); // Кнопки управления
-        const controlMessageElement = document.getElementById('control-message'); // Элемент для сообщений управления
+        const secretFileElement = document.getElementById('secret-file');
+        const controlButtons = document.querySelectorAll('.control-button');
+        const controlMessageElement = document.getElementById('control-message');
+
+        // Элементы Кабинета
+        const cabinetPasswordInput = document.getElementById('cabinet-password');
+        const loadCabinetDataButton = document.getElementById('load-cabinet-data');
+        const saveCabinetDataButton = document.getElementById('save-cabinet-data');
+        const cabinetPasswordMessage = document.getElementById('cabinet-password-message');
+
+        const taskListDisplay = document.getElementById('task-list-display');
+        const editTasksButton = document.getElementById('edit-tasks-button');
+        const taskMessage = document.getElementById('task-message');
+
+        const personalInfoDisplay = document.getElementById('personal-info-display');
+        const editPersonalInfoButton = document.getElementById('edit-personal-info-button');
+        const personalInfoMessage = document.getElementById('personal-info-message');
+
+        const financesDisplay = document.getElementById('finances-display');
+        const editFinancesButton = document.getElementById('edit-finances-button');
+        const financesMessage = document.getElementById('finances-message');
 
 
         // Флаг, указывающий, был ли терминал успешно взломан
@@ -645,6 +837,114 @@
         });
 
 
+        // --- Логика Кабинета ---
+
+        // Функция для получения ссылки на документ пользователя в Firestore
+        function getUserCabinetDocRef() {
+            if (!window.db || !window.currentUserId || !window.__app_id) {
+                console.error("Firebase not initialized or user ID not available.");
+                return null;
+            }
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            // Путь к коллекции: /artifacts/{appId}/users/{userId}/cabinet_data
+            // Документ: user_profile
+            return doc(window.db, `artifacts/${appId}/users/${window.currentUserId}/cabinet_data`, 'user_profile');
+        }
+
+        // Функция для загрузки данных из Firestore
+        async function loadCabinetData() {
+            const password = cabinetPasswordInput.value.trim();
+            if (!password) {
+                cabinetPasswordMessage.textContent = 'Введите пароль для загрузки данных.';
+                return;
+            }
+            cabinetPasswordMessage.textContent = 'Загрузка...';
+
+            const docRef = getUserCabinetDocRef();
+            if (!docRef) {
+                cabinetPasswordMessage.textContent = 'Ошибка: Firebase не инициализирован.';
+                return;
+            }
+
+            try {
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data.cabinetPassword === password) { // Проверяем пароль
+                        taskListDisplay.textContent = data.tasks || '';
+                        personalInfoDisplay.textContent = data.personalInfo || '';
+                        financesDisplay.textContent = data.finances || '';
+                        cabinetPasswordMessage.textContent = 'Данные успешно загружены.';
+                    } else {
+                        cabinetPasswordMessage.textContent = 'Неверный пароль для данных кабинета.';
+                    }
+                } else {
+                    cabinetPasswordMessage.textContent = 'Данные не найдены. Создайте их, нажав "Сохранить".';
+                }
+            } catch (e) {
+                console.error("Ошибка при загрузке данных кабинета:", e);
+                cabinetPasswordMessage.textContent = 'Ошибка при загрузке данных.';
+            }
+        }
+
+        // Функция для сохранения данных в Firestore
+        async function saveCabinetData() {
+            const password = cabinetPasswordInput.value.trim();
+            if (!password) {
+                cabinetPasswordMessage.textContent = 'Введите пароль для сохранения данных.';
+                return;
+            }
+            cabinetPasswordMessage.textContent = 'Сохранение...';
+
+            const docRef = getUserCabinetDocRef();
+            if (!docRef) {
+                cabinetPasswordMessage.textContent = 'Ошибка: Firebase не инициализирован.';
+                return;
+            }
+
+            // ВНИМАНИЕ: В реальном приложении пароли НИКОГДА не должны храниться в открытом виде.
+            // Здесь это сделано для простоты демонстрации функционала.
+            // В продакшене используйте хеширование паролей (например, bcrypt) на сервере.
+            const dataToSave = {
+                cabinetPassword: password, // Храним пароль для проверки
+                tasks: taskListDisplay.textContent.trim(),
+                personalInfo: personalInfoDisplay.textContent.trim(),
+                finances: financesDisplay.textContent.trim()
+            };
+
+            try {
+                await setDoc(docRef, dataToSave);
+                cabinetPasswordMessage.textContent = 'Данные успешно сохранены.';
+            } catch (e) {
+                console.error("Ошибка при сохранении данных кабинета:", e);
+                cabinetPasswordMessage.textContent = 'Ошибка при сохранении данных.';
+            }
+        }
+
+        // Функция для переключения режима редактирования
+        function toggleEditMode(displayElement, messageElement, buttonElement) {
+            const isEditable = displayElement.contentEditable === 'true';
+            displayElement.contentEditable = !isEditable;
+            buttonElement.textContent = isEditable ? 'Изменить' : 'Сохранить изменения';
+            if (isEditable) { // Если выходим из режима редактирования
+                messageElement.textContent = 'Изменения сохранены локально. Нажмите "Сохранить" для сохранения в облаке.';
+            } else { // Если входим в режим редактирования
+                messageElement.textContent = 'Редактирование активно. Нажмите кнопку еще раз, чтобы завершить.';
+                displayElement.focus(); // Устанавливаем фокус
+            }
+            displayElement.classList.toggle('cabinet-data-area', !isEditable); // Убираем/добавляем класс, чтобы сбросить желтую рамку
+        }
+
+
+        // Обработчики событий для кнопок Кабинета
+        loadCabinetDataButton.addEventListener('click', loadCabinetData);
+        saveCabinetDataButton.addEventListener('click', saveCabinetData);
+
+        editTasksButton.addEventListener('click', () => toggleEditMode(taskListDisplay, taskMessage, editTasksButton));
+        editPersonalInfoButton.addEventListener('click', () => toggleEditMode(personalInfoDisplay, personalInfoMessage, editPersonalInfoButton));
+        editFinancesButton.addEventListener('click', () => toggleEditMode(financesDisplay, financesMessage, editFinancesButton));
+
+
         // Обработка команд терминала
         terminalInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
@@ -740,7 +1040,7 @@
                         commandOutput += '  help - Показать список команд\n';
                         commandOutput += '  clear - Очистить вывод терминала\n';
                         commandOutput += '  status - Показать статус системы\n';
-                        commandOutput += '  navigate [страница] - Перейти на страницу (terminal, filesystem, control, characters, dossiers, map)\n'; // Обновлен список страниц
+                        commandOutput += '  navigate [страница] - Перейти на страницу (terminal, filesystem, control, cabinet, characters, dossiers, map)\n'; // Обновлен список страниц
                         commandOutput += '  message - Просмотреть сообщения\n';
                         commandOutput += '  info - Информация о системе\n';
                         commandOutput += '  hack - Начать процедуру взлома (мини-игра)\n'; // Обновлено описание hack
@@ -765,6 +1065,15 @@
                          commandOutput += 'Переход на страницу: Управление';
                          // Очищаем сообщение на странице управления при переходе
                          controlMessageElement.textContent = '';
+                         break;
+                    case 'navigate cabinet': // Обработка перехода на страницу Кабинет
+                         showPage('cabinet');
+                         commandOutput += 'Переход на страницу: Личный Кабинет';
+                         // Очищаем сообщения на странице кабинета при переходе
+                         cabinetPasswordMessage.textContent = '';
+                         taskMessage.textContent = '';
+                         personalInfoMessage.textContent = '';
+                         financesMessage.textContent = '';
                          break;
                     case 'navigate characters':
                         showPage('characters');
