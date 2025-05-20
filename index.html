@@ -318,7 +318,70 @@
             font-size: 0.9rem;
         }
 
-        /* Стили для модального окна (удалены, так как теперь данные отправляются на сервер) */
+        /* Стили для модального окна JSON */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.8); /* Black w/ opacity */
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: #1a1a1a;
+            margin: 5% auto; /* 5% from the top and centered */
+            padding: 20px;
+            border: 1px solid #00ff00;
+            width: 80%; /* Could be more or less, depending on screen size */
+            box-shadow: 0 0 15px #00ff00;
+            position: relative;
+        }
+
+        .close-button {
+            color: #aaaaaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .json-textarea {
+            width: 100%;
+            height: 300px;
+            background-color: #000;
+            border: 1px solid #00ffff;
+            color: #00ff00;
+            padding: 10px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.9rem;
+            resize: vertical;
+        }
+
+        .copy-json-button {
+            background-color: #00ffff;
+            color: #0f0f0f;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Roboto Mono', monospace;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+        }
+        .copy-json-button:hover {
+            background-color: #00cccc;
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -337,7 +400,8 @@
             <nav class="mt-4 text-center">
                 <a href="#terminal" class="nav-link" data-page="terminal">/// ТЕРМИНАЛ ///</a>
                 <a href="#filesystem" class="nav-link" data-page="filesystem">/// ФАЙЛОВАЯ СИСТЕМА ///</a>
-                <a href="#control" class="nav-link" data-page="control">/// УПРАВЛЕНИЕ ///</a><br> <a href="#cabinet" class="nav-link" data-page="cabinet">/// КАБИНЕТ ///</a>
+                <a href="#control" class="nav-link" data-page="control">/// УПРАВЛЕНИЕ ///</a><br>
+                <a href="#cabinet" class="nav-link" data-page="cabinet">/// КАБИНЕТ ///</a>
                 <a href="#characters" class="nav-link" data-page="characters">/// ПЕРСОНАЖИ ///</a>
                 <a href="#dossiers" class="nav-link" data-page="dossiers">/// ДОСЬЕ ///</a>
                 <a href="#map" class="nav-link" data-page="map">/// КАРТА ///</a>
@@ -514,6 +578,17 @@
 
     </div>
 
+    <div id="jsonModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2 class="text-2xl text-center text-purple-400 mb-4">/// JSON ДАННЫЕ ДЛЯ КОПИРОВАНИЯ ///</h2>
+            <p class="text-yellow-400 mb-2">Скопируйте этот JSON-код и вставьте его в ваш файл `id_list.json` на GitHub (или локально), затем обновите страницу, чтобы изменения вступили в силу.</p>
+            <textarea id="jsonOutput" class="json-textarea" readonly></textarea>
+            <button id="copyJsonButton" class="copy-json-button">Копировать JSON</button>
+        </div>
+    </div>
+
+
     <script>
         const navLinks = document.querySelectorAll('.nav-link');
         const pageSections = document.querySelectorAll('.page-section');
@@ -548,7 +623,11 @@
         const editFinancesButton = document.getElementById('edit-finances-button');
         const financesMessage = document.getElementById('finances-message');
 
-        // Модальное окно и связанные элементы удалены из HTML и JS.
+        // Модальное окно и связанные элементы
+        const jsonModal = document.getElementById('jsonModal');
+        const closeButton = document.querySelector('.close-button');
+        const jsonOutputTextarea = document.getElementById('jsonOutput');
+        const copyJsonButton = document.getElementById('copyJsonButton');
 
 
         // Флаг, указывающий, был ли терминал успешно взломан
@@ -578,11 +657,8 @@
             camera: false
         };
 
-        // Временное хранилище для всех данных аккаунтов, загруженных с сервера
+        // Временное хранилище для всех данных аккаунтов, загруженных из id_list.json
         let allCabinetAccountsData = [];
-
-        // Адрес вашего Node.js сервера. Замените, если ваш сервер будет на другом адресе/порту.
-        const SERVER_URL = 'http://localhost:3000';
 
 
         // Список случайных системных сообщений
@@ -717,7 +793,7 @@
                  terminalOutput.classList.remove('terminal-alert');
                  terminalInput.classList.remove('terminal-alert');
                  terminalInput.disabled = false; // Включаем ввод
-                 terminalOutput.innerHTML = '/// МАСТЕР-ДОСТУП АКТИВИРОВАН ///\nПодключение к сети... Успешно.\nВведите команду или \'help\' для списка команд.\n> ';
+                 terminalOutput.innerHTML = '/// МАСТЕР-ДОСТУП АКТИВИРОВАН ///\nПодключение к сети... Успешно.<br>Введите команду или \'help\' для списка команд.\n> ';
                  terminalOutput.scrollTop = terminalOutput.scrollHeight;
 
 
@@ -806,21 +882,28 @@
         });
 
 
-        // --- Логика Кабинета (теперь на основе id_list.json через сервер) ---
+        // --- Логика Кабинета (версия с буфером обмена и ручным обновлением JSON) ---
 
-        // Функция для загрузки всех данных аккаунтов с сервера
+        // Функция для загрузки всех данных аккаунтов из id_list.json
         async function loadAllCabinetAccountsData() {
             try {
-                const response = await fetch(`${SERVER_URL}/api/accounts`);
+                // Пытаемся загрузить id_list.json с текущего домена (GitHub Pages)
+                const response = await fetch('id_list.json');
                 if (!response.ok) {
-                    throw new Error(`Ошибка загрузки данных: ${response.statusText}`);
+                    // Если файл не найден или ошибка загрузки, возвращаем пустой массив
+                    if (response.status === 404) {
+                        console.warn("id_list.json не найден. Будет создан новый.");
+                        return [];
+                    }
+                    throw new Error(`Ошибка загрузки id_list.json: ${response.statusText}`);
                 }
-                allCabinetAccountsData = await response.json();
-                console.log("Данные аккаунтов загружены с сервера:", allCabinetAccountsData);
+                const data = await response.json();
+                console.log("Данные аккаунтов загружены из id_list.json:", data);
+                return data;
             } catch (e) {
-                console.error("Не удалось загрузить данные аккаунтов с сервера. Убедитесь, что сервер запущен.", e);
-                cabinetPasswordMessage.textContent = 'Ошибка: Не удалось загрузить данные с сервера. Проверьте консоль.';
-                allCabinetAccountsData = []; // Очищаем данные, если загрузка не удалась
+                console.error("Не удалось загрузить id_list.json. Убедитесь, что файл существует и корректен.", e);
+                cabinetPasswordMessage.textContent = 'Ошибка: Не удалось загрузить данные. Проверьте консоль.';
+                return []; // Возвращаем пустой массив в случае ошибки
             }
         }
 
@@ -839,7 +922,8 @@
             }
             cabinetPasswordMessage.textContent = 'Загрузка...';
 
-            // Ищем аккаунт в локально загруженных данных
+            allCabinetAccountsData = await loadAllCabinetAccountsData(); // Всегда загружаем свежие данные
+
             const account = allCabinetAccountsData.find(acc => acc.id === accountId);
 
             if (account) {
@@ -860,7 +944,7 @@
             }
         }
 
-        // Функция для сохранения данных на сервере
+        // Функция для сохранения данных и отображения JSON в модальном окне
         async function saveCabinetData() {
             const accountId = cabinetAccountIdInput.value.trim();
             const password = cabinetPasswordInput.value.trim();
@@ -873,7 +957,9 @@
                 cabinetPasswordMessage.textContent = 'Введите пароль для сохранения данных.';
                 return;
             }
-            cabinetPasswordMessage.textContent = 'Сохранение...';
+            cabinetPasswordMessage.textContent = 'Подготовка данных к сохранению...';
+
+            allCabinetAccountsData = await loadAllCabinetAccountsData(); // Всегда загружаем свежие данные перед сохранением
 
             let accountIndex = allCabinetAccountsData.findIndex(acc => acc.id === accountId);
 
@@ -886,33 +972,19 @@
             };
 
             if (accountIndex !== -1) {
-                // Обновляем существующий аккаунт в локальной копии
+                // Обновляем существующий аккаунт
                 allCabinetAccountsData[accountIndex] = dataToSave;
             } else {
-                // Создаем новый аккаунт в локальной копии
+                // Создаем новый аккаунт
                 allCabinetAccountsData.push(dataToSave);
             }
 
-            try {
-                // Отправляем весь обновленный массив данных на сервер
-                const response = await fetch(`${SERVER_URL}/api/accounts`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(allCabinetAccountsData)
-                });
+            // Форматируем JSON для вывода
+            const jsonString = JSON.stringify(allCabinetAccountsData, null, 2);
+            jsonOutputTextarea.value = jsonString; // Помещаем JSON в текстовое поле модального окна
 
-                if (!response.ok) {
-                    throw new Error(`Ошибка сохранения данных на сервере: ${response.statusText}`);
-                }
-                const result = await response.json();
-                cabinetPasswordMessage.textContent = `Данные для аккаунта "${accountId}" успешно сохранены на сервере.`;
-                console.log("Ответ сервера:", result.message);
-            } catch (e) {
-                console.error("Ошибка при сохранении данных на сервере:", e);
-                cabinetPasswordMessage.textContent = 'Ошибка: Не удалось сохранить данные на сервере. Проверьте консоль.';
-            }
+            jsonModal.style.display = 'block'; // Показываем модальное окно
+            cabinetPasswordMessage.textContent = `Данные для аккаунта "${accountId}" готовы. Скопируйте JSON.`;
         }
 
         // Функция для переключения режима редактирования
@@ -921,7 +993,7 @@
             displayElement.contentEditable = !isEditable;
             buttonElement.textContent = isEditable ? 'Изменить' : 'Сохранить изменения';
             if (isEditable) { // Если выходим из режима редактирования
-                messageElement.textContent = 'Изменения сохранены локально. Нажмите "Сохранить" для сохранения на сервере.';
+                messageElement.textContent = 'Изменения сохранены локально. Нажмите "Сохранить" для вывода JSON.';
                 displayElement.classList.remove('cabinet-data-area-editing'); // Убираем желтую рамку
             } else { // Если входим в режим редактирования
                 messageElement.textContent = 'Редактирование активно. Нажмите кнопку еще раз, чтобы завершить.';
@@ -939,7 +1011,30 @@
         editPersonalInfoButton.addEventListener('click', () => toggleEditMode(personalInfoDisplay, personalInfoMessage, editPersonalInfoButton));
         editFinancesButton.addEventListener('click', () => toggleEditMode(financesDisplay, financesMessage, editFinancesButton));
 
-        // Модальное окно и связанные обработчики удалены.
+        // Обработчики для модального окна JSON
+        closeButton.addEventListener('click', () => {
+            jsonModal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target === jsonModal) {
+                jsonModal.style.display = 'none';
+            }
+        });
+
+        copyJsonButton.addEventListener('click', () => {
+            jsonOutputTextarea.select(); // Выделяем текст в textarea
+            document.execCommand('copy'); // Копируем в буфер обмена (deprecated, но работает)
+            // Более современный способ:
+            // navigator.clipboard.writeText(jsonOutputTextarea.value).then(() => {
+            //     alert('JSON скопирован в буфер обмена!');
+            // }).catch(err => {
+            //     console.error('Не удалось скопировать текст: ', err);
+            // });
+            alert('JSON скопирован в буфер обмена! Теперь вставьте его в id_list.json и обновите страницу.');
+            jsonModal.style.display = 'none'; // Скрываем модальное окно после копирования
+        });
+
 
         // Обработка команд терминала
         terminalInput.addEventListener('keypress', (e) => {
@@ -1245,8 +1340,8 @@
              terminalInput.classList.remove('terminal-alert');
              terminalInput.disabled = false; // Убедимся, что ввод включен
 
-            // Загружаем данные аккаунтов с сервера при старте
-            await loadAllCabinetAccountsData();
+            // Загружаем данные аккаунтов из JSON при старте
+            allCabinetAccountsData = await loadAllCabinetAccountsData();
         };
 
         // Если пользователь переходит по хешу в URL после перезагрузки,
