@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Киберпанк Сеть v4</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto Mono', monospace; /* Применяем шрифт */
+            background-color: #0f0f0f; /* Очень темный фон */
+            color: #00ff00; /* Яркий неоновый зеленый цвет текста */
+            overflow-x: hidden; /* Избегаем горизонтальной прокрутки */
+            display: flex; /* Используем flexbox для центрирования логина */
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Минимальная высота во весь экран */
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+            width: 100%; /* Контейнер занимает всю доступную ширину */
+        }
+        .terminal-input {
+            background-color: #000; /* Черный фон для поля ввода */
+            border: 1px solid #00ff00; /* Зеленая рамка */
+            color: #00ff00; /* Зеленый текст */
+            padding: 0.5rem;
+            outline: none; /* Убираем стандартную обводку при фокусе */
+            width: 100%;
+        }
+        .terminal-output {
+            white-space: pre-wrap; /* Сохраняем переносы строк и пробелы */
+            word-break: break-all; /* Переносим длинные слова */
+            margin-top: 1rem;
+            min-height: 200px; /* Минимальная высота для вывода терминала */
+            border: 1px dashed #00ff00; /* Пунктирная рамка */
+            padding: 0.5rem;
+            overflow-y: auto; /* Добавляем прокрутку, если контента много */
+            max-height: 60vh; /* Максимальная высота */
+        }
+        /* Стиль для терминала в режиме тревоги */
+        .terminal-alert {
+            color: #ff0000; /* Красный текст */
+            border-color: #ff0000; /* Красная рамка */
+        }
+         .terminal-alert .terminal-input {
+             color: #ff0000;
+             border-color: #ff0000;
+         }
+
+
+        .nav-link {
+            cursor: pointer; /* Курсор-указатель для ссылок */
+            text-decoration: none; /* Убираем подчеркивание */
+            color: #00ffff; /* Неоновый голубой для ссылок */
+            margin-right: 1rem;
+            transition: color 0.3s ease; /* Плавное изменение цвета при наведении */
+        }
+        .nav-link:hover {
+            color: #ffff00; /* Неоновый желтый при наведении */
+        }
+        .page-section {
+            display: none; /* Скрываем все секции по умолчанию */
+        }
+        .page-section.active {
+            display: block; /* Показываем активную секцию */
+        }
+        h1, h2 {
+            color: #ff00ff; /* Неоновый пурпурный для заголовков */
+            text-shadow: 0 0 5px #ff00ff; /* Тень для эффекта свечения */
+            margin-bottom: 1rem;
+        }
+        /* Стили для контента страниц */
+        .page-content {
+            background-color: #1a1a1a; /* Более светлый темный фон для контента */
+            border: 1px solid #00ff00;
+            padding: 1.5rem;
+            border-radius: 8px; /* Скругленные углы */
+        }
+        .page-content p {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        .page-content ul {
+            list-style: disc;
+            margin-left: 1.5rem;
+        }
+        .page-content li {
+            margin-bottom: 0.5rem;
+        }
+        /* Стили для изображения карты */
+        .map-image {
+            max-width: 100%; /* Изображение не будет шире своего контейнера */
+            height: auto; /* Сохраняем пропорции */
+            border: 2px solid #00ffff; /* Неоновая голубая рамка */
+            margin-top: 1.5rem; /* Отступ сверху */
+            display: block; /* Делаем блочным элементом для центрирования и отступов */
+            margin-left: auto;
+            margin-right: auto;
+            cursor: pointer; /* Курсор-указатель при наведении */
+        }
+
+        /* Стили для экрана входа */
+        #login-screen {
+            display: flex; /* Изначально показываем */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #1a1a1a;
+            border: 2px solid #00ffff;
+            padding: 3rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        #login-screen input {
+            background-color: #000;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            outline: none;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1rem;
+            width: 250px; /* Фиксированная ширина для полей ввода */
+        }
+
+        #login-screen button {
+            background-color: #ff00ff; /* Пурпурная кнопка */
+            color: #0f0f0f; /* Темный текст на кнопке */
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1rem;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        #login-screen button:hover {
+            background-color: #ffff00; /* Желтая при наведении */
+            color: #0f0f0f;
+        }
+
+        #login-message {
+            color: #ff0000; /* Красный для сообщений об ошибке */
+            margin-top: 1rem;
+            min-height: 1.5rem; /* Занимаем место, чтобы не прыгало при появлении текста */
+        }
+
+        #main-content {
+            display: none; /* Изначально скрываем основной контент */
+        }
+
+        /* Стили для файловой системы (спойлеры) */
+        .file-entry {
+            margin-bottom: 1rem;
+            border: 1px solid #00ff00;
+            padding: 0.75rem;
+            border-radius: 5px;
+            background-color: #0d0d0d; /* Чуть темнее фона контента */
+        }
+
+        .file-entry summary {
+            cursor: pointer;
+            outline: none;
+            color: #00ffff; /* Неоновый голубой для названия файла */
+            font-weight: bold;
+        }
+
+        .file-content {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px dashed #00ff00;
+            white-space: pre-wrap; /* Сохраняем форматирование текста внутри */
+            word-break: break-all;
+        }
+
+        /* Стили для скрытого файла */
+        .hidden-file {
+            display: none; /* Изначально скрываем второй файл */
+        }
+
+        /* Стили для страницы управления */
+        .control-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem; /* Отступ между кнопками */
+        }
+
+        .control-button {
+            padding: 1rem;
+            border: 2px solid;
+            border-radius: 5px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+            text-align: center;
+        }
+
+        .button-active {
+            background-color: #00ff00; /* Зеленый фон (неактивен, доступен) */
+            color: #0f0f0f; /* Темный текст */
+            border-color: #00ff00;
+        }
+
+        .button-restricted {
+            background-color: #ff0000; /* Красный фон (недоступен) */
+            color: #0f0f0f;
+            border-color: #ff0000;
+            cursor: not-allowed; /* Курсор "запрещено" */
+            opacity: 0.6; /* Сделать немного прозрачнее */
+        }
+
+         .button-unlocked {
+            background-color: #ffff00; /* Желтый фон (неактивен, доступен после взлома) */
+            color: #0f0f0f;
+            border-color: #ffff00;
+        }
+
+        /* Стиль для активного (включенного) состояния кнопки */
+        .button-toggled {
+            background-color: #00ffff; /* Неоновый голубой фон */
+            color: #0f0f0f;
+            border-color: #00ffff;
+        }
+
+        /* Эффекты наведения */
+        .button-active:hover:not(.button-toggled):not(.button-restricted) {
+             background-color: #00cc00; /* Темнее зеленый при наведении */
+        }
+
+         .button-unlocked:hover:not(.button-toggled):not(.button-restricted) {
+             background-color: #cccc00; /* Темнее желтый при наведении */
+        }
+
+         .button-toggled:hover:not(.button-restricted) {
+             background-color: #00cccc; /* Темнее голубой при наведении */
+         }
+
+
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="login-screen">
+        <h2 class="text-2xl mb-4">/// СИСТЕМНЫЙ ДОСТУП ///</h2>
+        <input type="text" id="username" placeholder="Логин">
+        <input type="password" id="password" placeholder="Пароль">
+        <button id="login-button">ВОЙТИ</button>
+        <div id="login-message"></div>
+    </div>
+
+    <div id="main-content" class="container mt-8">
+        <header class="mb-8 border-b border-green-500 pb-4">
+            <h1 class="text-3xl font-bold text-center">/// КИБЕРНЕТИЧЕСКАЯ СЕТЬ ///</h1>
+            <nav class="mt-4 text-center">
+                <a href="#terminal" class="nav-link" data-page="terminal">/// ТЕРМИНАЛ ///</a>
+                <a href="#filesystem" class="nav-link" data-page="filesystem">/// ФАЙЛОВАЯ СИСТЕМА ///</a>
+                 <a href="#control" class="nav-link" data-page="control">/// УПРАВЛЕНИЕ ///</a>
+                <a href="#characters" class="nav-link" data-page="characters">/// ПЕРСОНАЖИ ///</a>
+                <a href="#dossiers" class="nav-link" data-page="dossiers">/// ДОСЬЕ ///</a>
+                <a href="#map" class="nav-link" data-page="map">/// КАРТА ///</a>
+            </nav>
+        </header>
+
+        <section id="terminal" class="page-section active">
+            <div class="page-content">
+                <h2 class="text-2xl">/// СИСТЕМНЫЙ ТЕРМИНАЛ ///</h2>
+                <div id="terminal-output" class="terminal-output">
+                    Подключение к сети... Успешно.<br>
+                    Введите команду или 'help' для списка команд.
+                </div>
+                <div class="flex items-center mt-4">
+                    <span class="mr-2 text-green-500">></span>
+                    <input type="text" id="terminal-input" class="terminal-input flex-grow" autofocus>
+                </div>
+            </div>
+        </section>
+
+        <section id="filesystem" class="page-section">
+            <div class="page-content">
+                <h2 class="text-2xl">/// ФАЙЛОВАЯ СИСТЕМА ///</h2>
+                <p>Используйте терминал для получения более глубокого доступа.</p>
+
+                <details class="file-entry">
+                    <summary>log_001_system_status.txt</summary>
+                    <div class="file-content">
+[2077-10-23 14:35:12] Системный статус: Норма. Загрузка ЦПУ: 12%. Память: 45% занято.
+[2077-10-23 14:36:01] Проверка подсистем: ОК.
+[2077-10-23 14:37:55] Входящее соединение с IP: 192.168.1.105. Пользователь: admin. Аутентификация успешна.
+[2077-10-23 14:38:02] Выполнена команда: 'status'.
+[2077-10-23 14:39:18] Выполнена команда: 'message'.
+                    </div>
+                </details>
+
+                <details class="file-entry hidden-file" id="secret-file">
+                    <summary>dossier_corp_ares.dat</summary>
+                    <div class="file-content">
+/// ДОСЬЕ: КОРПОРАЦИЯ "АРЕС ИНДАСТРИЗ" ///
+
+**Сектор:** Военно-промышленный комплекс, кибернетика.
+**Штаб-квартира:** Найт-Сити, Сектор А, Башня Арес.
+**Ключевые фигуры:**
+- Генеральный директор: Элайджа Вэнс (статус: жив, местоположение: неизвестно после инцидента в 2076)
+- Глава отдела R&D: Доктор Акира Сато (статус: активен)
+
+**Секретные проекты:**
+- Проект "Орсус": Разработка боевых кибер-имплантов нового поколения (статус: в активной фазе).
+- Проект "Феникс": Исследование технологий клонирования и переноса сознания (статус: приостановлен из-за этических и технических проблем).
+
+**Уязвимости:**
+- Высокая зависимость от поставок редких металлов из спорных территорий.
+- Внутренние конфликты между отделами R&D и безопасности.
+- Недавно обнаруженная уязвимость в протоколе шифрования (см. отчет 77-В).
+
+**Последняя активность:** Увеличение производства боевых дронов в Секторе Б. Набор наемников с высоким уровнем кибернетизации.
+                    </div>
+                </details>
+
+            </div>
+        </section>
+
+         <section id="control" class="page-section">
+            <div class="page-content">
+                <h2 class="text-2xl">/// СИСТЕМА УПРАВЛЕНИЯ ///</h2>
+                <p>Взаимодействие с объектами окружения.</p>
+
+                <div class="control-buttons">
+                    <button class="control-button button-active" data-target="door">ДВЕРЬ</button>
+                    <button class="control-button button-restricted" data-target="turret">ТУРЕЛЬ</button>
+                    <button class="control-button button-restricted" data-target="camera">КАМЕРЫ НАБЛЮДЕНИЯ</button>
+                </div>
+
+                 <div id="control-message" class="mt-4 text-center text-yellow-400 min-h-[1.5rem]">
+                     </div>
+
+            </div>
+        </section>
+
+
+        <section id="characters" class="page-section">
+            <div class="page-content">
+                <h2 class="text-2xl">/// СПИСОК ПЕРСОНАЖЕЙ ///</h2>
+                <p>Здесь будет информация о ключевых персонажах в вашей киберпанк-истории.</p>
+                <ul>
+                    <li>Нейрохакер "Призрак"</li>
+                    <li>Корпоративный агент "Сокол"</li>
+                    <li>Уличный самурай "Кенши"</li>
+                    </ul>
+            </div>
+        </section>
+
+        <section id="dossiers" class="page-section">
+            <div class="page-content">
+                <h2 class="text-2xl">/// СЕКРЕТНЫЕ ДОСЬЕ ///</h2>
+                <p>В этом разделе можно хранить информацию о фракциях, организациях, технологиях или важных событиях.</p>
+                <p><strong>Досье: Корпорация "Арес Индастриз"</strong></p>
+                <p>Крупнейший производитель кибернетических имплантов и оружия. Контролирует значительную часть городской инфраструктуры.</p>
+                </div>
+        </section>
+
+        <section id="map" class="page-section">
+            <div class="page-content">
+                <h2 class="text-2xl">/// КАРТА ГОРОДА ///</h2>
+                <p>Нажмите на изображение ниже, чтобы открыть карту в полном размере.</p>
+                <a href="https://i.ytimg.com/vi/xdxOkTjfuzU/maxresdefault.jpg" target="_blank">
+                    [Image of Киберпанк Город]
+                    <img src="https://i.ytimg.com/vi/xdxOkTjfuzU/maxresdefault.jpg" alt="Карта Киберпанк Города" class="map-image">
+                </a>
+                <p class="mt-4">Здесь также можно добавить описание ключевых локаций:</p>
+                <p><strong>Локация: Район Красных Фонарей</strong></p>
+                <p>Известен своими подпольными барами, нелегальными клиниками и точками обмена информацией.</p>
+                </div>
+        </section>
+
+    </div>
+
+    <script>
+        const navLinks = document.querySelectorAll('.nav-link');
+        const pageSections = document.querySelectorAll('.page-section');
+        const terminalInput = document.getElementById('terminal-input');
+        const terminalOutput = document.getElementById('terminal-output');
+        const loginScreen = document.getElementById('login-screen');
+        const mainContent = document.getElementById('main-content');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const loginButton = document.getElementById('login-button');
+        const loginMessage = document.getElementById('login-message');
+        const secretFileElement = document.getElementById('secret-file'); // Скрытый файл
+        const controlButtons = document.querySelectorAll('.control-button'); // Кнопки управления
+        const controlMessageElement = document.getElementById('control-message'); // Элемент для сообщений управления
+
+
+        // Флаг, указывающий, был ли терминал успешно взломан
+        let isHacked = false;
+        // Счетчик неудачных попыток взлома через мини-игру
+        let hackAttempts = 0;
+        const MAX_HACK_ATTEMPTS = 3;
+
+        // Состояние мини-игры взлома
+        let isHackMinigameActive = false;
+        let currentHackPhrase = '';
+        let hackTimer = 0;
+        let hackTimerInterval = null;
+        const HACK_TIMER_DURATION = 10; // 10 секунд
+
+        // Список слов для мини-игры взлома
+        const hackWords = [
+            "нейросеть", "протокол", "шифрование", "бэкдор", "алгоритм",
+            "система", "доступ", "данные", "сервер", "матрица",
+            "киберпространство", "уязвимость", "фаервол", "трафик", "идентификация"
+        ];
+
+        // Состояние кнопок управления (true = включено, false = выключено)
+        const controlStates = {
+            door: false,
+            turret: false,
+            camera: false
+        };
+
+
+        // Список случайных системных сообщений
+        const randomSystemMessages = [
+            "/// СИСТЕМА: Проверка целостности данных... ОК.",
+            "/// СИСТЕМА: Активность сети: 1.2 Гбит/с.",
+            "/// СИСТЕМА: Подсистема безопасности: Патруль в секторе В.",
+            "/// СИСТЕМА: Температура ЦПУ: 45°C.",
+            "/// СИСТЕМА: Ожидание команд...",
+            "/// СИСТЕМА: Фоновый процесс запущен.",
+            "/// СИСТЕМА: Обнаружен низкий приоритетный трафик.",
+            "/// СИСТЕМА: Соединение с внешним узлом установлено.",
+            "/// СИСТЕМА: Журнал ошибок: Пусто.",
+            "/// СИСТЕМА: Энергопотребление в норме."
+        ];
+
+        // Функция для вывода случайного системного сообщения с небольшой вероятностью
+        function maybePrintRandomMessage() {
+            const chance = 0.15; // 15% шанс появления сообщения после команды
+            if (Math.random() < chance) {
+                const randomMessage = randomSystemMessages[Math.floor(Math.random() * randomSystemMessages.length)];
+                // Добавляем сообщение перед следующим приглашением
+                terminalOutput.innerHTML += randomMessage + '\n';
+                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            }
+        }
+
+        // Функция для сброса состояния взлома и возврата на экран логина
+        function resetHackAndLogout(message) {
+            isHacked = false;
+            hackAttempts = 0;
+            isHackMinigameActive = false;
+            currentHackPhrase = '';
+            clearInterval(hackTimerInterval); // Останавливаем таймер мини-игры
+            hackTimer = 0; // Сбрасываем отображение таймера
+
+            // Скрываем основной контент и показываем экран логина
+            mainContent.style.display = 'none';
+            loginScreen.style.display = 'flex';
+            loginMessage.textContent = message; // Выводим сообщение о причине выхода
+
+            // Сбрасываем состояние кнопок управления в неактивное и обновляем их вид
+            for (const key in controlStates) {
+                controlStates[key] = false;
+            }
+            updateControlButtonsState();
+
+            // Скрываем секретный файл
+            if (secretFileElement) {
+                 secretFileElement.style.display = 'none';
+            }
+
+            // Очищаем поля логина/пароля и ставим фокус
+            usernameInput.value = '';
+            passwordInput.value = '';
+            usernameInput.focus();
+
+             // Очищаем терминал и добавляем стиль тревоги
+            terminalOutput.innerHTML = '/// ДОСТУП ЗАБЛОКИРОВАН ///\nСлишком много неудачных попыток взлома.\nОхрана предупреждена.\n';
+            terminalOutput.classList.add('terminal-alert');
+            terminalInput.classList.add('terminal-alert');
+            // Убираем возможность ввода в заблокированном терминале
+            terminalInput.disabled = true;
+
+        }
+
+
+        // Функция для обновления состояния кнопок управления (визуально)
+        function updateControlButtonsState() {
+            controlButtons.forEach(button => {
+                const target = button.getAttribute('data-target');
+                button.classList.remove('button-active', 'button-restricted', 'button-unlocked', 'button-toggled');
+
+                // Определяем базовый класс доступности
+                if (target === 'door') {
+                    button.classList.add('button-active'); // Дверь всегда доступна (зеленая база)
+                } else {
+                    if (isHacked) {
+                        button.classList.add('button-unlocked'); // Турель/Камера доступны после взлома (желтая база)
+                    } else {
+                        button.classList.add('button-restricted'); // Турель/Камера недоступны (красная база)
+                    }
+                }
+
+                // Если кнопка доступна и включена, добавляем класс 'button-toggled'
+                if ((target === 'door' || isHacked) && controlStates[target]) {
+                     button.classList.add('button-toggled');
+                }
+
+                // Если кнопка недоступна, убираем курсор pointer
+                 if (button.classList.contains('button-restricted')) {
+                     button.style.cursor = 'not-allowed';
+                 } else {
+                     button.style.cursor = 'pointer';
+                 }
+            });
+        }
+
+
+        // Функция для переключения страниц
+        function showPage(pageId) {
+            pageSections.forEach(section => {
+                section.classList.remove('active');
+            });
+            const targetSection = document.getElementById(pageId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+                // Обновляем URL без перезагрузки страницы
+                history.pushState(null, '', `#${pageId}`);
+            } else {
+                // Если страница не найдена, переходим на терминал
+                showPage('terminal');
+                terminalOutput.innerHTML += `\n> navigate ${pageId}\nОшибка: Страница "${pageId}" не найдена. Переход на терминал.\n`;
+                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            }
+        }
+
+        // Функция для обработки логина
+        function handleLogin() {
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            // Мастер-обход
+            if (username === 'override' && password === 'master') {
+                 loginScreen.style.display = 'none';
+                 mainContent.style.display = 'block';
+                 loginMessage.textContent = '';
+                 showPage('terminal');
+                 terminalInput.focus();
+                 updateControlButtonsState();
+                 // Убираем стиль тревоги, если он был
+                 terminalOutput.classList.remove('terminal-alert');
+                 terminalInput.classList.remove('terminal-alert');
+                 terminalInput.disabled = false; // Включаем ввод
+                 terminalOutput.innerHTML = '/// МАСТЕР-ДОСТУП АКТИВИРОВАН ///\nПодключение к сети... Успешно.\nВведите команду или \'help\' для списка команд.\n> ';
+                 terminalOutput.scrollTop = terminalOutput.scrollHeight;
+
+
+            }
+            // Обычный логин
+            else if (username === 'admin' && password === 'pass') {
+                loginScreen.style.display = 'none'; // Скрываем экран входа
+                mainContent.style.display = 'block'; // Показываем основной контент
+                loginMessage.textContent = ''; // Очищаем сообщение об ошибке
+                // Показываем терминал по умолчанию после входа
+                showPage('terminal');
+                // Устанавливаем фокус на поле ввода терминала
+                terminalInput.focus();
+                // Обновляем состояние кнопок управления после входа
+                updateControlButtonsState();
+                 // Убираем стиль тревоги, если он был
+                 terminalOutput.classList.remove('terminal-alert');
+                 terminalInput.classList.remove('terminal-alert');
+                 terminalInput.disabled = false; // Включаем ввод
+                 terminalOutput.innerHTML = 'Подключение к сети... Успешно.<br>Введите команду или \'help\' для списка команд.\n> ';
+                 terminalOutput.scrollTop = terminalOutput.scrollHeight;
+
+            } else {
+                loginMessage.textContent = 'Доступ запрещен. Неверный логин или пароль.';
+                // Очищаем поля ввода
+                usernameInput.value = '';
+                passwordInput.value = '';
+                // Устанавливаем фокус на поле логина
+                usernameInput.focus();
+            }
+        }
+
+        // Обработчик кликов по навигационным ссылкам
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault(); // Предотвращаем стандартное действие ссылки
+                const pageId = link.getAttribute('data-page');
+                showPage(pageId);
+            });
+        });
+
+        // Обработчик нажатия Enter на полях ввода логина/пароля
+        usernameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                passwordInput.focus(); // Переходим на поле пароля
+            }
+        });
+
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleLogin(); // Пытаемся войти
+            }
+        });
+
+        // Обработчик клика по кнопке входа
+        loginButton.addEventListener('click', handleLogin);
+
+        // Обработчик кликов по кнопкам управления
+        controlButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const target = button.getAttribute('data-target');
+                let message = '';
+
+                // Проверяем, доступна ли кнопка (не красная)
+                if (!button.classList.contains('button-restricted')) {
+                    // Переключаем состояние
+                    controlStates[target] = !controlStates[target];
+
+                    // Обновляем визуальное состояние кнопки
+                    updateControlButtonsState();
+
+                    // Формируем сообщение
+                    if (controlStates[target]) {
+                        message = `/// ${target.toUpperCase()}: Активация... Включено.`;
+                         // Можно добавить логику для временного отключения турели/камеры
+                    } else {
+                        message = `/// ${target.toUpperCase()}: Деактивация... Выключено.`;
+                    }
+
+                } else {
+                    // Если кнопка недоступна
+                     message = `/// ${target.toUpperCase()}: Доступ запрещен. Требуется повышенный уровень доступа.`;
+                }
+                controlMessageElement.textContent = message; // Выводим сообщение на странице управления
+            });
+        });
+
+
+        // Обработка команд терминала
+        terminalInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const command = terminalInput.value.trim(); // Обрезаем пробелы в начале и конце
+                const rawCommand = terminalInput.value; // Сохраняем исходный ввод для проверки на пустую строку
+                terminalInput.value = ''; // Очищаем поле ввода
+
+                // Если активна мини-игра взлома, обрабатываем ввод как ответ
+                if (isHackMinigameActive) {
+                    clearInterval(hackTimerInterval); // Останавливаем таймер
+                    hackTimer = 0; // Сбрасываем отображение таймера
+                    // Удаляем предыдущую строку с таймером перед выводом ответа
+                    terminalOutput.innerHTML = terminalOutput.innerHTML.replace(/Таймер: \d+...\n?/, '');
+
+                    // --- Мастер-обход мини-игры ---
+                    if (rawCommand.toLowerCase() === 'q') {
+                         terminalOutput.innerHTML += '> q\n'; // Выводим введенную q
+                         terminalOutput.innerHTML += '\n/// ОБХОД ВЗЛОМА АКТИВИРОВАН ///\n';
+                         isHackMinigameActive = false;
+                         isHacked = true; // Устанавливаем флаг успешного взлома
+                         hackAttempts = 0; // Сбрасываем счетчик попыток
+                         if (secretFileElement) {
+                             secretFileElement.style.display = 'block';
+                         }
+                         updateControlButtonsState();
+                         terminalOutput.innerHTML += 'Взлом успешно завершен! Уровень доступа повышен.\nОбнаружены новые данные. Используйте "message", "info" или перейдите на страницы "Файловая система" и "Управление".\n> ';
+                         terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                         terminalInput.focus();
+                         return; // Завершаем обработку после обхода
+                    }
+                    // --- Конец мастер-обхода ---
+
+
+                    // Проверяем, была ли введена пустая строка или только пробелы
+                    if (rawCommand.trim() === '') {
+                        terminalOutput.innerHTML += '> [ПУСТОЙ ВВОД]\n'; // Выводим индикатор пустого ввода
+                        terminalOutput.innerHTML += '\nПроцедура взлома прервана.\n'; // Сообщение о прерывании
+                        isHackMinigameActive = false; // Выключаем мини-игру
+                        hackAttempts++; // Увеличиваем счетчик неудачных попыток
+                        if (hackAttempts >= MAX_HACK_ATTEMPTS) {
+                            resetHackAndLogout('Доступ заблокирован. Охрана предупреждена.');
+                        } else {
+                            terminalOutput.innerHTML += `Неверная последовательность (пустой ввод). Осталось попыток: ${MAX_HACK_ATTEMPTS - hackAttempts}.\n> `;
+                            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                            terminalInput.focus();
+                        }
+                        return; // Завершаем обработку
+                    }
+
+
+                    terminalOutput.innerHTML += command + '\n'; // Выводим введенный ответ (обрезанный)
+
+
+                    if (command.toLowerCase() === currentHackPhrase.toLowerCase()) {
+                        // Успех!
+                        isHackMinigameActive = false;
+                        isHacked = true; // Устанавливаем флаг успешного взлома
+                        hackAttempts = 0; // Сбрасываем счетчик попыток
+                         // Показываем скрытый файл на странице файловой системы
+                        if (secretFileElement) {
+                            secretFileElement.style.display = 'block';
+                        }
+                        // Обновляем состояние кнопок управления
+                        updateControlButtonsState();
+
+                        terminalOutput.innerHTML += '\nВзлом успешно завершен! Уровень доступа повышен.\nОбнаружены новые данные. Используйте "message", "info" или перейдите на страницы "Файловая система" и "Управление".\n> ';
+                        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                        terminalInput.focus(); // Возвращаем фокус
+                    } else {
+                        // Неудача
+                        hackAttempts++;
+                        if (hackAttempts >= MAX_HACK_ATTEMPTS) {
+                            // Слишком много неудачных попыток - выкидываем на логин
+                            resetHackAndLogout('Доступ заблокирован. Охрана предупреждена.');
+                        } else {
+                            terminalOutput.innerHTML += `\nНеверная последовательность. Осталось попыток: ${MAX_HACK_ATTEMPTS - hackAttempts}.\n> `;
+                            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                            terminalInput.focus(); // Возвращаем фокус
+                            // Можно предложить попробовать снова или ввести 'cancel'
+                        }
+                    }
+                    return; // Завершаем обработку, так как это был ввод для мини-игры
+                }
+
+
+                // Если мини-игра не активна, обрабатываем как обычную команду
+                let commandOutput = '> ' + command + '\n'; // Добавляем введенную команду в вывод
+
+
+                switch (command.toLowerCase()) {
+                    case 'help':
+                        commandOutput += 'Доступные команды:\n';
+                        commandOutput += '  help - Показать список команд\n';
+                        commandOutput += '  clear - Очистить вывод терминала\n';
+                        commandOutput += '  status - Показать статус системы\n';
+                        commandOutput += '  navigate [страница] - Перейти на страницу (terminal, filesystem, control, characters, dossiers, map)\n'; // Обновлен список страниц
+                        commandOutput += '  message - Просмотреть сообщения\n';
+                        commandOutput += '  info - Информация о системе\n';
+                        commandOutput += '  hack - Начать процедуру взлома (мини-игра)\n'; // Обновлено описание hack
+                        break;
+                    case 'clear':
+                        terminalOutput.innerHTML = ''; // Clear the output area
+                        // No further output needed for clear before the prompt and random message
+                         terminalOutput.innerHTML += '> clear\n'; // Add the clear command itself
+                        break; // Exit switch, proceed to common output handling
+                    case 'status':
+                        commandOutput += 'Статус системы: Онлайн. Сеть стабильна.';
+                        if (isHacked) {
+                             commandOutput += '\nУровень доступа: Повышен (Обнаружены уязвимости)';
+                        }
+                        break;
+                    case 'navigate filesystem':
+                        showPage('filesystem');
+                        commandOutput += 'Переход на страницу: Файловая система';
+                        break;
+                    case 'navigate control': // Обработка перехода на страницу управления
+                         showPage('control');
+                         commandOutput += 'Переход на страницу: Управление';
+                         // Очищаем сообщение на странице управления при переходе
+                         controlMessageElement.textContent = '';
+                         break;
+                    case 'navigate characters':
+                        showPage('characters');
+                        commandOutput += 'Переход на страницу: Персонажи';
+                        break;
+                    case 'navigate dossiers':
+                        showPage('dossiers');
+                        commandOutput += 'Переход на страницу: Досье';
+                        break;
+                    case 'navigate map':
+                        showPage('map');
+                        commandOutput += 'Переход на страницу: Карта';
+                        break;
+                    case 'navigate terminal':
+                        showPage('terminal');
+                        commandOutput += 'Переход на страницу: Терминал';
+                        break;
+                    case 'message':
+                        commandOutput += '/// ВХОДЯЩИЕ СООБЩЕНИЯ ///\n';
+                        commandOutput += '- От: Аноним. Тема: Встреча. Сообщение: Встречаемся у "Синего Лотоса" в полночь. Приходи один.\n';
+                        commandOutput += '- От: Корп. Тема: Отчет. Сообщение: Отчет по операции "Найтфолл" принят. Ожидайте дальнейших инструкций.\n';
+                        commandOutput += '- От: [ЗАШИФРОВАНО]. Тема: [ЗАШИФРОВАНО]. Сообщение: [ДАННЫЕ ПОВРЕЖДЕНЫ ИЛИ ЗАШИФРОВАНЫ]\n';
+                        commandOutput += '- От: [ЗАШИФРОВАНО]. Тема: [ЗАШИФРОВАНО]. Сообщение: [ТРЕБУЕТСЯ КЛЮЧ ДЕШИФРОВАНИЯ]\n';
+
+                        if (isHacked) {
+                            commandOutput += '\n/// ОБНАРУЖЕННЫЕ СКРЫТЫЕ СООБЩЕНИЯ ///\n';
+                            commandOutput += '- От: [РАСШИФРОВАНО]. Тема: Координаты. Сообщение: Точка сбора для операции "Найтфолл" - сектор 7Г, старый док №12. Код доступа: CYBER-PHANTOM.\n';
+                            commandOutput += '- От: [РАСШИФРОВАНО]. Тема: Срочно. Сообщение: Система "Цербер" будет отключена для обслуживания 22:00 по местному времени. Окно уязвимости - 30 минут.\n';
+                        } else {
+                             commandOutput += '\nВыполните команду "hack" для попытки расшифровки скрытых сообщений.';
+                        }
+                        break;
+                    case 'info':
+                        commandOutput += '/// ИНФОРМАЦИЯ О СИСТЕМЕ ///\n';
+                        commandOutput += 'Владелец: Корпорация "Травма Тим" (Trauma Team International)\n';
+                        commandOutput += 'Модель: Медицинский Инфо-Терминал v3.7\n';
+                        commandOutput += 'Статус: Активен, подключен к локальной сети ТТ.\n';
+                        commandOutput += 'Предупреждение: Несанкционированный доступ отслеживается.\n';
+                        if (isHacked) {
+                            commandOutput += '\n/// ОБНАРУЖЕННЫЕ УЯЗВИМОСТИ ///\n';
+                            commandOutput += '- Бэкдор в подсистеме аутентификации (порт 2222).\n';
+                            commandOutput += '- Слабый протокол шифрования для внутренних сообщений (AES-128 с устаревшим ключом).\n';
+                        }
+                        break;
+                    case 'hack':
+                        if (isHacked) {
+                            commandOutput += 'Система уже взломана. Уровень доступа повышен.';
+                             terminalOutput.innerHTML += commandOutput + '\n'; // Output immediately for this case
+                             terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                             maybePrintRandomMessage();
+                             terminalOutput.innerHTML += '> ';
+                             terminalInput.focus();
+                             return; // Exit after handling already hacked case
+                        } else if (!isHackMinigameActive) {
+                            // Start minigame - special output handling below switch
+                            isHackMinigameActive = true;
+                            hackAttempts = 0; // Сбрасываем попытки при начале новой игры
+
+                            const shuffledWords = hackWords.sort(() => 0.5 - Math.random());
+                            currentHackPhrase = shuffledWords.slice(0, 5).join(' ');
+
+                            let hackStartOutput = '> ' + command + '\n'; // Include the command itself
+                            hackStartOutput += '/// НАЧАЛО ПРОЦЕДУРЫ ВЗЛОМА ///\n';
+                            hackStartOutput += 'Запомните следующую последовательность и введите ее в течение ' + HACK_TIMER_DURATION + ' секунд:\n\n';
+                            hackStartOutput += currentHackPhrase.toUpperCase() + '\n\n';
+                            hackStartOutput += 'Таймер: ' + hackTimer + '...\n'; // Start timer display from HACK_TIMER_DURATION
+
+                            terminalOutput.innerHTML += hackStartOutput; // Output minigame start immediately
+                            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                            terminalInput.focus(); // Focus for user input
+
+                            hackTimer = HACK_TIMER_DURATION; // Initialize timer variable
+                            hackTimerInterval = setInterval(() => {
+                                hackTimer--;
+                                // Обновляем отображение таймера в последней строке вывода
+                                const lines = terminalOutput.innerHTML.split('\n');
+                                // Find the last line that starts with 'Таймер:'
+                                let timerLineIndex = -1;
+                                for(let i = lines.length - 1; i >= 0; i--) {
+                                    if (lines[i].startsWith('Таймер:')) {
+                                        timerLineIndex = i;
+                                        break;
+                                    }
+                                }
+
+                                if (timerLineIndex !== -1) {
+                                     lines[timerLineIndex] = 'Таймер: ' + hackTimer + '...\n';
+                                     terminalOutput.innerHTML = lines.join('\n');
+                                } else {
+                                    // If timer line not found (scrolled away), add a new one at the end
+                                     terminalOutput.innerHTML += 'Таймер: ' + hackTimer + '...\n';
+                                }
+                                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+
+
+                                if (hackTimer <= 0) {
+                                    // Время вышло
+                                    clearInterval(hackTimerInterval);
+                                    isHackMinigameActive = false;
+                                     // Удаляем строку с таймером (ищем снова, так как innerHTML мог измениться)
+                                     const currentLines = terminalOutput.innerHTML.split('\n');
+                                     let lastTimerLineIndex = -1;
+                                     for(let i = currentLines.length - 1; i >= 0; i--) {
+                                        if (currentLines[i].startsWith('Таймер:')) {
+                                            lastTimerLineIndex = i;
+                                            break;
+                                        }
+                                     }
+                                     if (lastTimerLineIndex !== -1) {
+                                         currentLines.splice(lastTimerLineIndex, 1); // Remove the timer line
+                                         terminalOutput.innerHTML = currentLines.join('\n');
+                                     }
+
+
+                                    hackAttempts++;
+                                    if (hackAttempts >= MAX_HACK_ATTEMPTS) {
+                                        resetHackAndLogout('Доступ заблокирован. Охрана предупреждена.'); // Изменено сообщение
+                                    } else {
+                                        terminalOutput.innerHTML += `\nВремя вышло. Неверная последовательность. Осталось попыток: ${MAX_HACK_ATTEMPTS - hackAttempts}.\n> `;
+                                        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                                        terminalInput.focus();
+                                    }
+                                }
+                            }, 1000); // Каждую секунду
+                            return; // Exit after starting the hack minigame
+                        } else {
+                             commandOutput += 'Процедура взлома уже активна. Введите последовательность или дождитесь завершения таймера.';
+                             terminalOutput.innerHTML += commandOutput + '\n'; // Output immediately
+                             terminalOutput.scrollTop = terminalOutput.scrollTop + 200; // Дополнительная прокрутка
+                             // No prompt here, minigame is active
+                             return; // Exit
+                        }
+                    default:
+                        commandOutput += 'Ошибка: Команда не найдена. Введите "help" для списка команд.';
+                        break; // Exit switch, proceed to common output handling
+                }
+
+                // --- Common Output Handling for Regular Commands (except 'clear' and 'hack' when starting) ---
+                // If the command was not 'clear' and not 'hack' (when starting the minigame)
+                // The clear command output is handled within its case.
+                // The hack command output when starting is handled within its case.
+                // The hack command output when already hacked is handled within its case.
+                // The hack command output when minigame is active is handled within its case.
+                // So, this block only handles commands that fall through the switch without a specific return.
+                if (command.toLowerCase() !== 'clear' && command.toLowerCase() !== 'hack') {
+                     terminalOutput.innerHTML += commandOutput + '\n'; // Add the command output
+                     terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                     maybePrintRandomMessage(); // Potentially add a random message
+                     terminalOutput.innerHTML += '> '; // Add the prompt
+                     terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                     terminalInput.focus(); // Return focus
+                }
+                // Note: The prompt '>' is added in specific places for clear and hack to control flow.
+
+
+            } // End if (e.key === 'Enter')
+        }); // End keypress listener
+
+
+        // При загрузке страницы показываем экран входа
+        window.onload = () => {
+            loginScreen.style.display = 'flex';
+            mainContent.style.display = 'none';
+            usernameInput.focus(); // Устанавливаем фокус на поле логина
+            // Изначально скрываем секретный файл
+             if (secretFileElement) {
+                 secretFileElement.style.display = 'none';
+             }
+            // Изначально обновляем состояние кнопок управления
+            updateControlButtonsState();
+             // Убедимся, что терминал не в режиме тревоги при первой загрузке
+             terminalOutput.classList.remove('terminal-alert');
+             terminalInput.classList.remove('terminal-alert');
+             terminalInput.disabled = false; // Убедимся, что ввод включен
+        };
+
+        // Если пользователь переходит по хешу в URL после перезагрузки,
+        // и он уже вошел (что мы не можем проверить без сервера),
+        // мы все равно покажем экран входа для простоты.
+        // В реальном приложении здесь была бы проверка сессии.
+
+    </script>
+
+</body>
+</html>
