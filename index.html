@@ -6,58 +6,6 @@
     <title>Киберпанк Сеть v5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Глобальные переменные для Firebase
-        window.firebaseApp = null;
-        window.db = null;
-        window.auth = null;
-        window.currentUserId = null;
-
-        // Инициализация Firebase
-        async function initFirebase() {
-            try {
-                // __firebase_config и __app_id предоставляются средой Canvas
-                const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-
-                if (Object.keys(firebaseConfig).length === 0) {
-                    console.error("Firebase config is missing. Data persistence will not work.");
-                    return;
-                }
-
-                window.firebaseApp = initializeApp(firebaseConfig);
-                window.db = getFirestore(window.firebaseApp);
-                window.auth = getAuth(window.firebaseApp);
-
-                // Аутентификация
-                if (typeof __initial_auth_token !== 'undefined') {
-                    await signInWithCustomToken(window.auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(window.auth);
-                }
-
-                onAuthStateChanged(window.auth, (user) => {
-                    if (user) {
-                        window.currentUserId = user.uid;
-                        console.log("Firebase initialized. User ID:", window.currentUserId);
-                    } else {
-                        window.currentUserId = null;
-                        console.log("Firebase: No user signed in.");
-                    }
-                });
-
-            } catch (error) {
-                console.error("Error initializing Firebase:", error);
-            }
-        }
-
-        // Вызываем инициализацию Firebase при загрузке скрипта
-        initFirebase();
-    </script>
     <style>
         body {
             font-family: 'Roboto Mono', monospace; /* Применяем шрифт */
@@ -338,6 +286,12 @@
             width: 200px;
             font-family: 'Roboto Mono', monospace;
         }
+        .cabinet-input-account { /* Новый стиль для поля ввода ID аккаунта */
+            width: 100px; /* Уменьшенная ширина */
+            border-color: #ff00ff; /* Пурпурная рамка */
+            color: #ff00ff;
+        }
+
 
         .cabinet-button {
             background-color: #ff00ff;
@@ -363,6 +317,77 @@
             min-height: 1.2rem;
             font-size: 0.9rem;
         }
+
+        /* Стили для модального окна */
+        .modal {
+            display: none; /* Скрыто по умолчанию */
+            position: fixed; /* Поверх всего */
+            z-index: 1000; /* Высокий z-index */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto; /* Включить прокрутку, если содержимое слишком велико */
+            background-color: rgba(0,0,0,0.8); /* Полупрозрачный черный фон */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #1a1a1a;
+            margin: auto;
+            padding: 20px;
+            border: 2px solid #00ffff;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 0 15px #00ffff;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .close-button {
+            color: #aaa;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal-textarea {
+            width: 100%;
+            min-height: 200px;
+            background-color: #000;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 10px;
+            font-family: 'Roboto Mono', monospace;
+            resize: vertical;
+            margin-top: 15px;
+        }
+
+        .modal-copy-button {
+            background-color: #00ffff;
+            color: #0f0f0f;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Roboto Mono', monospace;
+            margin-top: 15px;
+            transition: background-color 0.3s ease;
+        }
+        .modal-copy-button:hover {
+            background-color: #ffff00;
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -382,7 +407,8 @@
                 <a href="#terminal" class="nav-link" data-page="terminal">/// ТЕРМИНАЛ ///</a>
                 <a href="#filesystem" class="nav-link" data-page="filesystem">/// ФАЙЛОВАЯ СИСТЕМА ///</a>
                 <a href="#control" class="nav-link" data-page="control">/// УПРАВЛЕНИЕ ///</a>
-                <a href="#cabinet" class="nav-link" data-page="cabinet">/// КАБИНЕТ ///</a> <a href="#characters" class="nav-link" data-page="characters">/// ПЕРСОНАЖИ ///</a>
+                <a href="#cabinet" class="nav-link" data-page="cabinet">/// КАБИНЕТ ///</a>
+                <a href="#characters" class="nav-link" data-page="characters">/// ПЕРСОНАЖИ ///</a>
                 <a href="#dossiers" class="nav-link" data-page="dossiers">/// ДОСЬЕ ///</a>
                 <a href="#map" class="nav-link" data-page="map">/// КАРТА ///</a>
             </nav>
@@ -466,6 +492,12 @@
             <div class="page-content">
                 <h2 class="text-2xl">/// ЛИЧНЫЙ КАБИНЕТ ///</h2>
                 <p>Управление персональными данными.</p>
+
+                <div class="cabinet-section">
+                    <h3 class="text-xl text-purple-400 mb-2">ID Аккаунта:</h3>
+                    <input type="text" id="cabinet-account-id" class="cabinet-input cabinet-input-account" value="account_1" placeholder="Например: account_1">
+                    <p class="text-xs text-gray-400 mt-1">Используйте ID аккаунта (например, "account_1", "account_2") для доступа к разным наборам данных.</p>
+                </div>
 
                 <div class="cabinet-section">
                     <h3 class="text-xl text-purple-400 mb-2">Пароль для доступа к данным:</h3>
@@ -552,9 +584,18 @@
 
     </div>
 
-    <script type="module">
-        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <div id="jsonModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h3 class="text-xl text-purple-400">Обновленные данные аккаунтов (скопируйте и обновите id_list.json):</h3>
+            <textarea id="jsonOutput" class="modal-textarea" readonly></textarea>
+            <button id="copyJsonButton" class="modal-copy-button">Копировать в буфер обмена</button>
+            <div id="copyMessage" class="cabinet-message text-green-400 mt-2"></div>
+        </div>
+    </div>
 
+
+    <script>
         const navLinks = document.querySelectorAll('.nav-link');
         const pageSections = document.querySelectorAll('.page-section');
         const terminalInput = document.getElementById('terminal-input');
@@ -570,6 +611,7 @@
         const controlMessageElement = document.getElementById('control-message');
 
         // Элементы Кабинета
+        const cabinetAccountIdInput = document.getElementById('cabinet-account-id');
         const cabinetPasswordInput = document.getElementById('cabinet-password');
         const loadCabinetDataButton = document.getElementById('load-cabinet-data');
         const saveCabinetDataButton = document.getElementById('save-cabinet-data');
@@ -586,6 +628,13 @@
         const financesDisplay = document.getElementById('finances-display');
         const editFinancesButton = document.getElementById('edit-finances-button');
         const financesMessage = document.getElementById('finances-message');
+
+        // Элементы модального окна
+        const jsonModal = document.getElementById('jsonModal');
+        const closeButton = document.querySelector('.close-button');
+        const jsonOutputTextarea = document.getElementById('jsonOutput');
+        const copyJsonButton = document.getElementById('copyJsonButton');
+        const copyMessage = document.getElementById('copyMessage');
 
 
         // Флаг, указывающий, был ли терминал успешно взломан
@@ -614,6 +663,9 @@
             turret: false,
             camera: false
         };
+
+        // Временное хранилище для всех данных аккаунтов, загруженных из JSON
+        let allCabinetAccountsData = [];
 
 
         // Список случайных системных сообщений
@@ -837,88 +889,104 @@
         });
 
 
-        // --- Логика Кабинета ---
+        // --- Логика Кабинета (теперь на основе id_list.json) ---
 
-        // Функция для получения ссылки на документ пользователя в Firestore
-        function getUserCabinetDocRef() {
-            if (!window.db || !window.currentUserId || !window.__app_id) {
-                console.error("Firebase not initialized or user ID not available.");
-                return null;
+        // Функция для загрузки данных из id_list.json
+        async function loadAllCabinetAccountsData() {
+            try {
+                // Предполагаем, что id_list.json находится в той же директории
+                const response = await fetch('id_list.json');
+                if (!response.ok) {
+                    throw new Error(`Ошибка загрузки id_list.json: ${response.statusText}`);
+                }
+                allCabinetAccountsData = await response.json();
+                console.log("Данные аккаунтов загружены:", allCabinetAccountsData);
+            } catch (e) {
+                console.error("Не удалось загрузить id_list.json. Создайте его вручную.", e);
+                // Если файл не найден или ошибка, инициализируем пустой массив
+                allCabinetAccountsData = [];
+                cabinetPasswordMessage.textContent = 'Ошибка: id_list.json не найден или неверный формат. Создайте его вручную.';
             }
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-            // Путь к коллекции: /artifacts/{appId}/users/{userId}/cabinet_data
-            // Документ: user_profile
-            return doc(window.db, `artifacts/${appId}/users/${window.currentUserId}/cabinet_data`, 'user_profile');
         }
 
-        // Функция для загрузки данных из Firestore
+        // Функция для загрузки данных конкретного аккаунта
         async function loadCabinetData() {
+            const accountId = cabinetAccountIdInput.value.trim();
             const password = cabinetPasswordInput.value.trim();
+
+            if (!accountId) {
+                cabinetPasswordMessage.textContent = 'Введите ID аккаунта для загрузки данных.';
+                return;
+            }
             if (!password) {
                 cabinetPasswordMessage.textContent = 'Введите пароль для загрузки данных.';
                 return;
             }
             cabinetPasswordMessage.textContent = 'Загрузка...';
 
-            const docRef = getUserCabinetDocRef();
-            if (!docRef) {
-                cabinetPasswordMessage.textContent = 'Ошибка: Firebase не инициализирован.';
-                return;
-            }
+            const account = allCabinetAccountsData.find(acc => acc.id === accountId);
 
-            try {
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    if (data.cabinetPassword === password) { // Проверяем пароль
-                        taskListDisplay.textContent = data.tasks || '';
-                        personalInfoDisplay.textContent = data.personalInfo || '';
-                        financesDisplay.textContent = data.finances || '';
-                        cabinetPasswordMessage.textContent = 'Данные успешно загружены.';
-                    } else {
-                        cabinetPasswordMessage.textContent = 'Неверный пароль для данных кабинета.';
-                    }
+            if (account) {
+                if (account.password === password) {
+                    taskListDisplay.textContent = account.tasks || '';
+                    personalInfoDisplay.textContent = account.personalInfo || '';
+                    financesDisplay.textContent = account.finances || '';
+                    cabinetPasswordMessage.textContent = `Данные для аккаунта "${accountId}" успешно загружены.`;
+                    // Обновляем текущий ID аккаунта, чтобы "Сохранить" работало для него
+                    window.currentCabinetAccountId = accountId;
                 } else {
-                    cabinetPasswordMessage.textContent = 'Данные не найдены. Создайте их, нажав "Сохранить".';
+                    cabinetPasswordMessage.textContent = 'Неверный пароль для данных аккаунта.';
                 }
-            } catch (e) {
-                console.error("Ошибка при загрузке данных кабинета:", e);
-                cabinetPasswordMessage.textContent = 'Ошибка при загрузке данных.';
+            } else {
+                cabinetPasswordMessage.textContent = `Аккаунт "${accountId}" не найден. Вы можете создать его, нажав "Сохранить".`;
+                // Очищаем поля, если аккаунт не найден
+                taskListDisplay.textContent = '';
+                personalInfoDisplay.textContent = '';
+                financesDisplay.textContent = '';
             }
         }
 
-        // Функция для сохранения данных в Firestore
+        // Функция для "сохранения" данных в in-memory JSON и вывода для копирования
         async function saveCabinetData() {
+            const accountId = cabinetAccountIdInput.value.trim();
             const password = cabinetPasswordInput.value.trim();
+
+            if (!accountId) {
+                cabinetPasswordMessage.textContent = 'Введите ID аккаунта для сохранения данных.';
+                return;
+            }
             if (!password) {
                 cabinetPasswordMessage.textContent = 'Введите пароль для сохранения данных.';
                 return;
             }
             cabinetPasswordMessage.textContent = 'Сохранение...';
 
-            const docRef = getUserCabinetDocRef();
-            if (!docRef) {
-                cabinetPasswordMessage.textContent = 'Ошибка: Firebase не инициализирован.';
-                return;
-            }
+            let accountIndex = allCabinetAccountsData.findIndex(acc => acc.id === accountId);
 
-            // ВНИМАНИЕ: В реальном приложении пароли НИКОГДА не должны храниться в открытом виде.
-            // Здесь это сделано для простоты демонстрации функционала.
-            // В продакшене используйте хеширование паролей (например, bcrypt) на сервере.
             const dataToSave = {
-                cabinetPassword: password, // Храним пароль для проверки
+                id: accountId,
+                password: password, // Храним пароль в открытом виде для простоты, но это небезопасно для реальных приложений
                 tasks: taskListDisplay.textContent.trim(),
                 personalInfo: personalInfoDisplay.textContent.trim(),
                 finances: financesDisplay.textContent.trim()
             };
 
-            try {
-                await setDoc(docRef, dataToSave);
-                cabinetPasswordMessage.textContent = 'Данные успешно сохранены.';
-            } catch (e) {
-                console.error("Ошибка при сохранении данных кабинета:", e);
-                cabinetPasswordMessage.textContent = 'Ошибка при сохранении данных.';
+            if (accountIndex !== -1) {
+                // Обновляем существующий аккаунт
+                allCabinetAccountsData[accountIndex] = dataToSave;
+                cabinetPasswordMessage.textContent = `Данные для аккаунта "${accountId}" обновлены локально.`;
+            } else {
+                // Создаем новый аккаунт
+                allCabinetAccountsData.push(dataToSave);
+                cabinetPasswordMessage.textContent = `Аккаунт "${accountId}" создан локально.`;
             }
+
+            // Выводим обновленный JSON в модальное окно
+            jsonOutputTextarea.value = JSON.stringify(allCabinetAccountsData, null, 2);
+            jsonModal.style.display = 'flex'; // Показываем модальное окно
+            copyMessage.textContent = 'Скопируйте текст и обновите ваш id_list.json на GitHub.';
+
+            window.currentCabinetAccountId = accountId; // Обновляем текущий ID аккаунта
         }
 
         // Функция для переключения режима редактирования
@@ -927,12 +995,13 @@
             displayElement.contentEditable = !isEditable;
             buttonElement.textContent = isEditable ? 'Изменить' : 'Сохранить изменения';
             if (isEditable) { // Если выходим из режима редактирования
-                messageElement.textContent = 'Изменения сохранены локально. Нажмите "Сохранить" для сохранения в облаке.';
+                messageElement.textContent = 'Изменения сохранены локально. Нажмите "Сохранить" для сохранения в файл.';
+                displayElement.classList.remove('cabinet-data-area-editing'); // Убираем желтую рамку
             } else { // Если входим в режим редактирования
                 messageElement.textContent = 'Редактирование активно. Нажмите кнопку еще раз, чтобы завершить.';
                 displayElement.focus(); // Устанавливаем фокус
+                displayElement.classList.add('cabinet-data-area-editing'); // Добавляем желтую рамку
             }
-            displayElement.classList.toggle('cabinet-data-area', !isEditable); // Убираем/добавляем класс, чтобы сбросить желтую рамку
         }
 
 
@@ -944,6 +1013,20 @@
         editPersonalInfoButton.addEventListener('click', () => toggleEditMode(personalInfoDisplay, personalInfoMessage, editPersonalInfoButton));
         editFinancesButton.addEventListener('click', () => toggleEditMode(financesDisplay, financesMessage, editFinancesButton));
 
+        // Обработчики для модального окна
+        closeButton.addEventListener('click', () => {
+            jsonModal.style.display = 'none';
+            copyMessage.textContent = ''; // Очищаем сообщение
+        });
+
+        copyJsonButton.addEventListener('click', () => {
+            jsonOutputTextarea.select();
+            document.execCommand('copy'); // Используем execCommand для совместимости в iframe
+            copyMessage.textContent = 'Скопировано!';
+            setTimeout(() => {
+                copyMessage.textContent = '';
+            }, 2000);
+        });
 
         // Обработка команд терминала
         terminalInput.addEventListener('keypress', (e) => {
@@ -1234,7 +1317,7 @@
 
 
         // При загрузке страницы показываем экран входа
-        window.onload = () => {
+        window.onload = async () => {
             loginScreen.style.display = 'flex';
             mainContent.style.display = 'none';
             usernameInput.focus(); // Устанавливаем фокус на поле логина
@@ -1248,6 +1331,9 @@
              terminalOutput.classList.remove('terminal-alert');
              terminalInput.classList.remove('terminal-alert');
              terminalInput.disabled = false; // Убедимся, что ввод включен
+
+            // Загружаем данные аккаунтов из id_list.json при старте
+            await loadAllCabinetAccountsData();
         };
 
         // Если пользователь переходит по хешу в URL после перезагрузки,
