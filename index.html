@@ -1555,250 +1555,246 @@
             }
         }
 
-        terminalInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                const command = terminalInput.value.trim();
-                const rawCommand = terminalInput.value;
-                terminalInput.value = '';
+        // --- Initialization and Event Handlers ---
 
-                if (!currentTerminalData) {
-                    terminalOutput.innerHTML += "> " + command + "\nОшибка: Терминал не загружен. Выберите терминал.\n> ";
-                    terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                    return;
+        function attachGlobalEventListeners() {
+            // Login screen elements (already handled by displayTerminalSelection, but here for robustness if needed)
+            usernameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    passwordInput.focus();
                 }
+            });
 
-                if (isHackMinigameActive) {
-                    clearInterval(hackTimerInterval);
-                    hackTimer = 0;
-                    terminalOutput.innerHTML = terminalOutput.innerHTML.replace(/Таймер: \d+...\n?/, '');
+            passwordInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    handleLogin();
+                }
+            });
 
-                    if (rawCommand.toLowerCase() === 'q') {
-                         terminalOutput.innerHTML += '> q\n';
-                         terminalOutput.innerHTML += currentTerminalData.hack_game.override_success + '\n> ';
-                         isHackMinigameActive = false;
-                         isHacked = true;
-                         hackAttempts = 0;
-                         // Re-query secretFileElement as it might have been re-rendered
-                         secretFileElement = document.getElementById('secret-file');
-                         if (secretFileElement) {
-                             secretFileElement.style.display = 'block';
-                         }
-                         updateControlButtonsState();
-                         terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                         terminalInput.focus();
-                         return;
-                    }
+            loginButton.addEventListener('click', handleLogin);
 
-                    if (rawCommand.trim() === '') {
-                        terminalOutput.innerHTML += '> [ПУСТОЙ ВВОД]\n';
-                        hackAttempts++;
-                        if (hackAttempts >= currentTerminalData.hack_game.max_attempts) {
-                            resetHackAndLogout('too_many_hack_attempts');
-                        } else {
-                            terminalOutput.innerHTML += currentTerminalData.error_messages.empty_hack_input.replace('{attempts_left}', currentTerminalData.hack_game.max_attempts - hackAttempts) + '\n> ';
-                            terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                            terminalInput.focus();
-                        }
-                        isHackMinigameActive = false;
+            // Terminal input listener
+            terminalInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const command = terminalInput.value.trim();
+                    const rawCommand = terminalInput.value;
+                    terminalInput.value = '';
+
+                    if (!currentTerminalData) {
+                        terminalOutput.innerHTML += "> " + command + "\nОшибка: Терминал не загружен. Выберите терминал.\n> ";
+                        terminalOutput.scrollTop = terminalOutput.scrollHeight;
                         return;
                     }
 
-                    terminalOutput.innerHTML += command + '\n';
+                    if (isHackMinigameActive) {
+                        clearInterval(hackTimerInterval);
+                        hackTimer = 0;
+                        terminalOutput.innerHTML = terminalOutput.innerHTML.replace(/Таймер: \d+...\n?/, '');
 
-                    if (command.toLowerCase() === currentHackPhrase.toLowerCase()) {
-                        isHackMinigameActive = false;
-                        isHacked = true;
-                        hackAttempts = 0;
-                        // Re-query secretFileElement as it might have been re-rendered
-                        secretFileElement = document.getElementById('secret-file');
-                        if (secretFileElement) {
-                            secretFileElement.style.display = 'block';
-                        }
-                        updateControlButtonsState();
-                        terminalOutput.innerHTML += currentTerminalData.hack_game.success_message + '\n> ';
-                        terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                        terminalInput.focus();
-                    } else {
-                        hackAttempts++;
-                        if (hackAttempts >= currentTerminalData.hack_game.max_attempts) {
-                            resetHackAndLogout('too_many_hack_attempts');
-                        } else {
-                            terminalOutput.innerHTML += currentTerminalData.hack_game.failure_message.replace('{attempts_left}', currentTerminalData.hack_game.max_attempts - hackAttempts) + '\n> ';
+                        if (rawCommand.toLowerCase() === 'q') {
+                            terminalOutput.innerHTML += '> q\n';
+                            terminalOutput.innerHTML += currentTerminalData.hack_game.override_success + '\n> ';
+                            isHackMinigameActive = false;
+                            isHacked = true;
+                            hackAttempts = 0;
+                            secretFileElement = document.getElementById('secret-file');
+                            if (secretFileElement) {
+                                secretFileElement.style.display = 'block';
+                            }
+                            updateControlButtonsState();
                             terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                            terminalInput.focus();
-                        }
-                    }
-                    return;
-                }
-
-                let commandOutput = '> ' + command + '\n';
-
-                switch (command.toLowerCase()) {
-                    case 'help':
-                        commandOutput += 'Доступные команды:\n';
-                        currentTerminalData.commands.forEach(cmd => {
-                            commandOutput += `  ${cmd.name} - ${cmd.description}\n`;
-                        });
-                        break;
-                    case 'clear':
-                        terminalOutput.innerHTML = '> clear\n';
-                        break;
-                    case 'status':
-                        commandOutput += currentTerminalData.command_outputs.status.default;
-                        if (isHacked) {
-                             commandOutput += currentTerminalData.command_outputs.status.hacked;
-                        }
-                        break;
-                    case 'navigate filesystem':
-                    case 'navigate control':
-                    case 'navigate cabinet':
-                    case 'navigate characters':
-                    case 'navigate dossiers':
-                    case 'navigate map':
-                    case 'navigate terminal':
-                    case 'navigate messages':
-                        const pageId = command.split(' ')[1];
-                        showPage(pageId);
-                        commandOutput += `Переход на страницу: ${pageId.charAt(0).toUpperCase() + pageId.slice(1)}`;
-                        if (pageId === 'control') controlMessageElement.textContent = '';
-                        if (pageId === 'cabinet') {
-                            cabinetPasswordMessage.textContent = '';
-                            taskMessage.textContent = '';
-                            personalInfoMessage.textContent = '';
-                            financesMessage.textContent = '';
-                        }
-                        if (pageId === 'messages') {
-                            messagesStatus.textContent = '';
-                        }
-                        break;
-                    case 'message':
-                         showPage('messages');
-                         commandOutput += `Переход на страницу: СООБЩЕНИЯ`;
-                         messagesStatus.textContent = '';
-                         break;
-                    case 'info':
-                        if (currentTerminalData.command_outputs.info.default) {
-                            commandOutput += currentTerminalData.command_outputs.info.default.join('\n');
-                        }
-                        if (isHacked && currentTerminalData.command_outputs.info.hacked) {
-                            commandOutput += '\n' + currentTerminalData.command_outputs.info.hacked.join('\n');
-                        }
-                        break;
-                    case 'hack':
-                        if (isHacked) {
-                            commandOutput += currentTerminalData.command_outputs.hack.already_hacked;
-                            terminalOutput.innerHTML += commandOutput + '\n';
-                            terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                            maybePrintRandomMessage();
-                            terminalOutput.innerHTML += '> ';
                             terminalInput.focus();
                             return;
-                        } else if (!isHackMinigameActive) {
-                            isHackMinigameActive = true;
+                        }
+
+                        if (rawCommand.trim() === '') {
+                            terminalOutput.innerHTML += '> [ПУСТОЙ ВВОД]\n';
+                            hackAttempts++;
+                            if (hackAttempts >= currentTerminalData.hack_game.max_attempts) {
+                                resetHackAndLogout('too_many_hack_attempts');
+                            } else {
+                                terminalOutput.innerHTML += currentTerminalData.error_messages.empty_hack_input.replace('{attempts_left}', currentTerminalData.hack_game.max_attempts - hackAttempts) + '\n> ';
+                                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                                terminalInput.focus();
+                            }
+                            isHackMinigameActive = false;
+                            return;
+                        }
+
+                        terminalOutput.innerHTML += command + '\n';
+
+                        if (command.toLowerCase() === currentHackPhrase.toLowerCase()) {
+                            isHackMinigameActive = false;
+                            isHacked = true;
                             hackAttempts = 0;
-
-                            const shuffledWords = currentTerminalData.hack_game.words.sort(() => 0.5 - Math.random());
-                            currentHackPhrase = shuffledWords.slice(0, 5).join(' ');
-
-                            let hackStartOutput = '> ' + command + '\n';
-                            hackStartOutput += currentTerminalData.hack_game.start_message
-                                .replace('{timer_duration}', currentTerminalData.hack_game.timer_duration)
-                                .replace('{phrase}', currentHackPhrase.toUpperCase())
-                                .replace('{timer_value}', currentTerminalData.hack_game.timer_duration);
-
-                            terminalOutput.innerHTML += hackStartOutput;
+                            secretFileElement = document.getElementById('secret-file');
+                            if (secretFileElement) {
+                                secretFileElement.style.display = 'block';
+                            }
+                            updateControlButtonsState();
+                            terminalOutput.innerHTML += currentTerminalData.hack_game.success_message + '\n> ';
                             terminalOutput.scrollTop = terminalOutput.scrollHeight;
                             terminalInput.focus();
-
-                            hackTimer = currentTerminalData.hack_game.timer_duration;
-                            hackTimerInterval = setInterval(() => {
-                                hackTimer--;
-                                const lines = terminalOutput.innerHTML.split('\n');
-                                let timerLineIndex = -1;
-                                for(let i = lines.length - 1; i >= 0; i--) {
-                                    if (lines[i].startsWith('Таймер:')) {
-                                        timerLineIndex = i;
-                                        break;
-                                    }
-                                }
-
-                                if (timerLineIndex !== -1) {
-                                     lines[timerLineIndex] = 'Таймер: ' + hackTimer + '...\n';
-                                     terminalOutput.innerHTML = lines.join('\n');
-                                } else {
-                                     terminalOutput.innerHTML += 'Таймер: ' + hackTimer + '...\n';
-                                }
+                        } else {
+                            hackAttempts++;
+                            if (hackAttempts >= currentTerminalData.hack_game.max_attempts) {
+                                resetHackAndLogout('too_many_hack_attempts');
+                            } else {
+                                terminalOutput.innerHTML += currentTerminalData.hack_game.failure_message.replace('{attempts_left}', currentTerminalData.hack_game.max_attempts - hackAttempts) + '\n> ';
                                 terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                                terminalInput.focus();
+                            }
+                        }
+                        return;
+                    }
 
-                                if (hackTimer <= 0) {
-                                    clearInterval(hackTimerInterval);
-                                    isHackMinigameActive = false;
-                                     const currentLines = terminalOutput.innerHTML.split('\n');
-                                     let lastTimerLineIndex = -1;
-                                     for(let i = currentLines.length - 1; i >= 0; i--) {
-                                        if (currentLines[i].startsWith('Таймер:')) {
-                                            lastTimerLineIndex = i;
+                    let commandOutput = '> ' + command + '\n';
+
+                    switch (command.toLowerCase()) {
+                        case 'help':
+                            commandOutput += 'Доступные команды:\n';
+                            currentTerminalData.commands.forEach(cmd => {
+                                commandOutput += `  ${cmd.name} - ${cmd.description}\n`;
+                            });
+                            break;
+                        case 'clear':
+                            terminalOutput.innerHTML = '> clear\n';
+                            break;
+                        case 'status':
+                            commandOutput += currentTerminalData.command_outputs.status.default;
+                            if (isHacked) {
+                                commandOutput += currentTerminalData.command_outputs.status.hacked;
+                            }
+                            break;
+                        case 'navigate filesystem':
+                        case 'navigate control':
+                        case 'navigate cabinet':
+                        case 'navigate characters':
+                        case 'navigate dossiers':
+                        case 'navigate map':
+                        case 'navigate terminal':
+                        case 'navigate messages':
+                            const pageId = command.split(' ')[1];
+                            showPage(pageId);
+                            commandOutput += `Переход на страницу: ${pageId.charAt(0).toUpperCase() + pageId.slice(1)}`;
+                            if (pageId === 'control') controlMessageElement.textContent = '';
+                            if (pageId === 'cabinet') {
+                                cabinetPasswordMessage.textContent = '';
+                                taskMessage.textContent = '';
+                                personalInfoMessage.textContent = '';
+                                financesMessage.textContent = '';
+                            }
+                            if (pageId === 'messages') {
+                                messagesStatus.textContent = '';
+                            }
+                            break;
+                        case 'message':
+                            showPage('messages');
+                            commandOutput += `Переход на страницу: СООБЩЕНИЯ`;
+                            messagesStatus.textContent = '';
+                            break;
+                        case 'info':
+                            if (currentTerminalData.command_outputs.info.default) {
+                                commandOutput += currentTerminalData.command_outputs.info.default.join('\n');
+                            }
+                            if (isHacked && currentTerminalData.command_outputs.info.hacked) {
+                                commandOutput += '\n' + currentTerminalData.command_outputs.info.hacked.join('\n');
+                            }
+                            break;
+                        case 'hack':
+                            if (isHacked) {
+                                commandOutput += currentTerminalData.command_outputs.hack.already_hacked;
+                                terminalOutput.innerHTML += commandOutput + '\n';
+                                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                                maybePrintRandomMessage();
+                                terminalOutput.innerHTML += '> ';
+                                terminalInput.focus();
+                                return;
+                            } else if (!isHackMinigameActive) {
+                                isHackMinigameActive = true;
+                                hackAttempts = 0;
+
+                                const shuffledWords = currentTerminalData.hack_game.words.sort(() => 0.5 - Math.random());
+                                currentHackPhrase = shuffledWords.slice(0, 5).join(' ');
+
+                                let hackStartOutput = '> ' + command + '\n';
+                                hackStartOutput += currentTerminalData.hack_game.start_message
+                                    .replace('{timer_duration}', currentTerminalData.hack_game.timer_duration)
+                                    .replace('{phrase}', currentHackPhrase.toUpperCase())
+                                    .replace('{timer_value}', currentTerminalData.hack_game.timer_duration);
+
+                                terminalOutput.innerHTML += hackStartOutput;
+                                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                                terminalInput.focus();
+
+                                hackTimer = currentTerminalData.hack_game.timer_duration;
+                                hackTimerInterval = setInterval(() => {
+                                    hackTimer--;
+                                    const lines = terminalOutput.innerHTML.split('\n');
+                                    let timerLineIndex = -1;
+                                    for(let i = lines.length - 1; i >= 0; i--) {
+                                        if (lines[i].startsWith('Таймер:')) {
+                                            timerLineIndex = i;
                                             break;
                                         }
-                                     }
-                                     if (lastTimerLineIndex !== -1) {
-                                         currentLines.splice(lastTimerLineIndex, 1);
-                                         terminalOutput.innerHTML = currentLines.join('\n');
-                                     }
-                                    hackAttempts++;
-                                    if (hackAttempts >= currentTerminalData.hack_game.max_attempts) {
-                                        resetHackAndLogout('too_many_hack_attempts');
-                                    } else {
-                                        terminalOutput.innerHTML += currentTerminalData.hack_game.timeout_message.replace('{attempts_left}', currentTerminalData.hack_game.max_attempts - hackAttempts) + '\n> ';
-                                        terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                                        terminalInput.focus();
                                     }
-                                }
-                            }, 1000);
-                            return;
-                        } else {
-                             commandOutput += currentTerminalData.command_outputs.hack.in_progress;
-                             terminalOutput.innerHTML += commandOutput + '\n';
-                             terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                             return;
-                        }
-                    default:
-                        commandOutput += currentTerminalData.error_messages.command_not_found;
-                        break;
+
+                                    if (timerLineIndex !== -1) {
+                                        lines[timerLineIndex] = 'Таймер: ' + hackTimer + '...\n';
+                                        terminalOutput.innerHTML = lines.join('\n');
+                                    } else {
+                                        terminalOutput.innerHTML += 'Таймер: ' + hackTimer + '...\n';
+                                    }
+                                    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+
+                                    if (hackTimer <= 0) {
+                                        clearInterval(hackTimerInterval);
+                                        isHackMinigameActive = false;
+                                        const currentLines = terminalOutput.innerHTML.split('\n');
+                                        let lastTimerLineIndex = -1;
+                                        for(let i = currentLines.length - 1; i >= 0; i--) {
+                                            if (currentLines[i].startsWith('Таймер:')) {
+                                                lastTimerLineIndex = i;
+                                                break;
+                                            }
+                                        }
+                                        if (lastTimerLineIndex !== -1) {
+                                            currentLines.splice(lastTimerLineIndex, 1);
+                                            terminalOutput.innerHTML = currentLines.join('\n');
+                                        }
+                                        hackAttempts++;
+                                        if (hackAttempts >= currentTerminalData.hack_game.max_attempts) {
+                                            resetHackAndLogout('too_many_hack_attempts');
+                                        } else {
+                                            terminalOutput.innerHTML += currentTerminalData.hack_game.timeout_message.replace('{attempts_left}', currentTerminalData.hack_game.max_attempts - hackAttempts) + '\n> ';
+                                            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                                            terminalInput.focus();
+                                        }
+                                    }
+                                }, 1000);
+                                return;
+                            } else {
+                                commandOutput += currentTerminalData.command_outputs.hack.in_progress;
+                                terminalOutput.innerHTML += commandOutput + '\n';
+                                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                                return;
+                            }
+                        default:
+                            commandOutput += currentTerminalData.error_messages.command_not_found;
+                            break;
+                    }
+
+                    if (command.toLowerCase() !== 'clear' && command.toLowerCase() !== 'hack') {
+                        terminalOutput.innerHTML += commandOutput + '\n';
+                        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                        maybePrintRandomMessage();
+                        terminalOutput.innerHTML += '> ';
+                        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                        terminalInput.focus();
+                    }
                 }
+            });
 
-                if (command.toLowerCase() !== 'clear' && command.toLowerCase() !== 'hack') {
-                     terminalOutput.innerHTML += commandOutput + '\n';
-                     terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                     maybePrintRandomMessage();
-                     terminalOutput.innerHTML += '> ';
-                     terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                     terminalInput.focus();
-                }
-            }
-        });
-
-
-        // --- Initialization and Event Handlers ---
-
-        // Attach initial event listeners for login screen elements (once on load)
-        // These elements are always present from the start.
-        usernameInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                passwordInput.focus();
-            }
-        });
-
-        passwordInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                handleLogin();
-            }
-        });
-
-        loginButton.addEventListener('click', handleLogin);
-
-        // Attach global event listeners that persist regardless of UI re-rendering
-        function attachGlobalEventListeners() {
             // Cabinet specific event listeners
             cabinetEnterButton.addEventListener('click', handleCabinetLogin);
             cabinetRegisterButton.addEventListener('click', handleCabinetRegister);
