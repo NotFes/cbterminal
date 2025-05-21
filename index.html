@@ -564,104 +564,101 @@
 
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // --- Элементы интерфейса ---
-        const terminalSelectionScreen = document.getElementById('terminal-selection-screen');
-        const terminalOptionsContainer = document.getElementById('terminal-options-container');
-        const loginScreen = document.getElementById('login-screen');
-        const mainContent = document.getElementById('main-content');
+        // --- Элементы интерфейса (объявляем, но не присваиваем сразу) ---
+        let terminalSelectionScreen;
+        let terminalOptionsContainer;
+        let loginScreen;
+        let mainContent;
 
-        const loginTerminalTitle = document.getElementById('login-terminal-title');
-        const usernameInput = document.getElementById('username');
-        const passwordInput = document.getElementById('password');
-        const loginButton = document.getElementById('login-button');
-        const loginMessage = document.getElementById('login-message');
+        let loginTerminalTitle;
+        let usernameInput;
+        let passwordInput;
+        let loginButton;
+        let loginMessage;
 
-        const mainTerminalHeader = document.getElementById('main-terminal-header');
-        const mainNavLinks = document.getElementById('main-nav-links');
-        const pageSections = document.querySelectorAll('.page-section');
-        const terminalInput = document.getElementById('terminal-input');
-        const terminalOutput = document.getElementById('terminal-output');
-        const controlMessageElement = document.getElementById('control-message');
+        let mainTerminalHeader;
+        let mainNavLinks;
+        let pageSections; // NodeList
+        let terminalInput;
+        let terminalOutput;
+        let controlMessageElement;
 
-        // Elements that will be populated dynamically
-        const terminalSectionTitle = document.getElementById('terminal-section-title');
+        let terminalSectionTitle;
 
-        const filesystemSectionTitle = document.getElementById('filesystem-section-title');
-        const filesystemIntroText = document.getElementById('filesystem-intro-text');
-        const filesystemFilesContainer = document.getElementById('filesystem-files-container');
+        let filesystemSectionTitle;
+        let filesystemIntroText;
+        let filesystemFilesContainer;
         let secretFileElement;
 
-        const controlSectionTitle = document.getElementById('control-section-title');
-        const controlIntroText = document.getElementById('control-intro-text');
-        const controlButtonsContainer = document.getElementById('control-buttons-container');
-        let controlButtons;
+        let controlSectionTitle;
+        let controlIntroText;
+        let controlButtonsContainer;
+        let controlButtons; // NodeList
 
-        const cabinetSectionTitle = document.getElementById('cabinet-section-title');
-        const cabinetIntroText = document.getElementById('cabinet-intro-text');
+        let cabinetSectionTitle;
+        let cabinetIntroText;
 
-        // Cabinet Login/Auth elements (NO SUPABASE AUTH HERE)
-        const cabinetLoginSection = document.getElementById('cabinet-login-section');
-        const cabinetLoginIdInput = document.getElementById('cabinet-login-id');
-        const cabinetLoginPasswordInput = document.getElementById('cabinet-login-password');
-        const cabinetEnterButton = document.getElementById('cabinet-enter-button');
-        const cabinetRegisterButton = document.getElementById('cabinet-register-button');
-        const cabinetLogoutButton = document.getElementById('cabinet-logout-button');
-        const cabinetAuthMessage = document.getElementById('cabinet-auth-message');
-        const personalCabinetDataSection = document.getElementById('personal-cabinet-data-section');
+        let cabinetLoginSection;
+        let cabinetLoginIdInput;
+        let cabinetLoginPasswordInput;
+        let cabinetEnterButton;
+        let cabinetRegisterButton;
+        let cabinetLogoutButton;
+        let cabinetAuthMessage;
+        let personalCabinetDataSection;
 
-        const cabinetDisplayIdInput = document.getElementById('cabinet-display-id'); // Displays current logged-in cabinet ID
-        const cabinetPasswordInput = document.getElementById('cabinet-password'); // Password for saving/updating
-        const saveCabinetPasswordButton = document.getElementById('save-cabinet-password-button'); // Button to save password
-        const cabinetPasswordMessage = document.getElementById('cabinet-password-message');
+        let cabinetDisplayIdInput;
+        let cabinetPasswordInput;
+        let saveCabinetPasswordButton;
+        let cabinetPasswordMessage;
 
-        const taskListDisplay = document.getElementById('task-list-display');
-        const cabinetTasksLabel = document.getElementById('cabinet-tasks-label');
-        const editTasksButton = document.getElementById('edit-tasks-button');
-        const taskMessage = document.getElementById('task-message');
+        let taskListDisplay;
+        let cabinetTasksLabel;
+        let editTasksButton;
+        let taskMessage;
 
-        const personalInfoDisplay = document.getElementById('personal-info-display');
-        const cabinetPersonalInfoLabel = document.getElementById('cabinet-personal-info-label');
-        const editPersonalInfoButton = document.getElementById('edit-personal-info-button');
-        const personalInfoMessage = document.getElementById('personal-info-message');
+        let personalInfoDisplay;
+        let cabinetPersonalInfoLabel;
+        let editPersonalInfoButton;
+        let personalInfoMessage;
 
-        const financesDisplay = document.getElementById('finances-display');
-        const cabinetFinancesLabel = document.getElementById('cabinet-finances-label');
-        const editFinancesButton = document.getElementById('edit-finances-button');
-        const financesMessage = document.getElementById('finances-message');
+        let financesDisplay;
+        let cabinetFinancesLabel;
+        let editFinancesButton;
+        let financesMessage;
 
-        const charactersSectionTitle = document.getElementById('characters-section-title');
-        const charactersIntroText = document.getElementById('characters-intro-text');
-        const charactersListContainer = document.getElementById('characters-list-container');
+        let charactersSectionTitle;
+        let charactersIntroText;
+        let charactersListContainer;
 
-        const dossiersSectionTitle = document.getElementById('dossiers-section-title');
-        const dossiersIntroText = document.getElementById('dossiers-intro-text');
-        const dossiersListContainer = document.getElementById('dossiers-list-container');
+        let dossiersSectionTitle;
+        let dossiersIntroText;
+        let dossiersListContainer;
 
-        const mapSectionTitle = document.getElementById('map-section-title');
-        const mapIntroText = document.getElementById('map-intro-text');
-        const mapImageLink = document.getElementById('map-image-link');
-        const mapImage = document.getElementById('map-image');
-        const mapDescriptionHeading = document.getElementById('map-description-heading');
-        const mapLocationsContainer = document.getElementById('map-locations-container');
+        let mapSectionTitle;
+        let mapIntroText;
+        let mapImageLink;
+        let mapImage;
+        let mapDescriptionHeading;
+        let mapLocationsContainer;
 
-        const messagesSectionTitle = document.getElementById('messages-section-title');
-        const messagesIntroText = document.getElementById('messages-intro-text');
-        const messagesListContainer = document.getElementById('messages-list-container');
-        const messagesStatus = document.getElementById('messages-status');
+        let messagesSectionTitle;
+        let messagesIntroText;
+        let messagesListContainer;
+        let messagesStatus;
 
-        const messageRecipientIdInput = document.getElementById('message-recipient-id');
-        const messageSubjectInput = document.getElementById('message-subject');
-        const messageContentTextarea = document.getElementById('message-content');
-        const sendMessageButton = document.getElementById('send-message-button');
-        const sendMessageStatus = document.getElementById('send-message-status');
+        let messageRecipientIdInput;
+        let messageSubjectInput;
+        let messageContentTextarea;
+        let sendMessageButton;
+        let sendMessageStatus;
 
-
-        const jsonModal = document.getElementById('jsonModal');
-        const closeButton = document.querySelector('.close-button');
-        const jsonOutputTextarea = document.getElementById('jsonOutput');
-        const copyJsonButton = document.getElementById('copyJsonButton');
-        const modalTitle = document.getElementById('modal-title');
-        const modalInstructions = document.getElementById('modal-instructions');
+        let jsonModal;
+        let closeButton;
+        let jsonOutputTextarea;
+        let copyJsonButton;
+        let modalTitle;
+        let modalInstructions;
 
 
         // --- Global variables for terminal data ---
@@ -674,12 +671,115 @@
         let hackTimerInterval = null;
         let controlStates = {};
         let selectedTerminalId = '';
-        let currentCabinetLogin = null; // Changed from currentCabinetAccountId to currentCabinetLogin
+        let currentCabinetLogin = null;
+
+
+        // --- Function to initialize all UI elements by ID ---
+        // This function will be called whenever we need to ensure DOM elements are correctly referenced.
+        function initializeUIElements() {
+            terminalSelectionScreen = document.getElementById('terminal-selection-screen');
+            terminalOptionsContainer = document.getElementById('terminal-options-container');
+            loginScreen = document.getElementById('login-screen');
+            mainContent = document.getElementById('main-content');
+
+            loginTerminalTitle = document.getElementById('login-terminal-title');
+            usernameInput = document.getElementById('username');
+            passwordInput = document.getElementById('password');
+            loginButton = document.getElementById('login-button');
+            loginMessage = document.getElementById('login-message');
+
+            mainTerminalHeader = document.getElementById('main-terminal-header');
+            mainNavLinks = document.getElementById('main-nav-links');
+            pageSections = document.querySelectorAll('.page-section');
+            terminalInput = document.getElementById('terminal-input');
+            terminalOutput = document.getElementById('terminal-output');
+            controlMessageElement = document.getElementById('control-message');
+
+            terminalSectionTitle = document.getElementById('terminal-section-title');
+
+            filesystemSectionTitle = document.getElementById('filesystem-section-title');
+            filesystemIntroText = document.getElementById('filesystem-intro-text');
+            filesystemFilesContainer = document.getElementById('filesystem-files-container');
+            secretFileElement = document.getElementById('secret-file'); // This might be null if not yet displayed
+
+            controlSectionTitle = document.getElementById('control-section-title');
+            controlIntroText = document.getElementById('control-intro-text');
+            controlButtonsContainer = document.getElementById('control-buttons-container');
+            controlButtons = document.querySelectorAll('.control-button');
+
+            cabinetSectionTitle = document.getElementById('cabinet-section-title');
+            cabinetIntroText = document.getElementById('cabinet-intro-text');
+
+            cabinetLoginSection = document.getElementById('cabinet-login-section');
+            cabinetLoginIdInput = document.getElementById('cabinet-login-id');
+            cabinetLoginPasswordInput = document.getElementById('cabinet-login-password');
+            cabinetEnterButton = document.getElementById('cabinet-enter-button');
+            cabinetRegisterButton = document.getElementById('cabinet-register-button');
+            cabinetLogoutButton = document.getElementById('cabinet-logout-button');
+            cabinetAuthMessage = document.getElementById('cabinet-auth-message');
+            personalCabinetDataSection = document.getElementById('personal-cabinet-data-section');
+
+            cabinetDisplayIdInput = document.getElementById('cabinet-display-id');
+            cabinetPasswordInput = document.getElementById('cabinet-password');
+            saveCabinetPasswordButton = document.getElementById('save-cabinet-password-button');
+            cabinetPasswordMessage = document.getElementById('cabinet-password-message');
+
+            taskListDisplay = document.getElementById('task-list-display');
+            cabinetTasksLabel = document.getElementById('cabinet-tasks-label');
+            editTasksButton = document.getElementById('edit-tasks-button');
+            taskMessage = document.getElementById('task-message');
+
+            personalInfoDisplay = document.getElementById('personal-info-display');
+            cabinetPersonalInfoLabel = document.getElementById('cabinet-personal-info-label');
+            editPersonalInfoButton = document.getElementById('edit-personal-info-button');
+            personalInfoMessage = document.getElementById('personal-info-message');
+
+            financesDisplay = document.getElementById('finances-display');
+            cabinetFinancesLabel = document.getElementById('cabinet-finances-label');
+            editFinancesButton = document.getElementById('edit-finances-button');
+            financesMessage = document.getElementById('finances-message');
+
+            charactersSectionTitle = document.getElementById('characters-section-title');
+            charactersIntroText = document.getElementById('characters-intro-text');
+            charactersListContainer = document.getElementById('characters-list-container');
+
+            dossiersSectionTitle = document.getElementById('dossiers-section-title');
+            dossiersIntroText = document.getElementById('dossiers-intro-text');
+            dossiersListContainer = document.getElementById('dossiers-list-container');
+
+            mapSectionTitle = document.getElementById('map-section-title');
+            mapIntroText = document.getElementById('map-intro-text');
+            mapImageLink = document.getElementById('map-image-link');
+            mapImage = document.getElementById('map-image');
+            mapDescriptionHeading = document.getElementById('map-description-heading');
+            mapLocationsContainer = document.getElementById('map-locations-container');
+
+            messagesSectionTitle = document.getElementById('messages-section-title');
+            messagesIntroText = document.getElementById('messages-intro-text');
+            messagesListContainer = document.getElementById('messages-list-container');
+            messagesStatus = document.getElementById('messages-status');
+
+            messageRecipientIdInput = document.getElementById('message-recipient-id');
+            messageSubjectInput = document.getElementById('message-subject');
+            messageContentTextarea = document.getElementById('message-content');
+            sendMessageButton = document.getElementById('send-message-button');
+            sendMessageStatus = document.getElementById('send-message-status');
+
+            jsonModal = document.getElementById('jsonModal');
+            closeButton = document.querySelector('.close-button');
+            jsonOutputTextarea = document.getElementById('jsonOutput');
+            copyJsonButton = document.getElementById('copyJsonButton');
+            modalTitle = document.getElementById('modal-title');
+            modalInstructions = document.getElementById('modal-instructions');
+        }
 
 
         // --- UI Population Functions ---
 
         function populateUI(data) {
+            // !!! IMPORTANT: Re-initialize all UI elements before populating them !!!
+            initializeUIElements();
+
             mainTerminalHeader.textContent = data.terminal_title;
             loginTerminalTitle.textContent = data.terminal_title;
             terminalSectionTitle.textContent = data.terminal_title;
@@ -706,6 +806,7 @@
                     mainNavLinks.appendChild(document.createElement('br'));
                 }
             });
+            // Re-attach event listeners after re-creating nav links
             document.querySelectorAll('.nav-link').forEach(link => {
                 link.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -734,6 +835,7 @@
                 details.appendChild(contentDiv);
                 filesystemFilesContainer.appendChild(details);
             });
+            // Re-get secretFileElement after re-creating filesystem files
             secretFileElement = document.getElementById('secret-file');
 
             controlSectionTitle.textContent = data.page_content.control.title;
@@ -748,23 +850,18 @@
                 controlButtonsContainer.appendChild(button);
                 controlStates[buttonConfig.target] = false;
             });
+            // Re-get controlButtons and re-attach event listeners
             controlButtons = document.querySelectorAll('.control-button');
             controlButtons.forEach(button => {
                 button.addEventListener('click', handleControlButtonClick);
             });
 
+
             cabinetSectionTitle.textContent = data.page_content.cabinet.title;
             cabinetIntroText.textContent = data.page_content.cabinet.intro;
 
-            // Updated cabinet UI labels
-            // cabinetAccountIdLabel.textContent = data.page_content.cabinet.sections.account_id.label; // No longer needed directly
-            // cabinetAccountIdInput.placeholder = data.page_content.cabinet.sections.account_id.placeholder; // No longer needed directly
-            // cabinetAccountIdHelp.textContent = data.page_content.cabinet.sections.account_id.help_text; // No longer needed directly
-
             cabinetPasswordLabel.textContent = data.page_content.cabinet.sections.password.label;
             cabinetPasswordInput.placeholder = data.page_content.cabinet.sections.password.placeholder;
-            // loadCabinetDataButton.textContent = data.page_content.cabinet.sections.password.load_button; // No longer needed
-            // saveCabinetDataButton.textContent = data.page_content.cabinet.sections.password.save_button; // No longer needed
 
             cabinetTasksLabel.textContent = data.page_content.cabinet.sections.tasks.label;
             editTasksButton.textContent = data.page_content.cabinet.sections.tasks.edit_button;
@@ -848,6 +945,9 @@
         }
 
         function displayTerminalSelection() {
+            // Initialize UI elements here, as this is the first point where they are needed
+            initializeUIElements();
+
             terminalOptionsContainer.innerHTML = '';
             terminalsConfig.forEach(term => {
                 const button = document.createElement('button');
@@ -869,6 +969,21 @@
             terminalSelectionScreen.style.display = 'flex';
             loginScreen.style.display = 'none';
             mainContent.style.display = 'none';
+
+            // Attach initial event listeners for login screen elements
+            usernameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    passwordInput.focus();
+                }
+            });
+
+            passwordInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    handleLogin();
+                }
+            });
+
+            loginButton.addEventListener('click', handleLogin);
         }
 
         async function selectTerminal(terminal) {
@@ -891,7 +1006,7 @@
                 }
                 currentTerminalData = data.config;
                 console.log("Terminal data loaded from Supabase:", currentTerminalData);
-                populateUI(currentTerminalData);
+                populateUI(currentTerminalData); // Call populateUI after data is loaded
             } catch (e) {
                 console.error(`Failed to load data for terminal ${terminal.name} from Supabase.`, e);
                 loginMessage.textContent = `Ошибка: Не удалось загрузить данные для терминала "${terminal.name}". Проверьте консоль.`;
@@ -980,6 +1095,8 @@
             }
             updateControlButtonsState();
 
+            // Re-query secretFileElement as it might have been re-rendered
+            secretFileElement = document.getElementById('secret-file');
             if (secretFileElement) {
                  secretFileElement.style.display = 'none';
             }
@@ -995,6 +1112,8 @@
         }
 
         function updateControlButtonsState() {
+            // Re-query controlButtons as they might have been re-rendered
+            controlButtons = document.querySelectorAll('.control-button');
             if (!controlButtons) return;
             controlButtons.forEach(button => {
                 const target = button.getAttribute('data-target');
@@ -1459,6 +1578,8 @@
                          isHackMinigameActive = false;
                          isHacked = true;
                          hackAttempts = 0;
+                         // Re-query secretFileElement as it might have been re-rendered
+                         secretFileElement = document.getElementById('secret-file');
                          if (secretFileElement) {
                              secretFileElement.style.display = 'block';
                          }
@@ -1488,6 +1609,8 @@
                         isHackMinigameActive = false;
                         isHacked = true;
                         hackAttempts = 0;
+                        // Re-query secretFileElement as it might have been re-rendered
+                        secretFileElement = document.getElementById('secret-file');
                         if (secretFileElement) {
                             secretFileElement.style.display = 'block';
                         }
@@ -1581,7 +1704,7 @@
                             hackStartOutput += currentTerminalData.hack_game.start_message
                                 .replace('{timer_duration}', currentTerminalData.hack_game.timer_duration)
                                 .replace('{phrase}', currentHackPhrase.toUpperCase())
-                                .replace('{timer_value}', currentTerminalData.hack_game.timer_duration); // Исправлено: было {timer_value}
+                                .replace('{timer_value}', currentTerminalData.hack_game.timer_duration);
 
                             terminalOutput.innerHTML += hackStartOutput;
                             terminalOutput.scrollTop = terminalOutput.scrollHeight;
@@ -1658,6 +1781,8 @@
 
         // --- Initialization and Event Handlers ---
 
+        // Attach initial event listeners for login screen elements (once on load)
+        // These elements are always present from the start.
         usernameInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 passwordInput.focus();
@@ -1672,37 +1797,46 @@
 
         loginButton.addEventListener('click', handleLogin);
 
-        // Cabinet specific event listeners
-        cabinetEnterButton.addEventListener('click', handleCabinetLogin);
-        cabinetRegisterButton.addEventListener('click', handleCabinetRegister);
-        cabinetLogoutButton.addEventListener('click', handleCabinetLogout);
-        saveCabinetPasswordButton.addEventListener('click', saveCabinetData); // This button now saves all cabinet data
+        // Attach global event listeners that persist regardless of UI re-rendering
+        function attachGlobalEventListeners() {
+            // Cabinet specific event listeners
+            cabinetEnterButton.addEventListener('click', handleCabinetLogin);
+            cabinetRegisterButton.addEventListener('click', handleCabinetRegister);
+            cabinetLogoutButton.addEventListener('click', handleCabinetLogout);
+            saveCabinetPasswordButton.addEventListener('click', saveCabinetData);
 
-        editTasksButton.addEventListener('click', () => toggleEditMode(taskListDisplay, taskMessage, editTasksButton, 'tasks'));
-        editPersonalInfoButton.addEventListener('click', () => toggleEditMode(personalInfoDisplay, personalInfoMessage, editPersonalInfoButton, 'personal_info'));
-        editFinancesButton.addEventListener('click', () => toggleEditMode(financesDisplay, financesMessage, editFinancesButton, 'finances'));
+            editTasksButton.addEventListener('click', () => toggleEditMode(taskListDisplay, taskMessage, editTasksButton, 'tasks'));
+            editPersonalInfoButton.addEventListener('click', () => toggleEditMode(personalInfoDisplay, personalInfoMessage, editPersonalInfoButton, 'personal_info'));
+            editFinancesButton.addEventListener('click', () => toggleEditMode(financesDisplay, financesMessage, editFinancesButton, 'finances'));
 
-        sendMessageButton.addEventListener('click', sendMessage);
+            sendMessageButton.addEventListener('click', sendMessage);
 
-        // JSON modal event handlers
-        closeButton.addEventListener('click', () => {
-            jsonModal.style.display = 'none';
-        });
-
-        window.addEventListener('click', (event) => {
-            if (event.target === jsonModal) {
+            // JSON modal event handlers
+            closeButton.addEventListener('click', () => {
                 jsonModal.style.display = 'none';
-            }
-        });
+            });
 
-        copyJsonButton.addEventListener('click', () => {
-            jsonOutputTextarea.select();
-            document.execCommand('copy');
-            alert(currentTerminalData.modal_messages.copy_alert.replace('{terminal_id}', currentTerminalData.terminal_id));
-            jsonModal.style.display = 'none';
-        });
+            window.addEventListener('click', (event) => {
+                if (event.target === jsonModal) {
+                    jsonModal.style.display = 'none';
+                }
+            });
 
+            copyJsonButton.addEventListener('click', () => {
+                jsonOutputTextarea.select();
+                document.execCommand('copy');
+                alert(currentTerminalData.modal_messages.copy_alert.replace('{terminal_id}', currentTerminalData.terminal_id));
+                jsonModal.style.display = 'none';
+            });
+        }
+
+
+        // Initial load function
         window.onload = async () => {
+            // Initialize UI elements once at the very start to ensure login screen elements are ready
+            initializeUIElements();
+            // Attach global event listeners after initial UI elements are ready
+            attachGlobalEventListeners();
             await loadTerminalConfig();
         };
 
