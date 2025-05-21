@@ -456,7 +456,7 @@
                     </div>
 
                     <div class="cabinet-section">
-                        <h3 class="text-xl text-purple-400 mb-2">Пароль Кабинета:</h3>
+                        <h3 class="text-xl text-purple-400 mb-2" id="cabinet-password-label">Пароль Кабинета:</h3>
                         <div class="flex items-center gap-2">
                             <input type="password" id="cabinet-password" class="cabinet-input" placeholder="Пароль">
                             <button id="save-cabinet-password-button" class="cabinet-button">Сохранить пароль</button>
@@ -465,21 +465,21 @@
                     </div>
 
                     <div class="cabinet-section">
-                        <h3 class="text-xl text-purple-400 mb-2">Задания:</h3>
+                        <h3 class="text-xl text-purple-400 mb-2" id="cabinet-tasks-label">Задания:</h3>
                         <div id="task-list-display" class="cabinet-data-area" contenteditable="false"></div>
                         <button id="edit-tasks-button" class="cabinet-button">Редактировать</button>
                         <div id="task-message" class="cabinet-message"></div>
                     </div>
 
                     <div class="cabinet-section">
-                        <h3 class="text-xl text-purple-400 mb-2">Личная информация:</h3>
+                        <h3 class="text-xl text-purple-400 mb-2" id="cabinet-personal-info-label">Личная информация:</h3>
                         <div id="personal-info-display" class="cabinet-data-area" contenteditable="false"></div>
                         <button id="edit-personal-info-button" class="cabinet-button">Редактировать</button>
                         <div id="personal-info-message" class="cabinet-message"></div>
                     </div>
 
                     <div class="cabinet-section">
-                        <h3 class="text-xl text-purple-400 mb-2">Финансы:</h3>
+                        <h3 class="text-xl text-purple-400 mb-2" id="cabinet-finances-label">Финансы:</h3>
                         <div id="finances-display" class="cabinet-data-area" contenteditable="false"></div>
                         <button id="edit-finances-button" class="cabinet-button">Редактировать</button>
                         <div id="finances-message" class="cabinet-message"></div>
@@ -557,8 +557,8 @@
 
 
     <script>
-        // --- base Client Initialization ---
-        // Replace with your actual base URL and anon key
+        // --- Supabase Client Initialization ---
+        // Replace with your actual Supabase URL and anon key
         const SUPABASE_URL = 'https://vnfswyztlwgkhkkmhhhs.supabase.co'; // e.g., 'https://abcdefg.supabase.co'
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZuZnN3eXp0bHdna2hra21oaGhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc4Mjg0MzYsImV4cCI6MjA2MzQwNDQzNn0.jvs2X_61LZaZxcmDoSK9ZRnHo-S2wblifiV4Vogdkyo'; // e.g., 'eyJhbGciOiJIUzI1Ni...'
 
