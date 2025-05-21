@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Киберпанк Сеть v6 (Supabase)</title>
+    <title>Киберпанк Сеть v6 (с Supabase)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -436,41 +436,54 @@
                 <h2 class="text-2xl" id="cabinet-section-title"></h2>
                 <p id="cabinet-intro-text"></p>
 
-                <div class="cabinet-section">
-                    <h3 class="text-xl text-purple-400 mb-2" id="cabinet-account-id-label"></h3>
-                    <input type="text" id="cabinet-account-id" class="cabinet-input cabinet-input-account" placeholder="">
-                    <p class="text-xs text-gray-400 mt-1" id="cabinet-account-id-help"></p>
-                </div>
-
-                <div class="cabinet-section">
-                    <h3 class="text-xl text-purple-400 mb-2" id="cabinet-password-label"></h3>
-                    <div class="flex items-center gap-2">
-                        <input type="password" id="cabinet-password" class="cabinet-input" placeholder="">
-                        <button id="load-cabinet-data" class="cabinet-button"></button>
-                        <button id="save-cabinet-data" class="cabinet-button"></button>
+                <div id="cabinet-login-section" class="cabinet-section">
+                    <h3 class="text-xl text-purple-400 mb-2">Вход в Кабинет</h3>
+                    <input type="text" id="cabinet-login-id" class="cabinet-input" placeholder="Логин Кабинета">
+                    <input type="password" id="cabinet-login-password" class="cabinet-input" placeholder="Пароль Кабинета">
+                    <div class="flex gap-2 mt-2">
+                        <button id="cabinet-enter-button" class="cabinet-button">Войти</button>
+                        <button id="cabinet-register-button" class="cabinet-button">Зарегистрировать</button>
                     </div>
-                    <div id="cabinet-password-message" class="cabinet-message text-red-500"></div>
+                    <button id="cabinet-logout-button" class="cabinet-button mt-2" style="display: none;">Выйти из Кабинета</button>
+                    <div id="cabinet-auth-message" class="cabinet-message text-red-500"></div>
                 </div>
 
-                <div class="cabinet-section">
-                    <h3 class="text-xl text-purple-400 mb-2" id="cabinet-tasks-label"></h3>
-                    <div id="task-list-display" class="cabinet-data-area" contenteditable="false"></div>
-                    <button id="edit-tasks-button" class="cabinet-button"></button>
-                    <div id="task-message" class="cabinet-message"></div>
-                </div>
+                <div id="personal-cabinet-data-section" style="display: none;">
+                    <div class="cabinet-section">
+                        <h3 class="text-xl text-purple-400 mb-2">Ваш логин Кабинета:</h3>
+                        <input type="text" id="cabinet-display-id" class="cabinet-input cabinet-input-account" placeholder="" readonly>
+                        <p class="text-xs text-gray-400 mt-1">Используйте этот логин для отправки сообщений другим пользователям.</p>
+                    </div>
 
-                <div class="cabinet-section">
-                    <h3 class="text-xl text-purple-400 mb-2" id="cabinet-personal-info-label"></h3>
-                    <div id="personal-info-display" class="cabinet-data-area" contenteditable="false"></div>
-                    <button id="edit-personal-info-button" class="cabinet-button"></button>
-                    <div id="personal-info-message" class="cabinet-message"></div>
-                </div>
+                    <div class="cabinet-section">
+                        <h3 class="text-xl text-purple-400 mb-2">Пароль Кабинета:</h3>
+                        <div class="flex items-center gap-2">
+                            <input type="password" id="cabinet-password" class="cabinet-input" placeholder="Пароль">
+                            <button id="save-cabinet-password-button" class="cabinet-button">Сохранить пароль</button>
+                        </div>
+                        <div id="cabinet-password-message" class="cabinet-message text-red-500"></div>
+                    </div>
 
-                <div class="cabinet-section">
-                    <h3 class="text-xl text-purple-400 mb-2" id="cabinet-finances-label"></h3>
-                    <div id="finances-display" class="cabinet-data-area" contenteditable="false"></div>
-                    <button id="edit-finances-button" class="cabinet-button"></button>
-                    <div id="finances-message" class="cabinet-message"></div>
+                    <div class="cabinet-section">
+                        <h3 class="text-xl text-purple-400 mb-2">Задания:</h3>
+                        <div id="task-list-display" class="cabinet-data-area" contenteditable="false"></div>
+                        <button id="edit-tasks-button" class="cabinet-button">Редактировать</button>
+                        <div id="task-message" class="cabinet-message"></div>
+                    </div>
+
+                    <div class="cabinet-section">
+                        <h3 class="text-xl text-purple-400 mb-2">Личная информация:</h3>
+                        <div id="personal-info-display" class="cabinet-data-area" contenteditable="false"></div>
+                        <button id="edit-personal-info-button" class="cabinet-button">Редактировать</button>
+                        <div id="personal-info-message" class="cabinet-message"></div>
+                    </div>
+
+                    <div class="cabinet-section">
+                        <h3 class="text-xl text-purple-400 mb-2">Финансы:</h3>
+                        <div id="finances-display" class="cabinet-data-area" contenteditable="false"></div>
+                        <button id="edit-finances-button" class="cabinet-button">Редактировать</button>
+                        <div id="finances-message" class="cabinet-message"></div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -506,6 +519,30 @@
             </div>
         </section>
 
+        <section id="messages" class="page-section">
+            <div class="page-content">
+                <h2 class="text-2xl" id="messages-section-title">/// СООБЩЕНИЯ ///</h2>
+                <p id="messages-intro-text">Здесь отображаются входящие и исходящие сообщения для вашего аккаунта.</p>
+
+                <div class="cabinet-section mt-8">
+                    <h3 class="text-xl text-purple-400 mb-2">Отправить сообщение</h3>
+                    <p class="text-gray-400 text-sm mb-2">
+                        Отправляйте сообщения другим пользователям. Укажите логин Кабинета получателя.
+                    </p>
+                    <input type="text" id="message-recipient-id" class="cabinet-input w-full mb-2" placeholder="Логин Кабинета получателя">
+                    <input type="text" id="message-subject" class="cabinet-input w-full mb-2" placeholder="Тема сообщения">
+                    <textarea id="message-content" class="cabinet-data-area w-full mb-2" placeholder="Содержание сообщения..." rows="5"></textarea>
+                    <button id="send-message-button" class="cabinet-button w-full">Отправить сообщение</button>
+                    <div id="send-message-status" class="cabinet-message mt-2"></div>
+                </div>
+
+                <h3 class="text-xl text-purple-400 mt-8 mb-2">Входящие и исходящие:</h3>
+                <div id="messages-list-container" class="mt-4">
+                    </div>
+                <div id="messages-status" class="text-yellow-400 mt-4 min-h-[1.5rem]"></div>
+            </div>
+        </section>
+
     </div>
 
     <div id="jsonModal" class="modal">
@@ -522,10 +559,9 @@
     <script>
         // --- Supabase Client Initialization ---
         // Replace with your actual Supabase URL and anon key
-        const SUPABASE_URL = 'https://vnfswyztlwgkhkkmhhhs.supabase.co'; // e.g., 'https://abcdefg.supabase.co'
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZuZnN3eXp0bHdna2hra21oaGhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc4Mjg0MzYsImV4cCI6MjA2MzQwNDQzNn0.jvs2X_61LZaZxcmDoSK9ZRnHo-S2wblifiV4Vogdkyo'; // e.g., 'eyJhbGciOiJIUzI1Ni...'
+        const SUPABASE_URL = 'ВАШ_SUPABASE_URL'; // e.g., 'https://abcdefg.supabase.co'
+        const SUPABASE_ANON_KEY = 'ВАШ_SUPABASE_ANON_KEY'; // e.g., 'eyJhbGciOiJIUzI1Ni...'
 
-        // ИСПРАВЛЕНО: Изменено Supabase.createClient на window.supabase.createClient
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // --- Элементы интерфейса ---
@@ -562,13 +598,20 @@
 
         const cabinetSectionTitle = document.getElementById('cabinet-section-title');
         const cabinetIntroText = document.getElementById('cabinet-intro-text');
-        const cabinetAccountIdInput = document.getElementById('cabinet-account-id');
-        const cabinetAccountIdLabel = document.getElementById('cabinet-account-id-label');
-        const cabinetAccountIdHelp = document.getElementById('cabinet-account-id-help');
-        const cabinetPasswordInput = document.getElementById('cabinet-password');
-        const cabinetPasswordLabel = document.getElementById('cabinet-password-label');
-        const loadCabinetDataButton = document.getElementById('load-cabinet-data');
-        const saveCabinetDataButton = document.getElementById('save-cabinet-data');
+
+        // Cabinet Login/Auth elements (NO SUPABASE AUTH HERE)
+        const cabinetLoginSection = document.getElementById('cabinet-login-section');
+        const cabinetLoginIdInput = document.getElementById('cabinet-login-id');
+        const cabinetLoginPasswordInput = document.getElementById('cabinet-login-password');
+        const cabinetEnterButton = document.getElementById('cabinet-enter-button');
+        const cabinetRegisterButton = document.getElementById('cabinet-register-button');
+        const cabinetLogoutButton = document.getElementById('cabinet-logout-button');
+        const cabinetAuthMessage = document.getElementById('cabinet-auth-message');
+        const personalCabinetDataSection = document.getElementById('personal-cabinet-data-section');
+
+        const cabinetDisplayIdInput = document.getElementById('cabinet-display-id'); // Displays current logged-in cabinet ID
+        const cabinetPasswordInput = document.getElementById('cabinet-password'); // Password for saving/updating
+        const saveCabinetPasswordButton = document.getElementById('save-cabinet-password-button'); // Button to save password
         const cabinetPasswordMessage = document.getElementById('cabinet-password-message');
 
         const taskListDisplay = document.getElementById('task-list-display');
@@ -601,7 +644,18 @@
         const mapDescriptionHeading = document.getElementById('map-description-heading');
         const mapLocationsContainer = document.getElementById('map-locations-container');
 
-        // JSON modal elements
+        const messagesSectionTitle = document.getElementById('messages-section-title');
+        const messagesIntroText = document.getElementById('messages-intro-text');
+        const messagesListContainer = document.getElementById('messages-list-container');
+        const messagesStatus = document.getElementById('messages-status');
+
+        const messageRecipientIdInput = document.getElementById('message-recipient-id');
+        const messageSubjectInput = document.getElementById('message-subject');
+        const messageContentTextarea = document.getElementById('message-content');
+        const sendMessageButton = document.getElementById('send-message-button');
+        const sendMessageStatus = document.getElementById('send-message-status');
+
+
         const jsonModal = document.getElementById('jsonModal');
         const closeButton = document.querySelector('.close-button');
         const jsonOutputTextarea = document.getElementById('jsonOutput');
@@ -619,7 +673,8 @@
         let hackTimer = 0;
         let hackTimerInterval = null;
         let controlStates = {};
-        let selectedTerminalId = ''; // To store the ID of the currently selected terminal
+        let selectedTerminalId = '';
+        let currentCabinetLogin = null; // Changed from currentCabinetAccountId to currentCabinetLogin
 
 
         // --- UI Population Functions ---
@@ -627,7 +682,7 @@
         function populateUI(data) {
             mainTerminalHeader.textContent = data.terminal_title;
             loginTerminalTitle.textContent = data.terminal_title;
-            terminalSectionTitle.textContent = data.terminal_title; // Corrected: directly from data.terminal_title
+            terminalSectionTitle.textContent = data.terminal_title;
 
             mainNavLinks.innerHTML = '';
             const navPages = [
@@ -635,6 +690,7 @@
                 { id: "filesystem", label: "ФАЙЛОВАЯ СИСТЕМА" },
                 { id: "control", label: "УПРАВЛЕНИЕ" },
                 { id: "cabinet", label: "КАБИНЕТ" },
+                { id: "messages", label: "СООБЩЕНИЯ" },
                 { id: "characters", label: "ПЕРСОНАЖИ" },
                 { id: "dossiers", label: "ДОСЬЕ" },
                 { id: "map", label: "КАРТА" }
@@ -646,7 +702,7 @@
                 link.setAttribute('data-page', page.id);
                 link.textContent = `/// ${page.label} ///`;
                 mainNavLinks.appendChild(link);
-                if (page.id === 'control') {
+                if (page.id === 'control' || page.id === 'messages') {
                     mainNavLinks.appendChild(document.createElement('br'));
                 }
             });
@@ -658,7 +714,6 @@
                 });
             });
 
-            // Filesystem
             filesystemSectionTitle.textContent = data.page_content.filesystem.title;
             filesystemIntroText.textContent = data.page_content.filesystem.intro;
             filesystemFilesContainer.innerHTML = '';
@@ -681,7 +736,6 @@
             });
             secretFileElement = document.getElementById('secret-file');
 
-            // Control
             controlSectionTitle.textContent = data.page_content.control.title;
             controlIntroText.textContent = data.page_content.control.intro;
             controlButtonsContainer.innerHTML = '';
@@ -699,18 +753,18 @@
                 button.addEventListener('click', handleControlButtonClick);
             });
 
-            // Cabinet
             cabinetSectionTitle.textContent = data.page_content.cabinet.title;
             cabinetIntroText.textContent = data.page_content.cabinet.intro;
 
-            cabinetAccountIdLabel.textContent = data.page_content.cabinet.sections.account_id.label;
-            cabinetAccountIdInput.placeholder = data.page_content.cabinet.sections.account_id.placeholder;
-            cabinetAccountIdHelp.textContent = data.page_content.cabinet.sections.account_id.help_text;
+            // Updated cabinet UI labels
+            // cabinetAccountIdLabel.textContent = data.page_content.cabinet.sections.account_id.label; // No longer needed directly
+            // cabinetAccountIdInput.placeholder = data.page_content.cabinet.sections.account_id.placeholder; // No longer needed directly
+            // cabinetAccountIdHelp.textContent = data.page_content.cabinet.sections.account_id.help_text; // No longer needed directly
 
             cabinetPasswordLabel.textContent = data.page_content.cabinet.sections.password.label;
             cabinetPasswordInput.placeholder = data.page_content.cabinet.sections.password.placeholder;
-            loadCabinetDataButton.textContent = data.page_content.cabinet.sections.password.load_button;
-            saveCabinetDataButton.textContent = data.page_content.cabinet.sections.password.save_button;
+            // loadCabinetDataButton.textContent = data.page_content.cabinet.sections.password.load_button; // No longer needed
+            // saveCabinetDataButton.textContent = data.page_content.cabinet.sections.password.save_button; // No longer needed
 
             cabinetTasksLabel.textContent = data.page_content.cabinet.sections.tasks.label;
             editTasksButton.textContent = data.page_content.cabinet.sections.tasks.edit_button;
@@ -724,7 +778,6 @@
             editFinancesButton.textContent = data.page_content.cabinet.sections.finances.edit_button;
             financesDisplay.textContent = data.page_content.cabinet.sections.finances.initial_content;
 
-            // Characters
             charactersSectionTitle.textContent = data.page_content.characters.title;
             charactersIntroText.textContent = data.page_content.characters.intro;
             charactersListContainer.innerHTML = '';
@@ -734,7 +787,6 @@
                 charactersListContainer.appendChild(li);
             });
 
-            // Dossiers
             dossiersSectionTitle.textContent = data.page_content.dossiers.title;
             dossiersIntroText.textContent = data.page_content.dossiers.intro;
             dossiersListContainer.innerHTML = '';
@@ -747,7 +799,6 @@
                 dossiersListContainer.appendChild(pContent);
             });
 
-            // Map
             mapSectionTitle.textContent = data.page_content.map.title;
             mapIntroText.textContent = data.page_content.map.intro;
             mapImageLink.href = data.page_content.map.image_link;
@@ -764,12 +815,14 @@
                 mapLocationsContainer.appendChild(pContent);
             });
 
-            // JSON modal
+            messagesSectionTitle.textContent = data.page_content.messages.title;
+            messagesIntroText.textContent = data.page_content.messages.intro;
+
+
             modalTitle.textContent = data.modal_messages.title;
             modalInstructions.innerHTML = data.modal_messages.instructions.replace('{terminal_id}', data.terminal_id);
             copyJsonButton.textContent = data.modal_messages.copy_button;
 
-            // Terminal initialization
             terminalOutput.innerHTML = data.initial_message + '\n> ';
             terminalOutput.scrollTop = terminalOutput.scrollHeight;
         }
@@ -777,7 +830,6 @@
 
         // --- Core Functions ---
 
-        // Loads terminal configuration from Supabase 'terminals' table
         let terminalsConfig = [];
         async function loadTerminalConfig() {
             try {
@@ -795,7 +847,6 @@
             }
         }
 
-        // Displays the terminal selection screen
         function displayTerminalSelection() {
             terminalOptionsContainer.innerHTML = '';
             terminalsConfig.forEach(term => {
@@ -820,26 +871,25 @@
             mainContent.style.display = 'none';
         }
 
-        // Selects and loads data for a specific terminal from Supabase 'terminal_details' table
         async function selectTerminal(terminal) {
             terminalSelectionScreen.style.display = 'none';
             loginScreen.style.display = 'flex';
             loginTerminalTitle.textContent = terminal.name;
             usernameInput.focus();
-            selectedTerminalId = terminal.id; // Store the selected terminal ID
+            selectedTerminalId = terminal.id;
 
             try {
                 const { data, error } = await supabase
                     .from('terminal_details')
                     .select('config')
-                    .eq('id', terminal.details_id) // Use details_id to fetch config
-                    .single(); // Expecting only one row
+                    .eq('id', terminal.details_id)
+                    .single();
 
                 if (error) throw error;
                 if (!data || !data.config) {
                     throw new Error(`No configuration found for terminal details ID: ${terminal.details_id}`);
                 }
-                currentTerminalData = data.config; // The actual config is in the 'config' column
+                currentTerminalData = data.config;
                 console.log("Terminal data loaded from Supabase:", currentTerminalData);
                 populateUI(currentTerminalData);
             } catch (e) {
@@ -850,8 +900,6 @@
             }
         }
 
-
-        // Function to switch pages
         function showPage(pageId) {
             pageSections.forEach(section => {
                 section.classList.remove('active');
@@ -860,6 +908,12 @@
             if (targetSection) {
                 targetSection.classList.add('active');
                 history.pushState(null, '', `#${pageId}`);
+                if (pageId === 'messages' && currentCabinetLogin) { // Check for cabinet login
+                    loadMessages();
+                }
+                if (pageId === 'cabinet') {
+                    updateCabinetUIForLoginStatus(); // Update cabinet UI based on its own login status
+                }
             } else {
                 showPage('terminal');
                 terminalOutput.innerHTML += `\n> navigate ${pageId}\n${currentTerminalData.error_messages.page_not_found.replace('{page_id}', pageId)}\n> `;
@@ -867,7 +921,6 @@
             }
         }
 
-        // Function to handle login
         function handleLogin() {
             const username = usernameInput.value.trim();
             const password = passwordInput.value.trim();
@@ -910,7 +963,6 @@
             }
         }
 
-        // Function to reset hack state and log out
         function resetHackAndLogout(messageKey) {
             isHacked = false;
             hackAttempts = 0;
@@ -942,8 +994,6 @@
             terminalInput.disabled = true;
         }
 
-
-        // Function to update control button states visually
         function updateControlButtonsState() {
             if (!controlButtons) return;
             controlButtons.forEach(button => {
@@ -995,49 +1045,170 @@
         }
 
 
-        // --- Cabinet Logic (now with Supabase) ---
+        // --- Cabinet Login/Registration Logic (NO SUPABASE AUTH HERE) ---
 
-        // Load specific cabinet account data from Supabase 'cabinet_accounts' table
-        async function loadCabinetData() {
-            const accountId = cabinetAccountIdInput.value.trim();
-            const password = cabinetPasswordInput.value.trim();
+        function updateCabinetUIForLoginStatus() {
+            if (currentCabinetLogin) {
+                cabinetLoginSection.style.display = 'none';
+                personalCabinetDataSection.style.display = 'block';
+                cabinetDisplayIdInput.value = currentCabinetLogin; // Display the logged-in cabinet ID
+                cabinetLogoutButton.style.display = 'block';
+                cabinetAuthMessage.textContent = `Вы вошли как: ${currentCabinetLogin}`;
+                cabinetAuthMessage.style.color = '#00ff00'; // Green for success
+                loadCabinetData(); // Load data for the logged-in cabinet
+            } else {
+                cabinetLoginSection.style.display = 'block';
+                personalCabinetDataSection.style.display = 'none';
+                cabinetLogoutButton.style.display = 'none';
+                cabinetAuthMessage.textContent = 'Войдите или зарегистрируйте аккаунт Кабинета.';
+                cabinetAuthMessage.style.color = '#ff0000'; // Red for warning/info
+                // Clear all cabinet data displays
+                cabinetDisplayIdInput.value = '';
+                cabinetLoginIdInput.value = '';
+                cabinetLoginPasswordInput.value = '';
+                cabinetPasswordInput.value = '';
+                taskListDisplay.textContent = currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
+                personalInfoDisplay.textContent = currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
+                financesDisplay.textContent = currentTerminalData.page_content.cabinet.sections.finances.initial_content;
+                cabinetPasswordMessage.textContent = '';
+                taskMessage.textContent = '';
+                personalInfoMessage.textContent = '';
+                financesMessage.textContent = '';
+            }
+        }
 
-            if (!accountId) {
-                cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.no_account_id;
+        async function handleCabinetLogin() {
+            const loginId = cabinetLoginIdInput.value.trim();
+            const password = cabinetLoginPasswordInput.value.trim();
+            cabinetAuthMessage.textContent = '';
+
+            if (!loginId || !password) {
+                cabinetAuthMessage.textContent = 'Введите логин и пароль Кабинета.';
                 return;
             }
-            if (!password) {
-                cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.no_password;
-                return;
-            }
-            cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.loading;
 
             try {
                 const { data, error } = await supabase
                     .from('cabinet_accounts')
                     .select('*')
-                    .eq('id', accountId)
-                    .eq('terminal_id', selectedTerminalId) // Filter by current terminal
+                    .eq('id', loginId)
+                    .eq('terminal_id', selectedTerminalId)
                     .single();
 
-                if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found (not an error for us)
+                if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
+                    throw error;
+                }
+
+                if (data && data.password === password) {
+                    currentCabinetLogin = loginId;
+                    updateCabinetUIForLoginStatus();
+                } else {
+                    cabinetAuthMessage.textContent = 'Неверный логин или пароль Кабинета.';
+                    cabinetLoginPasswordInput.value = '';
+                }
+            } catch (e) {
+                console.error('Ошибка входа в Кабинет:', e);
+                cabinetAuthMessage.textContent = `Ошибка входа: ${e.message}`;
+            }
+        }
+
+        async function handleCabinetRegister() {
+            const loginId = cabinetLoginIdInput.value.trim();
+            const password = cabinetLoginPasswordInput.value.trim();
+            cabinetAuthMessage.textContent = '';
+
+            if (!loginId || !password) {
+                cabinetAuthMessage.textContent = 'Введите логин и пароль для регистрации Кабинета.';
+                return;
+            }
+
+            try {
+                // Check if account already exists
+                const { data: existingAccount, error: checkError } = await supabase
+                    .from('cabinet_accounts')
+                    .select('id')
+                    .eq('id', loginId)
+                    .eq('terminal_id', selectedTerminalId)
+                    .single();
+
+                if (existingAccount) {
+                    cabinetAuthMessage.textContent = `Аккаунт "${loginId}" уже существует для этого терминала.`;
+                    return;
+                }
+                if (checkError && checkError.code !== 'PGRST116') { // Not found is okay
+                    throw checkError;
+                }
+
+                // Register new account
+                const { data, error } = await supabase
+                    .from('cabinet_accounts')
+                    .insert([
+                        {
+                            id: loginId,
+                            terminal_id: selectedTerminalId,
+                            password: password,
+                            tasks: currentTerminalData.page_content.cabinet.sections.tasks.initial_content,
+                            personal_info: currentTerminalData.page_content.cabinet.sections.personal_info.initial_content,
+                            finances: currentTerminalData.page_content.cabinet.sections.finances.initial_content
+                        }
+                    ])
+                    .select();
+
+                if (error) throw error;
+                cabinetAuthMessage.textContent = `Аккаунт "${loginId}" успешно зарегистрирован! Выполняется вход...`;
+                console.log('Кабинет зарегистрирован:', data);
+                currentCabinetLogin = loginId;
+                updateCabinetUIForLoginStatus();
+            } catch (e) {
+                console.error('Ошибка регистрации Кабинета:', e);
+                cabinetAuthMessage.textContent = `Ошибка регистрации: ${e.message}`;
+            }
+        }
+
+        function handleCabinetLogout() {
+            currentCabinetLogin = null;
+            updateCabinetUIForLoginStatus();
+            cabinetAuthMessage.textContent = 'Вы вышли из Кабинета.';
+            cabinetAuthMessage.style.color = '#00ffff'; // Blue for info
+        }
+
+        // --- Cabinet Data Management Logic ---
+
+        async function loadCabinetData() {
+            cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.loading;
+
+            if (!currentCabinetLogin) {
+                cabinetPasswordMessage.textContent = 'Войдите в Кабинет для загрузки данных.';
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('cabinet_accounts')
+                    .select('*')
+                    .eq('id', currentCabinetLogin)
+                    .eq('terminal_id', selectedTerminalId)
+                    .single();
+
+                if (error && error.code !== 'PGRST116') {
                     throw error;
                 }
 
                 if (data) {
-                    if (data.password === password) {
-                        taskListDisplay.textContent = data.tasks || currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
-                        personalInfoDisplay.textContent = data.personal_info || currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
-                        financesDisplay.textContent = data.finances || currentTerminalData.page_content.cabinet.sections.finances.initial_content;
-                        cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.loaded_success.replace('{account_id}', accountId);
-                    } else {
-                        cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.wrong_password;
-                    }
+                    taskListDisplay.textContent = data.tasks || currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
+                    personalInfoDisplay.textContent = data.personal_info || currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
+                    financesDisplay.textContent = data.finances || currentTerminalData.page_content.cabinet.sections.finances.initial_content;
+                    cabinetPasswordInput.value = data.password || ''; // Set narrative password field
+                    cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.loaded_success.replace('{account_id}', currentCabinetLogin);
+                    loadMessages(); // Load messages for this cabinet login
                 } else {
-                    cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.not_found.replace('{account_id}', accountId);
+                    // This case should ideally not happen if currentCabinetLogin is set,
+                    // but as a fallback:
+                    cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.not_found.replace('{account_id}', currentCabinetLogin);
                     taskListDisplay.textContent = currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
                     personalInfoDisplay.textContent = currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
                     financesDisplay.textContent = currentTerminalData.page_content.cabinet.sections.finances.initial_content;
+                    cabinetPasswordInput.value = '';
                 }
             }
             catch (e) {
@@ -1046,58 +1217,210 @@
             }
         }
 
-        // Save cabinet data directly to Supabase 'cabinet_accounts' table
-        async function saveCabinetData() {
-            const accountId = cabinetAccountIdInput.value.trim();
-            const password = cabinetPasswordInput.value.trim();
-
-            if (!accountId) {
-                cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.no_account_id;
-                return;
-            }
-            if (!password) {
-                cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.no_password;
-                return;
-            }
+        async function saveCabinetData() { // This function is now specifically for saving the narrative password
             cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.saving;
 
-            const dataToSave = {
-                id: accountId,
-                terminal_id: selectedTerminalId, // Link to the current terminal
-                password: password,
+            if (!currentCabinetLogin) {
+                cabinetPasswordMessage.textContent = 'Войдите в Кабинет для сохранения данных.';
+                return;
+            }
+
+            const cabinetPassword = cabinetPasswordInput.value.trim();
+
+            const dataToUpdate = {
+                password: cabinetPassword,
                 tasks: taskListDisplay.textContent.trim(),
                 personal_info: personalInfoDisplay.textContent.trim(),
                 finances: financesDisplay.textContent.trim()
             };
 
             try {
-                // Use upsert to insert if not exists, or update if exists
                 const { data, error } = await supabase
                     .from('cabinet_accounts')
-                    .upsert([dataToSave], { onConflict: 'id' }) // Conflict on 'id' to update existing
-                    .select(); // Select the updated/inserted row
+                    .update(dataToUpdate)
+                    .eq('id', currentCabinetLogin)
+                    .eq('terminal_id', selectedTerminalId)
+                    .select();
 
                 if (error) throw error;
                 console.log("Cabinet data saved to Supabase:", data);
-                cabinetPasswordMessage.textContent = `Данные для аккаунта "${accountId}" успешно сохранены в Supabase.`;
+                cabinetPasswordMessage.textContent = `Данные для аккаунта "${currentCabinetLogin}" успешно сохранены в Supabase.`;
             } catch (e) {
                 console.error("Error saving cabinet data to Supabase:", e);
                 cabinetPasswordMessage.textContent = 'Ошибка: Не удалось сохранить данные в Supabase. Проверьте консоль.';
             }
         }
 
-        // Toggle edit mode for Cabinet sections
         function toggleEditMode(displayElement, messageElement, buttonElement, sectionKey) {
+            if (!currentCabinetLogin) {
+                messageElement.textContent = 'Войдите в Кабинет, чтобы редактировать данные.';
+                messageElement.style.color = '#ff0000';
+                return;
+            }
+            messageElement.style.color = '#00ffff'; // Reset color
+
             const isEditable = displayElement.contentEditable === 'true';
             displayElement.contentEditable = !isEditable;
             buttonElement.textContent = isEditable ? currentTerminalData.page_content.cabinet.sections[sectionKey].edit_button : currentTerminalData.page_content.cabinet.sections[sectionKey].save_button;
             if (isEditable) {
                 messageElement.textContent = currentTerminalData.page_content.cabinet.sections[sectionKey].messages.saved_local;
                 displayElement.classList.remove('cabinet-data-area-editing');
+                // Auto-save edited section to DB
+                saveCabinetData();
             } else {
                 messageElement.textContent = currentTerminalData.page_content.cabinet.sections[sectionKey].messages.editing;
                 displayElement.focus();
                 displayElement.classList.add('cabinet-data-area-editing');
+            }
+        }
+
+        // Send Message
+        async function sendMessage() {
+            sendMessageStatus.textContent = '';
+            if (!currentCabinetLogin) {
+                sendMessageStatus.textContent = 'Ошибка: Войдите в Кабинет, чтобы отправлять сообщения.';
+                return;
+            }
+            if (!selectedTerminalId) {
+                sendMessageStatus.textContent = 'Ошибка: Выберите терминал.';
+                return;
+            }
+
+            const senderLogin = currentCabinetLogin;
+            const recipientLogin = messageRecipientIdInput.value.trim();
+            const subject = messageSubjectInput.value.trim();
+            const content = messageContentTextarea.value.trim();
+            const senderName = senderLogin; // For now, sender name is their login
+
+            if (!recipientLogin || !subject || !content) {
+                sendMessageStatus.textContent = 'Заполните все поля для отправки сообщения.';
+                return;
+            }
+
+            if (recipientLogin === senderLogin) {
+                sendMessageStatus.textContent = 'Ошибка: Вы не можете отправить сообщение самому себе.';
+                return;
+            }
+
+            // Optional: Check if recipient ID exists in cabinet_accounts
+            try {
+                const { data: recipientExists, error: recipientError } = await supabase
+                    .from('cabinet_accounts')
+                    .select('id')
+                    .eq('id', recipientLogin)
+                    .single();
+
+                if (!recipientExists) {
+                    sendMessageStatus.textContent = `Ошибка: Получатель с логином "${recipientLogin}" не найден.`;
+                    return;
+                }
+                if (recipientError && recipientError.code !== 'PGRST116') {
+                    throw recipientError;
+                }
+            } catch (e) {
+                console.error('Ошибка проверки получателя:', e);
+                sendMessageStatus.textContent = `Ошибка проверки получателя: ${e.message}`;
+                return;
+            }
+
+
+            try {
+                const { data, error } = await supabase
+                    .from('terminal_messages')
+                    .insert([
+                        {
+                            message_type: 'user-to-user',
+                            sender_id: senderLogin,
+                            sender_terminal_id: selectedTerminalId,
+                            recipient_id: recipientLogin,
+                            recipient_terminal_id: selectedTerminalId, // Assume same terminal for user-to-user for simplicity
+                            sender_name: senderName,
+                            subject: subject,
+                            content: content,
+                            read: false // New messages are unread
+                        }
+                    ])
+                    .select();
+
+                if (error) throw error;
+
+                sendMessageStatus.textContent = 'Сообщение успешно отправлено!';
+                messageRecipientIdInput.value = '';
+                messageSubjectInput.value = '';
+                messageContentTextarea.value = '';
+                loadMessages(); // Reload messages to show the sent one
+                console.log('Message sent:', data);
+            } catch (e) {
+                console.error('Error sending message:', e);
+                sendMessageStatus.textContent = `Ошибка отправки: ${e.message}`;
+            }
+        }
+
+
+        // Load messages for the current cabinet account
+        async function loadMessages() {
+            messagesListContainer.innerHTML = ''; // Clear previous messages
+            messagesStatus.textContent = 'Загрузка сообщений...';
+
+            if (!currentCabinetLogin) { // Check for cabinet login
+                messagesStatus.textContent = 'Войдите в Кабинет, чтобы просмотреть сообщения.';
+                return;
+            }
+            if (!selectedTerminalId) {
+                 messagesStatus.textContent = 'Выберите терминал, чтобы просмотреть сообщения.';
+                 return;
+            }
+
+            const currentLogin = currentCabinetLogin;
+
+            try {
+                const { data, error } = await supabase
+                    .from('terminal_messages')
+                    .select('*')
+                    .or(`recipient_id.eq.${currentLogin},sender_id.eq.${currentLogin}`) // Messages where user is recipient OR sender
+                    .eq('recipient_terminal_id', selectedTerminalId) // Filter by current terminal for received messages
+                    .order('timestamp', { ascending: false }); // Order by newest first
+
+                if (error) throw error;
+
+                if (data && data.length > 0) {
+                    messagesStatus.textContent = ''; // Clear status message
+                    data.forEach(async (message) => {
+                        const isSent = message.sender_id === currentLogin;
+                        const displaySender = isSent ? `Вам (${message.recipient_id})` : message.sender_name;
+                        const icon = message.read ? '&#10003;' : '&#9888;'; // Checkmark or warning icon
+                        const messageTypeLabel = isSent ? 'Исходящее' : 'Входящее';
+                        const summaryColorClass = isSent ? 'text-green-400' : 'text-blue-400'; // Different color for sent/received
+
+                        const messageDiv = document.createElement('div');
+                        messageDiv.classList.add('file-entry', 'mb-4');
+                        messageDiv.innerHTML = `
+                            <details ${message.read ? '' : 'open'}>
+                                <summary class="cursor-pointer outline-none ${summaryColorClass} font-bold">
+                                    ${icon} [${new Date(message.timestamp).toLocaleString()}] ${messageTypeLabel} от: ${displaySender} - Тема: ${message.subject}
+                                </summary>
+                                <div class="file-content mt-2 pt-2 border-t border-dashed border-gray-600">
+                                    ${message.content.replace(/\n/g, '<br>')}
+                                </div>
+                            </details>
+                        `;
+                        messagesListContainer.appendChild(messageDiv);
+
+                        // Mark message as read if it's not already and it's a received message
+                        if (!message.read && !isSent) {
+                            const { error: updateError } = await supabase
+                                .from('terminal_messages')
+                                .update({ read: true })
+                                .eq('id', message.id);
+                            if (updateError) console.error('Error marking message as read:', updateError);
+                        }
+                    });
+                } else {
+                    messagesStatus.textContent = 'Нет сообщений.';
+                }
+            } catch (e) {
+                console.error("Error loading messages from Supabase:", e);
+                messagesStatus.textContent = 'Ошибка загрузки сообщений. Проверьте консоль.';
             }
         }
 
@@ -1210,6 +1533,7 @@
                     case 'navigate dossiers':
                     case 'navigate map':
                     case 'navigate terminal':
+                    case 'navigate messages':
                         const pageId = command.split(' ')[1];
                         showPage(pageId);
                         commandOutput += `Переход на страницу: ${pageId.charAt(0).toUpperCase() + pageId.slice(1)}`;
@@ -1220,15 +1544,15 @@
                             personalInfoMessage.textContent = '';
                             financesMessage.textContent = '';
                         }
+                        if (pageId === 'messages') {
+                            messagesStatus.textContent = '';
+                        }
                         break;
                     case 'message':
-                        if (currentTerminalData.command_outputs.message.default) {
-                            commandOutput += currentTerminalData.command_outputs.message.default.join('\n');
-                        }
-                        if (isHacked && currentTerminalData.command_outputs.message.hacked) {
-                            commandOutput += '\n' + currentTerminalData.command_outputs.message.hacked.join('\n');
-                        }
-                        break;
+                         showPage('messages');
+                         commandOutput += `Переход на страницу: СООБЩЕНИЯ`;
+                         messagesStatus.textContent = '';
+                         break;
                     case 'info':
                         if (currentTerminalData.command_outputs.info.default) {
                             commandOutput += currentTerminalData.command_outputs.info.default.join('\n');
@@ -1257,7 +1581,7 @@
                             hackStartOutput += currentTerminalData.hack_game.start_message
                                 .replace('{timer_duration}', currentTerminalData.hack_game.timer_duration)
                                 .replace('{phrase}', currentHackPhrase.toUpperCase())
-                                .replace('{timer_value}', hackTimer); // Исправлено: было {timer_value}
+                                .replace('{timer_value}', currentTerminalData.hack_game.timer_duration); // Исправлено: было {timer_value}
 
                             terminalOutput.innerHTML += hackStartOutput;
                             terminalOutput.scrollTop = terminalOutput.scrollHeight;
@@ -1347,12 +1671,18 @@
         });
 
         loginButton.addEventListener('click', handleLogin);
-        loadCabinetDataButton.addEventListener('click', loadCabinetData);
-        saveCabinetDataButton.addEventListener('click', saveCabinetData);
+
+        // Cabinet specific event listeners
+        cabinetEnterButton.addEventListener('click', handleCabinetLogin);
+        cabinetRegisterButton.addEventListener('click', handleCabinetRegister);
+        cabinetLogoutButton.addEventListener('click', handleCabinetLogout);
+        saveCabinetPasswordButton.addEventListener('click', saveCabinetData); // This button now saves all cabinet data
 
         editTasksButton.addEventListener('click', () => toggleEditMode(taskListDisplay, taskMessage, editTasksButton, 'tasks'));
         editPersonalInfoButton.addEventListener('click', () => toggleEditMode(personalInfoDisplay, personalInfoMessage, editPersonalInfoButton, 'personal_info'));
         editFinancesButton.addEventListener('click', () => toggleEditMode(financesDisplay, financesMessage, editFinancesButton, 'finances'));
+
+        sendMessageButton.addEventListener('click', sendMessage);
 
         // JSON modal event handlers
         closeButton.addEventListener('click', () => {
