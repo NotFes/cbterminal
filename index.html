@@ -508,7 +508,873 @@
 
     </div>
 
+    <div id="jsonModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2 class="text-2xl text-center text-purple-400 mb-4" id="modal-title"></h2>
+            <p class="text-yellow-400 mb-2" id="modal-instructions"></p>
+            <textarea id="jsonOutput" class="json-textarea" readonly></textarea>
+            <button id="copyJsonButton" class="copy-json-button"></button>
+        </div>
+    </div>
+
+
     <script>
         // --- Supabase Client Initialization ---
         // Replace with your actual Supabase URL and anon key
-        const SUPABASE_URL = 
+        const SUPABASE_URL = 'https://vnfswyztlwgkhkkmhhhs.supabase.co'; // e.g., 'https://abcdefg.supabase.co'
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZuZnN3eXp0bHdna2hra21oaGhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc4Mjg0MzYsImV4cCI6MjA2MzQwNDQzNn0.jvs2X_61LZaZxcmDoSK9ZRnHo-S2wblifiV4Vogdkyo'; // e.g., 'eyJhbGciOiJIUzI1Ni...'
+
+        const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // --- Элементы интерфейса ---
+        const terminalSelectionScreen = document.getElementById('terminal-selection-screen');
+        const terminalOptionsContainer = document.getElementById('terminal-options-container');
+        const loginScreen = document.getElementById('login-screen');
+        const mainContent = document.getElementById('main-content');
+
+        const loginTerminalTitle = document.getElementById('login-terminal-title');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const loginButton = document.getElementById('login-button');
+        const loginMessage = document.getElementById('login-message');
+
+        const mainTerminalHeader = document.getElementById('main-terminal-header');
+        const mainNavLinks = document.getElementById('main-nav-links');
+        const pageSections = document.querySelectorAll('.page-section');
+        const terminalInput = document.getElementById('terminal-input');
+        const terminalOutput = document.getElementById('terminal-output');
+        const controlMessageElement = document.getElementById('control-message');
+
+        // Elements that will be populated dynamically
+        const terminalSectionTitle = document.getElementById('terminal-section-title');
+
+        const filesystemSectionTitle = document.getElementById('filesystem-section-title');
+        const filesystemIntroText = document.getElementById('filesystem-intro-text');
+        const filesystemFilesContainer = document.getElementById('filesystem-files-container');
+        let secretFileElement;
+
+        const controlSectionTitle = document.getElementById('control-section-title');
+        const controlIntroText = document.getElementById('control-intro-text');
+        const controlButtonsContainer = document.getElementById('control-buttons-container');
+        let controlButtons;
+
+        const cabinetSectionTitle = document.getElementById('cabinet-section-title');
+        const cabinetIntroText = document.getElementById('cabinet-intro-text');
+        const cabinetAccountIdInput = document.getElementById('cabinet-account-id');
+        const cabinetAccountIdLabel = document.getElementById('cabinet-account-id-label');
+        const cabinetAccountIdHelp = document.getElementById('cabinet-account-id-help');
+        const cabinetPasswordInput = document.getElementById('cabinet-password');
+        const cabinetPasswordLabel = document.getElementById('cabinet-password-label');
+        const loadCabinetDataButton = document.getElementById('load-cabinet-data');
+        const saveCabinetDataButton = document.getElementById('save-cabinet-data');
+        const cabinetPasswordMessage = document.getElementById('cabinet-password-message');
+
+        const taskListDisplay = document.getElementById('task-list-display');
+        const cabinetTasksLabel = document.getElementById('cabinet-tasks-label');
+        const editTasksButton = document.getElementById('edit-tasks-button');
+        const taskMessage = document.getElementById('task-message');
+
+        const personalInfoDisplay = document.getElementById('personal-info-display');
+        const cabinetPersonalInfoLabel = document.getElementById('cabinet-personal-info-label');
+        const editPersonalInfoButton = document.getElementById('edit-personal-info-button');
+        const personalInfoMessage = document.getElementById('personal-info-message');
+
+        const financesDisplay = document.getElementById('finances-display');
+        const cabinetFinancesLabel = document.getElementById('cabinet-finances-label');
+        const editFinancesButton = document.getElementById('edit-finances-button');
+        const financesMessage = document.getElementById('finances-message');
+
+        const charactersSectionTitle = document.getElementById('characters-section-title');
+        const charactersIntroText = document.getElementById('characters-intro-text');
+        const charactersListContainer = document.getElementById('characters-list-container');
+
+        const dossiersSectionTitle = document.getElementById('dossiers-section-title');
+        const dossiersIntroText = document.getElementById('dossiers-intro-text');
+        const dossiersListContainer = document.getElementById('dossiers-list-container');
+
+        const mapSectionTitle = document.getElementById('map-section-title');
+        const mapIntroText = document.getElementById('map-intro-text');
+        const mapImageLink = document.getElementById('map-image-link');
+        const mapImage = document.getElementById('map-image');
+        const mapDescriptionHeading = document.getElementById('map-description-heading');
+        const mapLocationsContainer = document.getElementById('map-locations-container');
+
+        // JSON modal elements
+        const jsonModal = document.getElementById('jsonModal');
+        const closeButton = document.querySelector('.close-button');
+        const jsonOutputTextarea = document.getElementById('jsonOutput');
+        const copyJsonButton = document.getElementById('copyJsonButton');
+        const modalTitle = document.getElementById('modal-title');
+        const modalInstructions = document.getElementById('modal-instructions');
+
+
+        // --- Global variables for terminal data ---
+        let currentTerminalData = null;
+        let isHacked = false;
+        let hackAttempts = 0;
+        let isHackMinigameActive = false;
+        let currentHackPhrase = '';
+        let hackTimer = 0;
+        let hackTimerInterval = null;
+        let controlStates = {};
+        let selectedTerminalId = ''; // To store the ID of the currently selected terminal
+
+
+        // --- UI Population Functions ---
+
+        function populateUI(data) {
+            mainTerminalHeader.textContent = data.terminal_title;
+            loginTerminalTitle.textContent = data.terminal_title;
+            terminalSectionTitle.textContent = data.terminal_title; // Corrected: directly from data.terminal_title
+
+            mainNavLinks.innerHTML = '';
+            const navPages = [
+                { id: "terminal", label: "ТЕРМИНАЛ" },
+                { id: "filesystem", label: "ФАЙЛОВАЯ СИСТЕМА" },
+                { id: "control", label: "УПРАВЛЕНИЕ" },
+                { id: "cabinet", label: "КАБИНЕТ" },
+                { id: "characters", label: "ПЕРСОНАЖИ" },
+                { id: "dossiers", label: "ДОСЬЕ" },
+                { id: "map", label: "КАРТА" }
+            ];
+            navPages.forEach((page, index) => {
+                const link = document.createElement('a');
+                link.href = `#${page.id}`;
+                link.classList.add('nav-link');
+                link.setAttribute('data-page', page.id);
+                link.textContent = `/// ${page.label} ///`;
+                mainNavLinks.appendChild(link);
+                if (page.id === 'control') {
+                    mainNavLinks.appendChild(document.createElement('br'));
+                }
+            });
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const pageId = link.getAttribute('data-page');
+                    showPage(pageId);
+                });
+            });
+
+            // Filesystem
+            filesystemSectionTitle.textContent = data.page_content.filesystem.title;
+            filesystemIntroText.textContent = data.page_content.filesystem.intro;
+            filesystemFilesContainer.innerHTML = '';
+            data.page_content.filesystem.files.forEach(file => {
+                const details = document.createElement('details');
+                details.classList.add('file-entry');
+                if (file.is_secret) {
+                    details.classList.add('hidden-file');
+                    details.id = 'secret-file';
+                }
+                const summary = document.createElement('summary');
+                summary.textContent = file.summary;
+                const contentDiv = document.createElement('div');
+                contentDiv.classList.add('file-content');
+                contentDiv.innerHTML = file.content.replace(/\n/g, '<br>');
+
+                details.appendChild(summary);
+                details.appendChild(contentDiv);
+                filesystemFilesContainer.appendChild(details);
+            });
+            secretFileElement = document.getElementById('secret-file');
+
+            // Control
+            controlSectionTitle.textContent = data.page_content.control.title;
+            controlIntroText.textContent = data.page_content.control.intro;
+            controlButtonsContainer.innerHTML = '';
+            controlStates = {};
+            data.page_content.control.buttons.forEach(buttonConfig => {
+                const button = document.createElement('button');
+                button.classList.add('control-button');
+                button.setAttribute('data-target', buttonConfig.target);
+                button.textContent = buttonConfig.label;
+                controlButtonsContainer.appendChild(button);
+                controlStates[buttonConfig.target] = false;
+            });
+            controlButtons = document.querySelectorAll('.control-button');
+            controlButtons.forEach(button => {
+                button.addEventListener('click', handleControlButtonClick);
+            });
+
+            // Cabinet
+            cabinetSectionTitle.textContent = data.page_content.cabinet.title;
+            cabinetIntroText.textContent = data.page_content.cabinet.intro;
+
+            cabinetAccountIdLabel.textContent = data.page_content.cabinet.sections.account_id.label;
+            cabinetAccountIdInput.placeholder = data.page_content.cabinet.sections.account_id.placeholder;
+            cabinetAccountIdHelp.textContent = data.page_content.cabinet.sections.account_id.help_text;
+
+            cabinetPasswordLabel.textContent = data.page_content.cabinet.sections.password.label;
+            cabinetPasswordInput.placeholder = data.page_content.cabinet.sections.password.placeholder;
+            loadCabinetDataButton.textContent = data.page_content.cabinet.sections.password.load_button;
+            saveCabinetDataButton.textContent = data.page_content.cabinet.sections.password.save_button;
+
+            cabinetTasksLabel.textContent = data.page_content.cabinet.sections.tasks.label;
+            editTasksButton.textContent = data.page_content.cabinet.sections.tasks.edit_button;
+            taskListDisplay.textContent = data.page_content.cabinet.sections.tasks.initial_content;
+
+            cabinetPersonalInfoLabel.textContent = data.page_content.cabinet.sections.personal_info.label;
+            editPersonalInfoButton.textContent = data.page_content.cabinet.sections.personal_info.edit_button;
+            personalInfoDisplay.textContent = data.page_content.cabinet.sections.personal_info.initial_content;
+
+            cabinetFinancesLabel.textContent = data.page_content.cabinet.sections.finances.label;
+            editFinancesButton.textContent = data.page_content.cabinet.sections.finances.edit_button;
+            financesDisplay.textContent = data.page_content.cabinet.sections.finances.initial_content;
+
+            // Characters
+            charactersSectionTitle.textContent = data.page_content.characters.title;
+            charactersIntroText.textContent = data.page_content.characters.intro;
+            charactersListContainer.innerHTML = '';
+            data.page_content.characters.list.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                charactersListContainer.appendChild(li);
+            });
+
+            // Dossiers
+            dossiersSectionTitle.textContent = data.page_content.dossiers.title;
+            dossiersIntroText.textContent = data.page_content.dossiers.intro;
+            dossiersListContainer.innerHTML = '';
+            data.page_content.dossiers.dossiers_list.forEach(dossier => {
+                const pHeading = document.createElement('p');
+                pHeading.innerHTML = `<strong>${dossier.heading}</strong>`;
+                const pContent = document.createElement('p');
+                pContent.textContent = dossier.content;
+                dossiersListContainer.appendChild(pHeading);
+                dossiersListContainer.appendChild(pContent);
+            });
+
+            // Map
+            mapSectionTitle.textContent = data.page_content.map.title;
+            mapIntroText.textContent = data.page_content.map.intro;
+            mapImageLink.href = data.page_content.map.image_link;
+            mapImage.src = data.page_content.map.image_src;
+            mapImage.alt = data.page_content.map.image_alt;
+            mapDescriptionHeading.textContent = data.page_content.map.description_heading;
+            mapLocationsContainer.innerHTML = '';
+            data.page_content.map.locations.forEach(location => {
+                const pHeading = document.createElement('p');
+                pHeading.innerHTML = `<strong>${location.heading}</strong>`;
+                const pContent = document.createElement('p');
+                pContent.textContent = location.content;
+                mapLocationsContainer.appendChild(pHeading);
+                mapLocationsContainer.appendChild(pContent);
+            });
+
+            // JSON modal
+            modalTitle.textContent = data.modal_messages.title;
+            modalInstructions.innerHTML = data.modal_messages.instructions.replace('{terminal_id}', data.terminal_id);
+            copyJsonButton.textContent = data.modal_messages.copy_button;
+
+            // Terminal initialization
+            terminalOutput.innerHTML = data.initial_message + '\n> ';
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        }
+
+
+        // --- Core Functions ---
+
+        // Loads terminal configuration from Supabase 'terminals' table
+        let terminalsConfig = [];
+        async function loadTerminalConfig() {
+            try {
+                const { data, error } = await supabase
+                    .from('terminals')
+                    .select('*');
+
+                if (error) throw error;
+                terminalsConfig = data;
+                console.log("Terminal configuration loaded from Supabase:", terminalsConfig);
+                displayTerminalSelection();
+            } catch (e) {
+                console.error("Failed to load terminal configuration from Supabase.", e);
+                terminalSelectionScreen.innerHTML = `<h2 class="text-2xl mb-4 text-red-500">!!! ОШИБКА ЗАГРУЗКИ КОНФИГУРАЦИИ !!!</h2><p class="text-red-400">Не удалось загрузить список терминалов из Supabase. Проверьте консоль.</p>`;
+            }
+        }
+
+        // Displays the terminal selection screen
+        function displayTerminalSelection() {
+            terminalOptionsContainer.innerHTML = '';
+            terminalsConfig.forEach(term => {
+                const button = document.createElement('button');
+                button.classList.add('terminal-option');
+                button.textContent = term.name;
+                button.setAttribute('data-terminal-id', term.id);
+                button.addEventListener('click', () => selectTerminal(term));
+
+                const description = document.createElement('p');
+                description.textContent = term.description;
+                description.classList.add('text-center', 'text-gray-400', 'mb-4');
+
+                const wrapper = document.createElement('div');
+                wrapper.classList.add('flex', 'flex-col', 'items-center', 'mb-6');
+                wrapper.appendChild(button);
+                wrapper.appendChild(description);
+                terminalOptionsContainer.appendChild(wrapper);
+            });
+            terminalSelectionScreen.style.display = 'flex';
+            loginScreen.style.display = 'none';
+            mainContent.style.display = 'none';
+        }
+
+        // Selects and loads data for a specific terminal from Supabase 'terminal_details' table
+        async function selectTerminal(terminal) {
+            terminalSelectionScreen.style.display = 'none';
+            loginScreen.style.display = 'flex';
+            loginTerminalTitle.textContent = terminal.name;
+            usernameInput.focus();
+            selectedTerminalId = terminal.id; // Store the selected terminal ID
+
+            try {
+                const { data, error } = await supabase
+                    .from('terminal_details')
+                    .select('config')
+                    .eq('id', terminal.details_id) // Use details_id to fetch config
+                    .single(); // Expecting only one row
+
+                if (error) throw error;
+                if (!data || !data.config) {
+                    throw new Error(`No configuration found for terminal details ID: ${terminal.details_id}`);
+                }
+                currentTerminalData = data.config; // The actual config is in the 'config' column
+                console.log("Terminal data loaded from Supabase:", currentTerminalData);
+                populateUI(currentTerminalData);
+            } catch (e) {
+                console.error(`Failed to load data for terminal ${terminal.name} from Supabase.`, e);
+                loginMessage.textContent = `Ошибка: Не удалось загрузить данные для терминала "${terminal.name}". Проверьте консоль.`;
+                terminalSelectionScreen.style.display = 'flex';
+                loginScreen.style.display = 'none';
+            }
+        }
+
+
+        // Function to switch pages
+        function showPage(pageId) {
+            pageSections.forEach(section => {
+                section.classList.remove('active');
+            });
+            const targetSection = document.getElementById(pageId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+                history.pushState(null, '', `#${pageId}`);
+            } else {
+                showPage('terminal');
+                terminalOutput.innerHTML += `\n> navigate ${pageId}\n${currentTerminalData.error_messages.page_not_found.replace('{page_id}', pageId)}\n> `;
+                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            }
+        }
+
+        // Function to handle login
+        function handleLogin() {
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            if (!currentTerminalData) {
+                loginMessage.textContent = "Ошибка: Данные терминала не загружены. Выберите терминал.";
+                return;
+            }
+
+            if (username === currentTerminalData.login_credentials.master_username && password === currentTerminalData.login_credentials.master_password) {
+                 loginScreen.style.display = 'none';
+                 mainContent.style.display = 'block';
+                 loginMessage.textContent = '';
+                 showPage('terminal');
+                 terminalInput.focus();
+                 updateControlButtonsState();
+                 terminalOutput.classList.remove('terminal-alert');
+                 terminalInput.classList.remove('terminal-alert');
+                 terminalInput.disabled = false;
+                 terminalOutput.innerHTML = currentTerminalData.login_messages.master_access + '\n> ';
+                 terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            }
+            else if (username === currentTerminalData.login_credentials.username && password === currentTerminalData.login_credentials.password) {
+                loginScreen.style.display = 'none';
+                mainContent.style.display = 'block';
+                loginMessage.textContent = '';
+                showPage('terminal');
+                terminalInput.focus();
+                updateControlButtonsState();
+                terminalOutput.classList.remove('terminal-alert');
+                terminalInput.classList.remove('terminal-alert');
+                terminalInput.disabled = false;
+                terminalOutput.innerHTML = currentTerminalData.login_messages.welcome + '\n> ';
+                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            } else {
+                loginMessage.textContent = currentTerminalData.login_messages.access_denied;
+                usernameInput.value = '';
+                passwordInput.value = '';
+                usernameInput.focus();
+            }
+        }
+
+        // Function to reset hack state and log out
+        function resetHackAndLogout(messageKey) {
+            isHacked = false;
+            hackAttempts = 0;
+            isHackMinigameActive = false;
+            currentHackPhrase = '';
+            clearInterval(hackTimerInterval);
+            hackTimer = 0;
+
+            mainContent.style.display = 'none';
+            loginScreen.style.display = 'flex';
+            loginMessage.textContent = currentTerminalData.error_messages[messageKey];
+
+            for (const key in controlStates) {
+                controlStates[key] = false;
+            }
+            updateControlButtonsState();
+
+            if (secretFileElement) {
+                 secretFileElement.style.display = 'none';
+            }
+
+            usernameInput.value = '';
+            passwordInput.value = '';
+            usernameInput.focus();
+
+            terminalOutput.innerHTML = currentTerminalData.error_messages.login_blocked_alert + '\n';
+            terminalOutput.classList.add('terminal-alert');
+            terminalInput.classList.add('terminal-alert');
+            terminalInput.disabled = true;
+        }
+
+
+        // Function to update control button states visually
+        function updateControlButtonsState() {
+            if (!controlButtons) return;
+            controlButtons.forEach(button => {
+                const target = button.getAttribute('data-target');
+                button.classList.remove('button-active', 'button-restricted', 'button-unlocked', 'button-toggled');
+
+                const buttonConfig = currentTerminalData.page_content.control.buttons.find(btn => btn.target === target);
+                if (!buttonConfig) return;
+
+                if (!buttonConfig.restricted) {
+                    button.classList.add('button-active');
+                } else {
+                    if (isHacked) {
+                        button.classList.add('button-unlocked');
+                    } else {
+                        button.classList.add('button-restricted');
+                    }
+                }
+
+                if ((!buttonConfig.restricted || isHacked) && controlStates[target]) {
+                     button.classList.add('button-toggled');
+                }
+
+                 if (button.classList.contains('button-restricted')) {
+                     button.style.cursor = 'not-allowed';
+                 } else {
+                     button.style.cursor = 'pointer';
+                 }
+            });
+        }
+
+        function handleControlButtonClick() {
+            const target = this.getAttribute('data-target');
+            let message = '';
+
+            if (this.classList.contains('button-restricted')) {
+                message = currentTerminalData.page_content.control.messages.access_denied.replace('{target_upper}', target.toUpperCase());
+            } else {
+                controlStates[target] = !controlStates[target];
+                updateControlButtonsState();
+
+                if (controlStates[target]) {
+                    message = currentTerminalData.page_content.control.messages.activated.replace('{target_upper}', target.toUpperCase());
+                } else {
+                    message = currentTerminalData.page_content.control.messages.deactivated.replace('{target_upper}', target.toUpperCase());
+                }
+            }
+            controlMessageElement.textContent = message;
+        }
+
+
+        // --- Cabinet Logic (now with Supabase) ---
+
+        // Load specific cabinet account data from Supabase 'cabinet_accounts' table
+        async function loadCabinetData() {
+            const accountId = cabinetAccountIdInput.value.trim();
+            const password = cabinetPasswordInput.value.trim();
+
+            if (!accountId) {
+                cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.no_account_id;
+                return;
+            }
+            if (!password) {
+                cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.no_password;
+                return;
+            }
+            cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.loading;
+
+            try {
+                const { data, error } = await supabase
+                    .from('cabinet_accounts')
+                    .select('*')
+                    .eq('id', accountId)
+                    .eq('terminal_id', selectedTerminalId) // Filter by current terminal
+                    .single();
+
+                if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found (not an error for us)
+                    throw error;
+                }
+
+                if (data) {
+                    if (data.password === password) {
+                        taskListDisplay.textContent = data.tasks || currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
+                        personalInfoDisplay.textContent = data.personal_info || currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
+                        financesDisplay.textContent = data.finances || currentTerminalData.page_content.cabinet.sections.finances.initial_content;
+                        cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.loaded_success.replace('{account_id}', accountId);
+                    } else {
+                        cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.wrong_password;
+                    }
+                } else {
+                    cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.not_found.replace('{account_id}', accountId);
+                    taskListDisplay.textContent = currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
+                    personalInfoDisplay.textContent = currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
+                    financesDisplay.textContent = currentTerminalData.page_content.cabinet.sections.finances.initial_content;
+                }
+            } catch (e) {
+                console.error("Error loading cabinet data from Supabase:", e);
+                cabinetPasswordMessage.textContent = 'Ошибка: Не удалось загрузить данные из Supabase. Проверьте консоль.';
+            }
+        }
+
+        // Save cabinet data directly to Supabase 'cabinet_accounts' table
+        async function saveCabinetData() {
+            const accountId = cabinetAccountIdInput.value.trim();
+            const password = cabinetPasswordInput.value.trim();
+
+            if (!accountId) {
+                cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.no_account_id;
+                return;
+            }
+            if (!password) {
+                cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.no_password;
+                return;
+            }
+            cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.saving;
+
+            const dataToSave = {
+                id: accountId,
+                terminal_id: selectedTerminalId, // Link to the current terminal
+                password: password,
+                tasks: taskListDisplay.textContent.trim(),
+                personal_info: personalInfoDisplay.textContent.trim(),
+                finances: financesDisplay.textContent.trim()
+            };
+
+            try {
+                // Use upsert to insert if not exists, or update if exists
+                const { data, error } = await supabase
+                    .from('cabinet_accounts')
+                    .upsert([dataToSave], { onConflict: 'id' }) // Conflict on 'id' to update existing
+                    .select(); // Select the updated/inserted row
+
+                if (error) throw error;
+                console.log("Cabinet data saved to Supabase:", data);
+                cabinetPasswordMessage.textContent = `Данные для аккаунта "${accountId}" успешно сохранены в Supabase.`;
+            } catch (e) {
+                console.error("Error saving cabinet data to Supabase:", e);
+                cabinetPasswordMessage.textContent = 'Ошибка: Не удалось сохранить данные в Supabase. Проверьте консоль.';
+            }
+        }
+
+        // Toggle edit mode for Cabinet sections
+        function toggleEditMode(displayElement, messageElement, buttonElement, sectionKey) {
+            const isEditable = displayElement.contentEditable === 'true';
+            displayElement.contentEditable = !isEditable;
+            buttonElement.textContent = isEditable ? currentTerminalData.page_content.cabinet.sections[sectionKey].edit_button : currentTerminalData.page_content.cabinet.sections[sectionKey].save_button;
+            if (isEditable) {
+                messageElement.textContent = currentTerminalData.page_content.cabinet.sections[sectionKey].messages.saved_local;
+                displayElement.classList.remove('cabinet-data-area-editing');
+            } else {
+                messageElement.textContent = currentTerminalData.page_content.cabinet.sections[sectionKey].messages.editing;
+                displayElement.focus();
+                displayElement.classList.add('cabinet-data-area-editing');
+            }
+        }
+
+
+        // --- Terminal Command Handling ---
+
+        function maybePrintRandomMessage() {
+            const chance = 0.15;
+            if (Math.random() < chance && currentTerminalData && currentTerminalData.random_system_messages) {
+                const randomMessage = currentTerminalData.random_system_messages[Math.floor(Math.random() * currentTerminalData.random_system_messages.length)];
+                terminalOutput.innerHTML += randomMessage + '\n';
+                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            }
+        }
+
+        terminalInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const command = terminalInput.value.trim();
+                const rawCommand = terminalInput.value;
+                terminalInput.value = '';
+
+                if (!currentTerminalData) {
+                    terminalOutput.innerHTML += "> " + command + "\nОшибка: Терминал не загружен. Выберите терминал.\n> ";
+                    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                    return;
+                }
+
+                if (isHackMinigameActive) {
+                    clearInterval(hackTimerInterval);
+                    hackTimer = 0;
+                    terminalOutput.innerHTML = terminalOutput.innerHTML.replace(/Таймер: \d+...\n?/, '');
+
+                    if (rawCommand.toLowerCase() === 'q') {
+                         terminalOutput.innerHTML += '> q\n';
+                         terminalOutput.innerHTML += currentTerminalData.hack_game.override_success + '\n> ';
+                         isHackMinigameActive = false;
+                         isHacked = true;
+                         hackAttempts = 0;
+                         if (secretFileElement) {
+                             secretFileElement.style.display = 'block';
+                         }
+                         updateControlButtonsState();
+                         terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                         terminalInput.focus();
+                         return;
+                    }
+
+                    if (rawCommand.trim() === '') {
+                        terminalOutput.innerHTML += '> [ПУСТОЙ ВВОД]\n';
+                        hackAttempts++;
+                        if (hackAttempts >= currentTerminalData.hack_game.max_attempts) {
+                            resetHackAndLogout('too_many_hack_attempts');
+                        } else {
+                            terminalOutput.innerHTML += currentTerminalData.error_messages.empty_hack_input.replace('{attempts_left}', currentTerminalData.hack_game.max_attempts - hackAttempts) + '\n> ';
+                            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                            terminalInput.focus();
+                        }
+                        isHackMinigameActive = false;
+                        return;
+                    }
+
+                    terminalOutput.innerHTML += command + '\n';
+
+                    if (command.toLowerCase() === currentHackPhrase.toLowerCase()) {
+                        isHackMinigameActive = false;
+                        isHacked = true;
+                        hackAttempts = 0;
+                        if (secretFileElement) {
+                            secretFileElement.style.display = 'block';
+                        }
+                        updateControlButtonsState();
+                        terminalOutput.innerHTML += currentTerminalData.hack_game.success_message + '\n> ';
+                        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                        terminalInput.focus();
+                    } else {
+                        hackAttempts++;
+                        if (hackAttempts >= currentTerminalData.hack_game.max_attempts) {
+                            resetHackAndLogout('too_many_hack_attempts');
+                        } else {
+                            terminalOutput.innerHTML += currentTerminalData.hack_game.failure_message.replace('{attempts_left}', currentTerminalData.hack_game.max_attempts - hackAttempts) + '\n> ';
+                            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                            terminalInput.focus();
+                        }
+                    }
+                    return;
+                }
+
+                let commandOutput = '> ' + command + '\n';
+
+                switch (command.toLowerCase()) {
+                    case 'help':
+                        commandOutput += 'Доступные команды:\n';
+                        currentTerminalData.commands.forEach(cmd => {
+                            commandOutput += `  ${cmd.name} - ${cmd.description}\n`;
+                        });
+                        break;
+                    case 'clear':
+                        terminalOutput.innerHTML = '> clear\n';
+                        break;
+                    case 'status':
+                        commandOutput += currentTerminalData.command_outputs.status.default;
+                        if (isHacked) {
+                             commandOutput += currentTerminalData.command_outputs.status.hacked;
+                        }
+                        break;
+                    case 'navigate filesystem':
+                    case 'navigate control':
+                    case 'navigate cabinet':
+                    case 'navigate characters':
+                    case 'navigate dossiers':
+                    case 'navigate map':
+                    case 'navigate terminal':
+                        const pageId = command.split(' ')[1];
+                        showPage(pageId);
+                        commandOutput += `Переход на страницу: ${pageId.charAt(0).toUpperCase() + pageId.slice(1)}`;
+                        if (pageId === 'control') controlMessageElement.textContent = '';
+                        if (pageId === 'cabinet') {
+                            cabinetPasswordMessage.textContent = '';
+                            taskMessage.textContent = '';
+                            personalInfoMessage.textContent = '';
+                            financesMessage.textContent = '';
+                        }
+                        break;
+                    case 'message':
+                        if (currentTerminalData.command_outputs.message.default) {
+                            commandOutput += currentTerminalData.command_outputs.message.default.join('\n');
+                        }
+                        if (isHacked && currentTerminalData.command_outputs.message.hacked) {
+                            commandOutput += '\n' + currentTerminalData.command_outputs.message.hacked.join('\n');
+                        }
+                        break;
+                    case 'info':
+                        if (currentTerminalData.command_outputs.info.default) {
+                            commandOutput += currentTerminalData.command_outputs.info.default.join('\n');
+                        }
+                        if (isHacked && currentTerminalData.command_outputs.info.hacked) {
+                            commandOutput += '\n' + currentTerminalData.command_outputs.info.hacked.join('\n');
+                        }
+                        break;
+                    case 'hack':
+                        if (isHacked) {
+                            commandOutput += currentTerminalData.command_outputs.hack.already_hacked;
+                            terminalOutput.innerHTML += commandOutput + '\n';
+                            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                            maybePrintRandomMessage();
+                            terminalOutput.innerHTML += '> ';
+                            terminalInput.focus();
+                            return;
+                        } else if (!isHackMinigameActive) {
+                            isHackMinigameActive = true;
+                            hackAttempts = 0;
+
+                            const shuffledWords = currentTerminalData.hack_game.words.sort(() => 0.5 - Math.random());
+                            currentHackPhrase = shuffledWords.slice(0, 5).join(' ');
+
+                            let hackStartOutput = '> ' + command + '\n';
+                            hackStartOutput += currentTerminalData.hack_game.start_message
+                                .replace('{timer_duration}', currentTerminalData.hack_game.timer_duration)
+                                .replace('{phrase}', currentHackPhrase.toUpperCase())
+                                .replace('{timer_value}', currentTerminalData.hack_game.timer_duration);
+
+                            terminalOutput.innerHTML += hackStartOutput;
+                            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                            terminalInput.focus();
+
+                            hackTimer = currentTerminalData.hack_game.timer_duration;
+                            hackTimerInterval = setInterval(() => {
+                                hackTimer--;
+                                const lines = terminalOutput.innerHTML.split('\n');
+                                let timerLineIndex = -1;
+                                for(let i = lines.length - 1; i >= 0; i--) {
+                                    if (lines[i].startsWith('Таймер:')) {
+                                        timerLineIndex = i;
+                                        break;
+                                    }
+                                }
+
+                                if (timerLineIndex !== -1) {
+                                     lines[timerLineIndex] = 'Таймер: ' + hackTimer + '...\n';
+                                     terminalOutput.innerHTML = lines.join('\n');
+                                } else {
+                                     terminalOutput.innerHTML += 'Таймер: ' + hackTimer + '...\n';
+                                }
+                                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+
+                                if (hackTimer <= 0) {
+                                    clearInterval(hackTimerInterval);
+                                    isHackMinigameActive = false;
+                                     const currentLines = terminalOutput.innerHTML.split('\n');
+                                     let lastTimerLineIndex = -1;
+                                     for(let i = currentLines.length - 1; i >= 0; i--) {
+                                        if (currentLines[i].startsWith('Таймер:')) {
+                                            lastTimerLineIndex = i;
+                                            break;
+                                        }
+                                     }
+                                     if (lastTimerLineIndex !== -1) {
+                                         currentLines.splice(lastTimerLineIndex, 1);
+                                         terminalOutput.innerHTML = currentLines.join('\n');
+                                     }
+                                    hackAttempts++;
+                                    if (hackAttempts >= currentTerminalData.hack_game.max_attempts) {
+                                        resetHackAndLogout('too_many_hack_attempts');
+                                    } else {
+                                        terminalOutput.innerHTML += currentTerminalData.hack_game.timeout_message.replace('{attempts_left}', currentTerminalData.hack_game.max_attempts - hackAttempts) + '\n> ';
+                                        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                                        terminalInput.focus();
+                                    }
+                                }
+                            }, 1000);
+                            return;
+                        } else {
+                             commandOutput += currentTerminalData.command_outputs.hack.in_progress;
+                             terminalOutput.innerHTML += commandOutput + '\n';
+                             terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                             return;
+                        }
+                    default:
+                        commandOutput += currentTerminalData.error_messages.command_not_found;
+                        break;
+                }
+
+                if (command.toLowerCase() !== 'clear' && command.toLowerCase() !== 'hack') {
+                     terminalOutput.innerHTML += commandOutput + '\n';
+                     terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                     maybePrintRandomMessage();
+                     terminalOutput.innerHTML += '> ';
+                     terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                     terminalInput.focus();
+                }
+            }
+        });
+
+
+        // --- Initialization and Event Handlers ---
+
+        usernameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                passwordInput.focus();
+            }
+        });
+
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleLogin();
+            }
+        });
+
+        loginButton.addEventListener('click', handleLogin);
+        loadCabinetDataButton.addEventListener('click', loadCabinetData);
+        saveCabinetDataButton.addEventListener('click', saveCabinetData);
+
+        editTasksButton.addEventListener('click', () => toggleEditMode(taskListDisplay, taskMessage, editTasksButton, 'tasks'));
+        editPersonalInfoButton.addEventListener('click', () => toggleEditMode(personalInfoDisplay, personalInfoMessage, editPersonalInfoButton, 'personal_info'));
+        editFinancesButton.addEventListener('click', () => toggleEditMode(financesDisplay, financesMessage, editFinancesButton, 'finances'));
+
+        // JSON modal event handlers
+        closeButton.addEventListener('click', () => {
+            jsonModal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target === jsonModal) {
+                jsonModal.style.display = 'none';
+            }
+        });
+
+        copyJsonButton.addEventListener('click', () => {
+            jsonOutputTextarea.select();
+            document.execCommand('copy');
+            alert(currentTerminalData.modal_messages.copy_alert.replace('{terminal_id}', currentTerminalData.terminal_id));
+            jsonModal.style.display = 'none';
+        });
+
+        window.onload = async () => {
+            await loadTerminalConfig();
+        };
+
+    </script>
+
+</body>
+</html>
