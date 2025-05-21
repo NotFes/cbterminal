@@ -480,7 +480,6 @@
                         <button id="cabinet-enter-button" class="cabinet-button">Войти</button>
                         <button id="cabinet-register-button" class="cabinet-button">Зарегистрировать</button>
                     </div>
-                    <button id="cabinet-logout-button" class="cabinet-button mt-2" style="display: none;">Выйти из Кабинета</button>
                     <div id="cabinet-auth-message" class="cabinet-message text-red-500"></div>
                 </div>
 
@@ -489,6 +488,7 @@
                         <h3 class="text-xl text-purple-400 mb-2">Ваш логин Кабинета:</h3>
                         <input type="text" id="cabinet-display-id" class="cabinet-input cabinet-input-account" placeholder="" readonly>
                         <p class="text-xs text-gray-400 mt-1">Используйте этот логин для отправки сообщений другим пользователям.</p>
+                        <button id="cabinet-logout-button" class="cabinet-button mt-4">Выйти из Кабинета</button>
                     </div>
 
                     <div class="cabinet-section">
@@ -560,12 +560,6 @@
                 <h2 class="text-2xl" id="messages-section-title">/// СООБЩЕНИЯ ///</h2>
                 <p id="messages-intro-text">Здесь отображаются входящие и исходящие сообщения для вашего аккаунта.</p>
 
-                <div class="flex gap-2 mb-4">
-                    <button id="filter-all-messages" class="cabinet-button text-xs px-3 py-1 button-toggled">Все</button>
-                    <button id="filter-incoming-messages" class="cabinet-button text-xs px-3 py-1">Входящие</button>
-                    <button id="filter-outgoing-messages" class="cabinet-button text-xs px-3 py-1">Исходящие</button>
-                </div>
-
                 <div class="cabinet-section mt-8">
                     <h3 class="text-xl text-purple-400 mb-2">Отправить сообщение</h3>
                     <p class="text-gray-400 text-sm mb-2">
@@ -579,6 +573,13 @@
                 </div>
 
                 <h3 class="text-xl text-purple-400 mt-8 mb-2">Входящие и исходящие:</h3>
+                <div class="flex gap-2 mb-4">
+                    <button id="filter-all-messages" class="cabinet-button text-xs px-3 py-1 button-toggled">Активные</button>
+                    <button id="filter-incoming-messages" class="cabinet-button text-xs px-3 py-1">Входящие</button>
+                    <button id="filter-outgoing-messages" class="cabinet-button text-xs px-3 py-1">Исходящие</button>
+                    <button id="filter-archived-messages" class="cabinet-button text-xs px-3 py-1">Архив</button>
+                </div>
+
                 <div id="messages-list-container" class="mt-4">
                     </div>
                 <div id="messages-status" class="text-yellow-400 mt-4 min-h-[1.5rem]"></div>
@@ -624,7 +625,7 @@
         // Новая переменная для хранения подписки на сообщения
         let messageSubscription = null;
         // Переменная для текущего фильтра сообщений
-        let currentMessageFilter = 'all'; // 'all', 'incoming', 'outgoing'
+        let currentMessageFilter = 'all'; // 'all', 'incoming', 'outgoing', 'archived'
 
 
         // --- UI Population Functions ---
@@ -1191,7 +1192,6 @@
             const cabinetLoginSection = document.getElementById('cabinet-login-section');
             const personalCabinetDataSection = document.getElementById('personal-cabinet-data-section');
             const cabinetDisplayIdInput = document.getElementById('cabinet-display-id');
-            const cabinetLogoutButton = document.getElementById('cabinet-logout-button');
             const cabinetAuthMessage = document.getElementById('cabinet-auth-message');
 
             const cabinetLoginIdInput = document.getElementById('cabinet-login-id');
@@ -1211,7 +1211,6 @@
                 if (cabinetLoginSection) cabinetLoginSection.style.display = 'none';
                 if (personalCabinetDataSection) personalCabinetDataSection.style.display = 'block';
                 if (cabinetDisplayIdInput) cabinetDisplayIdInput.value = currentCabinetLogin;
-                if (cabinetLogoutButton) cabinetLogoutButton.style.display = 'block';
                 if (cabinetAuthMessage) {
                     cabinetAuthMessage.textContent = `Вы вошли как: ${currentCabinetLogin}`;
                     cabinetAuthMessage.style.color = '#00ff00';
@@ -1225,7 +1224,6 @@
             } else {
                 if (cabinetLoginSection) cabinetLoginSection.style.display = 'block';
                 if (personalCabinetDataSection) personalCabinetDataSection.style.display = 'none';
-                if (cabinetLogoutButton) cabinetLogoutButton.style.display = 'none';
                 if (cabinetAuthMessage) {
                     cabinetAuthMessage.textContent = 'Войдите или зарегистрируйте аккаунт Кабинета.';
                     cabinetAuthMessage.style.color = '#ff0000';
@@ -1545,7 +1543,8 @@
                             sender_name: senderName,
                             subject: subject,
                             content: content,
-                            read: false
+                            read: false,
+                            status: 'active' // New: default status is active
                         }
                     ])
                     .select();
@@ -1586,14 +1585,19 @@
             const currentLogin = currentCabinetLogin;
             let query = supabase.from('terminal_messages').select('*');
 
-            // Apply filter
+            // Apply filter based on currentMessageFilter and status
             if (filter === 'incoming') {
-                query = query.eq('recipient_id', currentLogin).eq('recipient_terminal_id', selectedTerminalId);
+                query = query.eq('recipient_id', currentLogin).eq('recipient_terminal_id', selectedTerminalId).eq('status', 'active');
             } else if (filter === 'outgoing') {
-                query = query.eq('sender_id', currentLogin).eq('sender_terminal_id', selectedTerminalId);
-            } else { // 'all'
+                query = query.eq('sender_id', currentLogin).eq('sender_terminal_id', selectedTerminalId).eq('status', 'active');
+            } else if (filter === 'archived') {
                 query = query.or(`recipient_id.eq.${currentLogin},sender_id.eq.${currentLogin}`)
-                             .eq('recipient_terminal_id', selectedTerminalId); // Filter by recipient terminal ID for all messages
+                             .eq('recipient_terminal_id', selectedTerminalId)
+                             .eq('status', 'archived');
+            } else { // 'all' (meaning 'active' messages for both incoming/outgoing)
+                query = query.or(`recipient_id.eq.${currentLogin},sender_id.eq.${currentLogin}`)
+                             .eq('recipient_terminal_id', selectedTerminalId)
+                             .eq('status', 'active');
             }
 
             query = query.order('timestamp', { ascending: false });
@@ -1616,8 +1620,11 @@
                         messageDiv.classList.add('file-entry', 'mb-4');
                         messageDiv.innerHTML = `
                             <details ${message.read ? '' : 'open'}>
-                                <summary class="cursor-pointer outline-none ${summaryColorClass} font-bold">
-                                    ${icon} [${new Date(message.timestamp).toLocaleString()}] ${messageTypeLabel} от: ${displaySender} - Тема: ${message.subject}
+                                <summary class="cursor-pointer outline-none ${summaryColorClass} font-bold flex justify-between items-center">
+                                    <span>${icon} [${new Date(message.timestamp).toLocaleString()}] ${messageTypeLabel} от: ${displaySender} - Тема: ${message.subject}</span>
+                                    <button class="cabinet-button text-xs px-2 py-0.5 ml-2" data-message-id="${message.id}" data-action="${message.status === 'active' ? 'archive' : 'unarchive'}">
+                                        ${message.status === 'active' ? 'Архивировать' : 'Разархивировать'}
+                                    </button>
                                 </summary>
                                 <div class="file-content mt-2 pt-2 border-t border-dashed border-gray-600">
                                     ${message.content.replace(/\n/g, '<br>')}
@@ -1625,6 +1632,21 @@
                             </details>
                         `;
                         if (messagesListContainer) messagesListContainer.appendChild(messageDiv);
+
+                        // Attach event listener for archive/unarchive button
+                        const archiveButton = messageDiv.querySelector(`button[data-message-id="${message.id}"]`);
+                        if (archiveButton) {
+                            archiveButton.addEventListener('click', (e) => {
+                                e.stopPropagation(); // Prevent details from toggling
+                                const msgId = e.target.dataset.messageId;
+                                const action = e.target.dataset.action;
+                                if (action === 'archive') {
+                                    archiveMessage(msgId);
+                                } else {
+                                    unarchiveMessage(msgId);
+                                }
+                            });
+                        }
 
                         // Пометить сообщение как прочитанное, если оно входящее и не прочитано
                         if (!message.read && !isSent) {
@@ -1644,6 +1666,41 @@
                 if (messagesStatus) messagesStatus.textContent = 'Ошибка загрузки сообщений. Проверьте консоль.';
             }
         }
+
+        // Новая функция для архивации сообщения
+        async function archiveMessage(messageId) {
+            try {
+                const { error } = await supabase
+                    .from('terminal_messages')
+                    .update({ status: 'archived' })
+                    .eq('id', messageId);
+
+                if (error) throw error;
+                showNotification('Сообщение заархивировано!');
+                loadMessages(currentMessageFilter); // Reload messages with current filter
+            } catch (e) {
+                console.error('Error archiving message:', e);
+                showNotification(`Ошибка архивации: ${e.message}`);
+            }
+        }
+
+        // Новая функция для разархивации сообщения
+        async function unarchiveMessage(messageId) {
+            try {
+                const { error } = await supabase
+                    .from('terminal_messages')
+                    .update({ status: 'active' })
+                    .eq('id', messageId);
+
+                if (error) throw error;
+                showNotification('Сообщение разархивировано!');
+                loadMessages(currentMessageFilter); // Reload messages with current filter
+            } catch (e) {
+                console.error('Error unarchiving message:', e);
+                showNotification(`Ошибка разархивации: ${e.message}`);
+            }
+        }
+
 
         // Новая функция для настройки Realtime подписки
         function setupMessageSubscription() {
@@ -1713,7 +1770,8 @@
                     .select('id', { count: 'exact', head: true })
                     .eq('recipient_id', currentCabinetLogin)
                     .eq('recipient_terminal_id', selectedTerminalId)
-                    .eq('read', false);
+                    .eq('read', false)
+                    .eq('status', 'active'); // Only count active, unread messages
 
                 if (error) throw error;
 
@@ -1788,6 +1846,8 @@
             const filterAllButton = document.getElementById('filter-all-messages');
             const filterIncomingButton = document.getElementById('filter-incoming-messages');
             const filterOutgoingButton = document.getElementById('filter-outgoing-messages');
+            const filterArchivedButton = document.getElementById('filter-archived-messages');
+
 
             const jsonModal = document.getElementById('jsonModal');
             const closeButton = document.querySelector('.close-button');
@@ -2079,6 +2139,7 @@
                 filterAllButton.classList.add('button-toggled');
                 filterIncomingButton.classList.remove('button-toggled');
                 filterOutgoingButton.classList.remove('button-toggled');
+                filterArchivedButton.classList.remove('button-toggled');
             });
             if (filterIncomingButton) filterIncomingButton.addEventListener('click', () => {
                 currentMessageFilter = 'incoming';
@@ -2086,6 +2147,7 @@
                 filterIncomingButton.classList.add('button-toggled');
                 filterAllButton.classList.remove('button-toggled');
                 filterOutgoingButton.classList.remove('button-toggled');
+                filterArchivedButton.classList.remove('button-toggled');
             });
             if (filterOutgoingButton) filterOutgoingButton.addEventListener('click', () => {
                 currentMessageFilter = 'outgoing';
@@ -2093,6 +2155,15 @@
                 filterOutgoingButton.classList.add('button-toggled');
                 filterAllButton.classList.remove('button-toggled');
                 filterIncomingButton.classList.remove('button-toggled');
+                filterArchivedButton.classList.remove('button-toggled');
+            });
+            if (filterArchivedButton) filterArchivedButton.addEventListener('click', () => {
+                currentMessageFilter = 'archived';
+                loadMessages('archived');
+                filterArchivedButton.classList.add('button-toggled');
+                filterAllButton.classList.remove('button-toggled');
+                filterIncomingButton.classList.remove('button-toggled');
+                filterOutgoingButton.classList.remove('button-toggled');
             });
 
 
