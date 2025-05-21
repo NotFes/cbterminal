@@ -564,105 +564,7 @@
 
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // --- Элементы интерфейса (объявляем глобально для attachGlobalEventListeners и других функций,
-        // но populateUI будет получать их напрямую) ---
-        let terminalSelectionScreen;
-        let terminalOptionsContainer;
-        let loginScreen;
-        let mainContent;
-
-        let loginTerminalTitle;
-        let usernameInput;
-        let passwordInput;
-        let loginButton;
-        let loginMessage;
-
-        let mainTerminalHeader;
-        let mainNavLinks;
-        let pageSections; // NodeList
-        let terminalInput;
-        let terminalOutput;
-        let controlMessageElement;
-
-        let terminalSectionTitle;
-
-        let filesystemSectionTitle;
-        let filesystemIntroText;
-        let filesystemFilesContainer;
-        let secretFileElement;
-
-        let controlSectionTitle;
-        let controlIntroText;
-        let controlButtonsContainer;
-        let controlButtons; // NodeList
-
-        let cabinetSectionTitle;
-        let cabinetIntroText;
-
-        let cabinetLoginSection;
-        let cabinetLoginIdInput;
-        let cabinetLoginPasswordInput;
-        let cabinetEnterButton;
-        let cabinetRegisterButton;
-        let cabinetLogoutButton;
-        let cabinetAuthMessage;
-        let personalCabinetDataSection;
-
-        let cabinetDisplayIdInput;
-        let cabinetPasswordInput;
-        let saveCabinetPasswordButton;
-        let cabinetPasswordMessage;
-
-        let taskListDisplay;
-        let cabinetTasksLabel;
-        let editTasksButton;
-        let taskMessage;
-
-        let personalInfoDisplay;
-        let cabinetPersonalInfoLabel;
-        let editPersonalInfoButton;
-        let personalInfoMessage;
-
-        let financesDisplay;
-        let cabinetFinancesLabel;
-        let editFinancesButton;
-        let financesMessage;
-
-        let charactersSectionTitle;
-        let charactersIntroText;
-        let charactersListContainer;
-
-        let dossiersSectionTitle;
-        let dossiersIntroText;
-        let dossiersListContainer;
-
-        let mapSectionTitle;
-        let mapIntroText;
-        let mapImageLink;
-        let mapImage;
-        let mapDescriptionHeading;
-        let mapLocationsContainer;
-
-        let messagesSectionTitle;
-        let messagesIntroText;
-        let messagesListContainer;
-        let messagesStatus;
-
-        let messageRecipientIdInput;
-        let messageSubjectInput;
-        let messageContentTextarea;
-        let sendMessageButton;
-        let sendMessageStatus;
-
-        let jsonModal;
-        let closeButton;
-        let jsonOutputTextarea;
-        let copyJsonButton;
-        let modalTitle;
-        let modalInstructions;
-
-
-        // --- Global variables for terminal data ---
+        // --- Global variables (ONLY for state, NOT for DOM elements) ---
         let currentTerminalData = null;
         let isHacked = false;
         let hackAttempts = 0;
@@ -675,121 +577,21 @@
         let currentCabinetLogin = null;
 
 
-        // --- Function to initialize all UI elements by ID (for global references) ---
-        function initializeUIElements() {
-            terminalSelectionScreen = document.getElementById('terminal-selection-screen');
-            terminalOptionsContainer = document.getElementById('terminal-options-container');
-            loginScreen = document.getElementById('login-screen');
-            mainContent = document.getElementById('main-content');
-
-            loginTerminalTitle = document.getElementById('login-terminal-title');
-            usernameInput = document.getElementById('username');
-            passwordInput = document.getElementById('password');
-            loginButton = document.getElementById('login-button');
-            loginMessage = document.getElementById('login-message');
-
-            mainTerminalHeader = document.getElementById('main-terminal-header');
-            mainNavLinks = document.getElementById('main-nav-links');
-            pageSections = document.querySelectorAll('.page-section');
-            terminalInput = document.getElementById('terminal-input');
-            terminalOutput = document.getElementById('terminal-output');
-            controlMessageElement = document.getElementById('control-message');
-
-            terminalSectionTitle = document.getElementById('terminal-section-title');
-
-            filesystemSectionTitle = document.getElementById('filesystem-section-title');
-            filesystemIntroText = document.getElementById('filesystem-intro-text');
-            filesystemFilesContainer = document.getElementById('filesystem-files-container');
-            secretFileElement = document.getElementById('secret-file');
-
-            controlSectionTitle = document.getElementById('control-section-title');
-            controlIntroText = document.getElementById('control-intro-text');
-            controlButtonsContainer = document.getElementById('control-buttons-container');
-            controlButtons = document.querySelectorAll('.control-button');
-
-            cabinetSectionTitle = document.getElementById('cabinet-section-title');
-            cabinetIntroText = document.getElementById('cabinet-intro-text');
-
-            cabinetLoginSection = document.getElementById('cabinet-login-section');
-            cabinetLoginIdInput = document.getElementById('cabinet-login-id');
-            cabinetLoginPasswordInput = document.getElementById('cabinet-login-password');
-            cabinetEnterButton = document.getElementById('cabinet-enter-button');
-            cabinetRegisterButton = document.getElementById('cabinet-register-button');
-            cabinetLogoutButton = document.getElementById('cabinet-logout-button');
-            cabinetAuthMessage = document.getElementById('cabinet-auth-message');
-            personalCabinetDataSection = document.getElementById('personal-cabinet-data-section');
-
-            cabinetDisplayIdInput = document.getElementById('cabinet-display-id');
-            cabinetPasswordInput = document.getElementById('cabinet-password');
-            saveCabinetPasswordButton = document.getElementById('save-cabinet-password-button');
-            cabinetPasswordMessage = document.getElementById('cabinet-password-message');
-
-            taskListDisplay = document.getElementById('task-list-display');
-            cabinetTasksLabel = document.getElementById('cabinet-tasks-label');
-            editTasksButton = document.getElementById('edit-tasks-button');
-            taskMessage = document.getElementById('task-message');
-
-            personalInfoDisplay = document.getElementById('personal-info-display');
-            cabinetPersonalInfoLabel = document.getElementById('cabinet-personal-info-label');
-            editPersonalInfoButton = document.getElementById('edit-personal-info-button');
-            personalInfoMessage = document.getElementById('personal-info-message');
-
-            financesDisplay = document.getElementById('finances-display');
-            cabinetFinancesLabel = document.getElementById('cabinet-finances-label');
-            editFinancesButton = document.getElementById('edit-finances-button');
-            financesMessage = document.getElementById('finances-message');
-
-            charactersSectionTitle = document.getElementById('characters-section-title');
-            charactersIntroText = document.getElementById('characters-intro-text');
-            charactersListContainer = document.getElementById('characters-list-container');
-
-            dossiersSectionTitle = document.getElementById('dossiers-section-title');
-            dossiersIntroText = document.getElementById('dossiers-intro-text');
-            dossiersListContainer = document.getElementById('dossiers-list-container');
-
-            mapSectionTitle = document.getElementById('map-section-title');
-            mapIntroText = document.getElementById('map-intro-text');
-            mapImageLink = document.getElementById('map-image-link');
-            mapImage = document.getElementById('map-image');
-            mapDescriptionHeading = document.getElementById('map-description-heading');
-            mapLocationsContainer = document.getElementById('map-locations-container');
-
-            messagesSectionTitle = document.getElementById('messages-section-title');
-            messagesIntroText = document.getElementById('messages-intro-text');
-            messagesListContainer = document.getElementById('messages-list-container');
-            messagesStatus = document.getElementById('messages-status');
-
-            messageRecipientIdInput = document.getElementById('message-recipient-id');
-            messageSubjectInput = document.getElementById('message-subject');
-            messageContentTextarea = document.getElementById('message-content');
-            sendMessageButton = document.getElementById('send-message-button');
-            sendMessageStatus = document.getElementById('send-message-status');
-
-            jsonModal = document.getElementById('jsonModal');
-            closeButton = document.querySelector('.close-button');
-            jsonOutputTextarea = document.getElementById('jsonOutput');
-            copyJsonButton = document.getElementById('copyJsonButton');
-            modalTitle = document.getElementById('modal-title');
-            modalInstructions = document.getElementById('modal-instructions');
-        }
-
-
         // --- UI Population Functions ---
 
         function populateUI(data) {
-            // Re-fetch all elements needed for populateUI directly to ensure fresh references
-            const currentMainTerminalHeader = document.getElementById('main-terminal-header');
-            if (currentMainTerminalHeader) currentMainTerminalHeader.textContent = data.terminal_title;
+            const mainTerminalHeader = document.getElementById('main-terminal-header');
+            if (mainTerminalHeader) mainTerminalHeader.textContent = data.terminal_title;
 
-            const currentLoginTerminalTitle = document.getElementById('login-terminal-title');
-            if (currentLoginTerminalTitle) currentLoginTerminalTitle.textContent = data.terminal_title;
+            const loginTerminalTitle = document.getElementById('login-terminal-title');
+            if (loginTerminalTitle) loginTerminalTitle.textContent = data.terminal_title;
 
-            const currentTerminalSectionTitle = document.getElementById('terminal-section-title');
-            if (currentTerminalSectionTitle) currentTerminalSectionTitle.textContent = data.terminal_title;
+            const terminalSectionTitle = document.getElementById('terminal-section-title');
+            if (terminalSectionTitle) terminalSectionTitle.textContent = data.terminal_title;
 
-            const currentMainNavLinks = document.getElementById('main-nav-links');
-            if (currentMainNavLinks) {
-                currentMainNavLinks.innerHTML = '';
+            const mainNavLinks = document.getElementById('main-nav-links');
+            if (mainNavLinks) {
+                mainNavLinks.innerHTML = '';
                 const navPages = [
                     { id: "terminal", label: "ТЕРМИНАЛ" },
                     { id: "filesystem", label: "ФАЙЛОВАЯ СИСТЕМА" },
@@ -806,9 +608,9 @@
                     link.classList.add('nav-link');
                     link.setAttribute('data-page', page.id);
                     link.textContent = `/// ${page.label} ///`;
-                    currentMainNavLinks.appendChild(link);
+                    mainNavLinks.appendChild(link);
                     if (page.id === 'control' || page.id === 'messages') {
-                        currentMainNavLinks.appendChild(document.createElement('br'));
+                        mainNavLinks.appendChild(document.createElement('br'));
                     }
                 });
                 // Re-attach event listeners after re-creating nav links
@@ -821,15 +623,15 @@
                 });
             }
 
-            const currentFilesystemSectionTitle = document.getElementById('filesystem-section-title');
-            if (currentFilesystemSectionTitle) currentFilesystemSectionTitle.textContent = data.page_content.filesystem.title;
+            const filesystemSectionTitle = document.getElementById('filesystem-section-title');
+            if (filesystemSectionTitle) filesystemSectionTitle.textContent = data.page_content.filesystem.title;
 
-            const currentFilesystemIntroText = document.getElementById('filesystem-intro-text');
-            if (currentFilesystemIntroText) currentFilesystemIntroText.textContent = data.page_content.filesystem.intro;
+            const filesystemIntroText = document.getElementById('filesystem-intro-text');
+            if (filesystemIntroText) filesystemIntroText.textContent = data.page_content.filesystem.intro;
 
-            const currentFilesystemFilesContainer = document.getElementById('filesystem-files-container');
-            if (currentFilesystemFilesContainer) {
-                currentFilesystemFilesContainer.innerHTML = '';
+            const filesystemFilesContainer = document.getElementById('filesystem-files-container');
+            if (filesystemFilesContainer) {
+                filesystemFilesContainer.innerHTML = '';
                 data.page_content.filesystem.files.forEach(file => {
                     const details = document.createElement('details');
                     details.classList.add('file-entry');
@@ -845,161 +647,158 @@
 
                     details.appendChild(summary);
                     details.appendChild(contentDiv);
-                    currentFilesystemFilesContainer.appendChild(details);
+                    filesystemFilesContainer.appendChild(details);
                 });
-                // Update global secretFileElement after re-creating filesystem files
-                secretFileElement = document.getElementById('secret-file');
             }
 
-            const currentControlSectionTitle = document.getElementById('control-section-title');
-            if (currentControlSectionTitle) currentControlSectionTitle.textContent = data.page_content.control.title;
+            const controlSectionTitle = document.getElementById('control-section-title');
+            if (controlSectionTitle) controlSectionTitle.textContent = data.page_content.control.title;
 
-            const currentControlIntroText = document.getElementById('control-intro-text');
-            if (currentControlIntroText) currentControlIntroText.textContent = data.page_content.control.intro;
+            const controlIntroText = document.getElementById('control-intro-text');
+            if (controlIntroText) controlIntroText.textContent = data.page_content.control.intro;
 
-            const currentControlButtonsContainer = document.getElementById('control-buttons-container');
-            if (currentControlButtonsContainer) {
-                currentControlButtonsContainer.innerHTML = '';
+            const controlButtonsContainer = document.getElementById('control-buttons-container');
+            if (controlButtonsContainer) {
+                controlButtonsContainer.innerHTML = '';
                 controlStates = {};
                 data.page_content.control.buttons.forEach(buttonConfig => {
                     const button = document.createElement('button');
                     button.classList.add('control-button');
                     button.setAttribute('data-target', buttonConfig.target);
                     button.textContent = buttonConfig.label;
-                    currentControlButtonsContainer.appendChild(button);
+                    controlButtonsContainer.appendChild(button);
                     controlStates[buttonConfig.target] = false;
                 });
-                // Update global controlButtons after re-creating them
-                controlButtons = document.querySelectorAll('.control-button');
-                controlButtons.forEach(button => {
+                // Re-attach event listeners for control buttons
+                document.querySelectorAll('.control-button').forEach(button => {
                     button.addEventListener('click', handleControlButtonClick);
                 });
             }
 
             // Cabinet Section elements
-            const currentCabinetSectionTitle = document.getElementById('cabinet-section-title');
-            if (currentCabinetSectionTitle) currentCabinetSectionTitle.textContent = data.page_content.cabinet.title;
+            const cabinetSectionTitle = document.getElementById('cabinet-section-title');
+            if (cabinetSectionTitle) cabinetSectionTitle.textContent = data.page_content.cabinet.title;
 
-            const currentCabinetIntroText = document.getElementById('cabinet-intro-text');
-            if (currentCabinetIntroText) currentCabinetIntroText.textContent = data.page_content.cabinet.intro;
+            const cabinetIntroText = document.getElementById('cabinet-intro-text');
+            if (cabinetIntroText) cabinetIntroText.textContent = data.page_content.cabinet.intro;
 
-            const currentCabinetPasswordLabel = document.getElementById('cabinet-password-label');
-            if (currentCabinetPasswordLabel) currentCabinetPasswordLabel.textContent = data.page_content.cabinet.sections.password.label;
+            const cabinetPasswordLabel = document.getElementById('cabinet-password-label');
+            if (cabinetPasswordLabel) cabinetPasswordLabel.textContent = data.page_content.cabinet.sections.password.label;
 
-            const currentCabinetPasswordInput = document.getElementById('cabinet-password');
-            if (currentCabinetPasswordInput) currentCabinetPasswordInput.placeholder = data.page_content.cabinet.sections.password.placeholder;
+            const cabinetPasswordInput = document.getElementById('cabinet-password');
+            if (cabinetPasswordInput) cabinetPasswordInput.placeholder = data.page_content.cabinet.sections.password.placeholder;
 
-            const currentCabinetTasksLabel = document.getElementById('cabinet-tasks-label');
-            if (currentCabinetTasksLabel) currentCabinetTasksLabel.textContent = data.page_content.cabinet.sections.tasks.label;
+            const cabinetTasksLabel = document.getElementById('cabinet-tasks-label');
+            if (cabinetTasksLabel) cabinetTasksLabel.textContent = data.page_content.cabinet.sections.tasks.label;
 
-            const currentEditTasksButton = document.getElementById('edit-tasks-button');
-            if (currentEditTasksButton) currentEditTasksButton.textContent = data.page_content.cabinet.sections.tasks.edit_button;
+            const editTasksButton = document.getElementById('edit-tasks-button');
+            if (editTasksButton) editTasksButton.textContent = data.page_content.cabinet.sections.tasks.edit_button;
 
-            const currentTaskListDisplay = document.getElementById('task-list-display');
-            if (currentTaskListDisplay) currentTaskListDisplay.textContent = data.page_content.cabinet.sections.tasks.initial_content;
+            const taskListDisplay = document.getElementById('task-list-display');
+            if (taskListDisplay) taskListDisplay.textContent = data.page_content.cabinet.sections.tasks.initial_content;
 
-            const currentCabinetPersonalInfoLabel = document.getElementById('cabinet-personal-info-label');
-            if (currentCabinetPersonalInfoLabel) currentCabinetPersonalInfoLabel.textContent = data.page_content.cabinet.sections.personal_info.label;
+            const cabinetPersonalInfoLabel = document.getElementById('cabinet-personal-info-label');
+            if (cabinetPersonalInfoLabel) cabinetPersonalInfoLabel.textContent = data.page_content.cabinet.sections.personal_info.label;
 
-            const currentEditPersonalInfoButton = document.getElementById('edit-personal-info-button');
-            if (currentEditPersonalInfoButton) currentEditPersonalInfoButton.textContent = data.page_content.cabinet.sections.personal_info.edit_button;
+            const editPersonalInfoButton = document.getElementById('edit-personal-info-button');
+            if (editPersonalInfoButton) editPersonalInfoButton.textContent = data.page_content.cabinet.sections.personal_info.edit_button;
 
-            const currentPersonalInfoDisplay = document.getElementById('personal-info-display');
-            if (currentPersonalInfoDisplay) currentPersonalInfoDisplay.textContent = data.page_content.cabinet.sections.personal_info.initial_content;
+            const personalInfoDisplay = document.getElementById('personal-info-display');
+            if (personalInfoDisplay) personalInfoDisplay.textContent = data.page_content.cabinet.sections.personal_info.initial_content;
 
-            const currentCabinetFinancesLabel = document.getElementById('cabinet-finances-label');
-            if (currentCabinetFinancesLabel) currentCabinetFinancesLabel.textContent = data.page_content.cabinet.sections.finances.label;
+            const cabinetFinancesLabel = document.getElementById('cabinet-finances-label');
+            if (cabinetFinancesLabel) cabinetFinancesLabel.textContent = data.page_content.cabinet.sections.finances.label;
 
-            const currentEditFinancesButton = document.getElementById('edit-finances-button');
-            if (currentEditFinancesButton) currentEditFinancesButton.textContent = data.page_content.cabinet.sections.finances.edit_button;
+            const editFinancesButton = document.getElementById('edit-finances-button');
+            if (editFinancesButton) editFinancesButton.textContent = data.page_content.cabinet.sections.finances.edit_button;
 
-            const currentFinancesDisplay = document.getElementById('finances-display');
-            if (currentFinancesDisplay) currentFinancesDisplay.textContent = data.page_content.cabinet.sections.finances.initial_content;
+            const financesDisplay = document.getElementById('finances-display');
+            if (financesDisplay) financesDisplay.textContent = data.page_content.cabinet.sections.finances.initial_content;
 
 
-            const currentCharactersSectionTitle = document.getElementById('characters-section-title');
-            if (currentCharactersSectionTitle) currentCharactersSectionTitle.textContent = data.page_content.characters.title;
+            const charactersSectionTitle = document.getElementById('characters-section-title');
+            if (charactersSectionTitle) charactersSectionTitle.textContent = data.page_content.characters.title;
 
-            const currentCharactersIntroText = document.getElementById('characters-intro-text');
-            if (currentCharactersIntroText) currentCharactersIntroText.textContent = data.page_content.characters.intro;
+            const charactersIntroText = document.getElementById('characters-intro-text');
+            if (charactersIntroText) charactersIntroText.textContent = data.page_content.characters.intro;
 
-            const currentCharactersListContainer = document.getElementById('characters-list-container');
-            if (currentCharactersListContainer) {
-                currentCharactersListContainer.innerHTML = '';
+            const charactersListContainer = document.getElementById('characters-list-container');
+            if (charactersListContainer) {
+                charactersListContainer.innerHTML = '';
                 data.page_content.characters.list.forEach(item => {
                     const li = document.createElement('li');
                     li.textContent = item;
-                    currentCharactersListContainer.appendChild(li);
+                    charactersListContainer.appendChild(li);
                 });
             }
 
-            const currentDossiersSectionTitle = document.getElementById('dossiers-section-title');
-            if (currentDossiersSectionTitle) currentDossiersSectionTitle.textContent = data.page_content.dossiers.title;
+            const dossiersSectionTitle = document.getElementById('dossiers-section-title');
+            if (dossiersSectionTitle) dossiersSectionTitle.textContent = data.page_content.dossiers.title;
 
-            const currentDossiersIntroText = document.getElementById('dossiers-intro-text');
-            if (currentDossiersIntroText) currentDossiersIntroText.textContent = data.page_content.dossiers.intro;
+            const dossiersIntroText = document.getElementById('dossiers-intro-text');
+            if (dossiersIntroText) dossiersIntroText.textContent = data.page_content.dossiers.intro;
 
-            const currentDossiersListContainer = document.getElementById('dossiers-list-container');
-            if (currentDossiersListContainer) {
-                currentDossiersListContainer.innerHTML = '';
+            const dossiersListContainer = document.getElementById('dossiers-list-container');
+            if (dossiersListContainer) {
+                dossiersListContainer.innerHTML = '';
                 data.page_content.dossiers.dossiers_list.forEach(dossier => {
                     const pHeading = document.createElement('p');
                     pHeading.innerHTML = `<strong>${dossier.heading}</strong>`;
                     const pContent = document.createElement('p');
                     pContent.textContent = dossier.content;
-                    currentDossiersListContainer.appendChild(pHeading);
-                    currentDossiersListContainer.appendChild(pContent);
+                    dossiersListContainer.appendChild(pHeading);
+                    dossiersListContainer.appendChild(pContent);
                 });
             }
 
-            const currentMapSectionTitle = document.getElementById('map-section-title');
-            if (currentMapSectionTitle) currentMapSectionTitle.textContent = data.page_content.map.title;
+            const mapSectionTitle = document.getElementById('map-section-title');
+            if (mapSectionTitle) mapSectionTitle.textContent = data.page_content.map.title;
 
-            const currentMapIntroText = document.getElementById('map-intro-text');
-            if (currentMapIntroText) currentMapIntroText.textContent = data.page_content.map.intro;
+            const mapIntroText = document.getElementById('map-intro-text');
+            if (mapIntroText) mapIntroText.textContent = data.page_content.map.intro;
 
-            const currentMapImageLink = document.getElementById('map-image-link');
-            if (currentMapImageLink) currentMapImageLink.href = data.page_content.map.image_link;
+            const mapImageLink = document.getElementById('map-image-link');
+            if (mapImageLink) mapImageLink.href = data.page_content.map.image_link;
 
-            const currentMapImage = document.getElementById('map-image');
-            if (currentMapImage) {
-                currentMapImage.src = data.page_content.map.image_src;
-                currentMapImage.alt = data.page_content.map.image_alt;
+            const mapImage = document.getElementById('map-image');
+            if (mapImage) {
+                mapImage.src = data.page_content.map.image_src;
+                mapImage.alt = data.page_content.map.image_alt;
             }
 
-            const currentMapDescriptionHeading = document.getElementById('map-description-heading');
-            if (currentMapDescriptionHeading) currentMapDescriptionHeading.textContent = data.page_content.map.description_heading;
+            const mapDescriptionHeading = document.getElementById('map-description-heading');
+            if (mapDescriptionHeading) mapDescriptionHeading.textContent = data.page_content.map.description_heading;
 
-            const currentMapLocationsContainer = document.getElementById('map-locations-container');
-            if (currentMapLocationsContainer) {
-                currentMapLocationsContainer.innerHTML = '';
+            const mapLocationsContainer = document.getElementById('map-locations-container');
+            if (mapLocationsContainer) {
+                mapLocationsContainer.innerHTML = '';
                 data.page_content.map.locations.forEach(location => {
                     const pHeading = document.createElement('p');
                     pHeading.innerHTML = `<strong>${location.heading}</strong>`;
                     const pContent = document.createElement('p');
                     pContent.textContent = location.content;
-                    currentMapLocationsContainer.appendChild(pHeading);
-                    currentMapLocationsContainer.appendChild(pContent);
+                    mapLocationsContainer.appendChild(pHeading);
+                    mapLocationsContainer.appendChild(pContent);
                 });
             }
 
-            const currentMessagesSectionTitle = document.getElementById('messages-section-title');
-            if (currentMessagesSectionTitle) currentMessagesSectionTitle.textContent = data.page_content.messages.title;
+            const messagesSectionTitle = document.getElementById('messages-section-title');
+            if (messagesSectionTitle) messagesSectionTitle.textContent = data.page_content.messages.title;
 
-            const currentMessagesIntroText = document.getElementById('messages-intro-text');
-            if (currentMessagesIntroText) currentMessagesIntroText.textContent = data.page_content.messages.intro;
+            const messagesIntroText = document.getElementById('messages-intro-text');
+            if (messagesIntroText) messagesIntroText.textContent = data.page_content.messages.intro;
 
 
-            const currentModalTitle = document.getElementById('modal-title');
-            if (currentModalTitle) currentModalTitle.textContent = data.modal_messages.title;
+            const modalTitle = document.getElementById('modal-title');
+            if (modalTitle) modalTitle.textContent = data.modal_messages.title;
 
-            const currentModalInstructions = document.getElementById('modal-instructions');
-            if (currentModalInstructions) currentModalInstructions.innerHTML = data.modal_messages.instructions.replace('{terminal_id}', data.terminal_id);
+            const modalInstructions = document.getElementById('modal-instructions');
+            if (modalInstructions) modalInstructions.innerHTML = data.modal_messages.instructions.replace('{terminal_id}', data.terminal_id);
 
-            const currentCopyJsonButton = document.getElementById('copyJsonButton');
-            if (currentCopyJsonButton) currentCopyJsonButton.textContent = data.modal_messages.copy_button;
+            const copyJsonButton = document.getElementById('copyJsonButton');
+            if (copyJsonButton) copyJsonButton.textContent = data.modal_messages.copy_button;
 
-            // terminalOutput is used globally, so ensure it's initialized
+            const terminalOutput = document.getElementById('terminal-output');
             if (terminalOutput) {
                 terminalOutput.innerHTML = data.initial_message + '\n> ';
                 terminalOutput.scrollTop = terminalOutput.scrollHeight;
@@ -1011,6 +810,7 @@
 
         let terminalsConfig = [];
         async function loadTerminalConfig() {
+            const terminalSelectionScreen = document.getElementById('terminal-selection-screen');
             try {
                 const { data, error } = await supabase
                     .from('terminals')
@@ -1022,57 +822,72 @@
                 displayTerminalSelection();
             } catch (e) {
                 console.error("Failed to load terminal configuration from Supabase.", e);
-                terminalSelectionScreen.innerHTML = `<h2 class="text-2xl mb-4 text-red-500">!!! ОШИБКА ЗАГРУЗКИ КОНФИГУРАЦИИ !!!</h2><p class="text-red-400">Не удалось загрузить список терминалов из Supabase. Проверьте консоль.</p>`;
+                if (terminalSelectionScreen) terminalSelectionScreen.innerHTML = `<h2 class="text-2xl mb-4 text-red-500">!!! ОШИБКА ЗАГРУЗКИ КОНФИГУРАЦИИ !!!</h2><p class="text-red-400">Не удалось загрузить список терминалов из Supabase. Проверьте консоль.</p>`;
             }
         }
 
         function displayTerminalSelection() {
-            // Initialize UI elements here, as this is the first point where they are needed
-            initializeUIElements();
+            const terminalSelectionScreen = document.getElementById('terminal-selection-screen');
+            const terminalOptionsContainer = document.getElementById('terminal-options-container');
+            const loginScreen = document.getElementById('login-screen');
+            const mainContent = document.getElementById('main-content');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const loginButton = document.getElementById('login-button');
 
-            terminalOptionsContainer.innerHTML = '';
-            terminalsConfig.forEach(term => {
-                const button = document.createElement('button');
-                button.classList.add('terminal-option');
-                button.textContent = term.name;
-                button.setAttribute('data-terminal-id', term.id);
-                button.addEventListener('click', () => selectTerminal(term));
+            if (terminalOptionsContainer) {
+                terminalOptionsContainer.innerHTML = '';
+                terminalsConfig.forEach(term => {
+                    const button = document.createElement('button');
+                    button.classList.add('terminal-option');
+                    button.textContent = term.name;
+                    button.setAttribute('data-terminal-id', term.id);
+                    button.addEventListener('click', () => selectTerminal(term));
 
-                const description = document.createElement('p');
-                description.textContent = term.description;
-                description.classList.add('text-center', 'text-gray-400', 'mb-4');
+                    const description = document.createElement('p');
+                    description.textContent = term.description;
+                    description.classList.add('text-center', 'text-gray-400', 'mb-4');
 
-                const wrapper = document.createElement('div');
-                wrapper.classList.add('flex', 'flex-col', 'items-center', 'mb-6');
-                wrapper.appendChild(button);
-                wrapper.appendChild(description);
-                terminalOptionsContainer.appendChild(wrapper);
-            });
-            terminalSelectionScreen.style.display = 'flex';
-            loginScreen.style.display = 'none';
-            mainContent.style.display = 'none';
+                    const wrapper = document.createElement('div');
+                    wrapper.classList.add('flex', 'flex-col', 'items-center', 'mb-6');
+                    wrapper.appendChild(button);
+                    wrapper.appendChild(description);
+                    terminalOptionsContainer.appendChild(wrapper);
+                });
+            }
+            if (terminalSelectionScreen) terminalSelectionScreen.style.display = 'flex';
+            if (loginScreen) loginScreen.style.display = 'none';
+            if (mainContent) mainContent.style.display = 'none';
 
             // Attach initial event listeners for login screen elements
-            usernameInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    passwordInput.focus();
-                }
-            });
-
-            passwordInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    handleLogin();
-                }
-            });
-
-            loginButton.addEventListener('click', handleLogin);
+            if (usernameInput) {
+                usernameInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        if (passwordInput) passwordInput.focus();
+                    }
+                });
+            }
+            if (passwordInput) {
+                passwordInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        handleLogin();
+                    }
+                });
+            }
+            if (loginButton) loginButton.addEventListener('click', handleLogin);
         }
 
         async function selectTerminal(terminal) {
-            terminalSelectionScreen.style.display = 'none';
-            loginScreen.style.display = 'flex';
-            loginTerminalTitle.textContent = terminal.name;
-            usernameInput.focus();
+            const terminalSelectionScreen = document.getElementById('terminal-selection-screen');
+            const loginScreen = document.getElementById('login-screen');
+            const loginTerminalTitle = document.getElementById('login-terminal-title');
+            const usernameInput = document.getElementById('username');
+            const loginMessage = document.getElementById('login-message');
+
+            if (terminalSelectionScreen) terminalSelectionScreen.style.display = 'none';
+            if (loginScreen) loginScreen.style.display = 'flex';
+            if (loginTerminalTitle) loginTerminalTitle.textContent = terminal.name;
+            if (usernameInput) usernameInput.focus();
             selectedTerminalId = terminal.id;
 
             try {
@@ -1091,13 +906,22 @@
                 populateUI(currentTerminalData); // Call populateUI after data is loaded
             } catch (e) {
                 console.error(`Failed to load data for terminal ${terminal.name} from Supabase.`, e);
-                loginMessage.textContent = `Ошибка: Не удалось загрузить данные для терминала "${terminal.name}". Проверьте консоль.`;
-                terminalSelectionScreen.style.display = 'flex';
-                loginScreen.style.display = 'none';
+                if (loginMessage) loginMessage.textContent = `Ошибка: Не удалось загрузить данные для терминала "${terminal.name}". Проверьте консоль.`;
+                if (terminalSelectionScreen) terminalSelectionScreen.style.display = 'flex';
+                if (loginScreen) loginScreen.style.display = 'none';
             }
         }
 
         function showPage(pageId) {
+            const pageSections = document.querySelectorAll('.page-section');
+            const terminalOutput = document.getElementById('terminal-output');
+            const controlMessageElement = document.getElementById('control-message');
+            const cabinetPasswordMessage = document.getElementById('cabinet-password-message');
+            const taskMessage = document.getElementById('task-message');
+            const personalInfoMessage = document.getElementById('personal-info-message');
+            const financesMessage = document.getElementById('finances-message');
+            const messagesStatus = document.getElementById('messages-status');
+
             pageSections.forEach(section => {
                 section.classList.remove('active');
             });
@@ -1113,50 +937,64 @@
                 }
             } else {
                 showPage('terminal');
-                terminalOutput.innerHTML += `\n> navigate ${pageId}\n${currentTerminalData.error_messages.page_not_found.replace('{page_id}', pageId)}\n> `;
-                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                if (terminalOutput && currentTerminalData) {
+                    terminalOutput.innerHTML += `\n> navigate ${pageId}\n${currentTerminalData.error_messages.page_not_found.replace('{page_id}', pageId)}\n> `;
+                    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                }
             }
         }
 
         function handleLogin() {
-            const username = usernameInput.value.trim();
-            const password = passwordInput.value.trim();
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const loginScreen = document.getElementById('login-screen');
+            const mainContent = document.getElementById('main-content');
+            const loginMessage = document.getElementById('login-message');
+            const terminalInput = document.getElementById('terminal-input');
+            const terminalOutput = document.getElementById('terminal-output');
+
+            const username = usernameInput ? usernameInput.value.trim() : '';
+            const password = passwordInput ? passwordInput.value.trim() : '';
 
             if (!currentTerminalData) {
-                loginMessage.textContent = "Ошибка: Данные терминала не загружены. Выберите терминал.";
+                if (loginMessage) loginMessage.textContent = "Ошибка: Данные терминала не загружены. Выберите терминал.";
                 return;
             }
 
             if (username === currentTerminalData.login_credentials.master_username && password === currentTerminalData.login_credentials.master_password) {
-                 loginScreen.style.display = 'none';
-                 mainContent.style.display = 'block';
-                 loginMessage.textContent = '';
+                 if (loginScreen) loginScreen.style.display = 'none';
+                 if (mainContent) mainContent.style.display = 'block';
+                 if (loginMessage) loginMessage.textContent = '';
                  showPage('terminal');
-                 terminalInput.focus();
+                 if (terminalInput) terminalInput.focus();
                  updateControlButtonsState();
-                 terminalOutput.classList.remove('terminal-alert');
-                 terminalInput.classList.remove('terminal-alert');
-                 terminalInput.disabled = false;
-                 terminalOutput.innerHTML = currentTerminalData.login_messages.master_access + '\n> ';
-                 terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                 if (terminalOutput) terminalOutput.classList.remove('terminal-alert');
+                 if (terminalInput) terminalInput.classList.remove('terminal-alert');
+                 if (terminalInput) terminalInput.disabled = false;
+                 if (terminalOutput) {
+                     terminalOutput.innerHTML = currentTerminalData.login_messages.master_access + '\n> ';
+                     terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                 }
             }
             else if (username === currentTerminalData.login_credentials.username && password === currentTerminalData.login_credentials.password) {
-                loginScreen.style.display = 'none';
-                mainContent.style.display = 'block';
-                loginMessage.textContent = '';
+                if (loginScreen) loginScreen.style.display = 'none';
+                if (mainContent) mainContent.style.display = 'block';
+                if (loginMessage) loginMessage.textContent = '';
                 showPage('terminal');
-                terminalInput.focus();
+                if (terminalInput) terminalInput.focus();
                 updateControlButtonsState();
-                terminalOutput.classList.remove('terminal-alert');
-                terminalInput.classList.remove('terminal-alert');
-                terminalInput.disabled = false;
-                terminalOutput.innerHTML = currentTerminalData.login_messages.welcome + '\n> ';
-                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                if (terminalOutput) terminalOutput.classList.remove('terminal-alert');
+                if (terminalInput) terminalInput.classList.remove('terminal-alert');
+                if (terminalInput) terminalInput.disabled = false;
+                if (terminalOutput) {
+                    terminalOutput.innerHTML = currentTerminalData.login_messages.welcome + '\n> ';
+                    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                }
             } else {
-                loginMessage.textContent = currentTerminalData.login_credentials.access_denied;
-                usernameInput.value = '';
-                passwordInput.value = '';
-                usernameInput.focus();
+                if (loginMessage) loginMessage.textContent = currentTerminalData.login_credentials.access_denied;
+                if (usernameInput) usernameInput.value = '';
+                if (passwordInput) passwordInput.value = '';
+                if (usernameInput) usernameInput.focus();
             }
         }
 
@@ -1168,35 +1006,45 @@
             clearInterval(hackTimerInterval);
             hackTimer = 0;
 
-            mainContent.style.display = 'none';
-            loginScreen.style.display = 'flex';
-            loginMessage.textContent = currentTerminalData.error_messages[messageKey];
+            const mainContent = document.getElementById('main-content');
+            const loginScreen = document.getElementById('login-screen');
+            const loginMessage = document.getElementById('login-message');
+            const secretFileElement = document.getElementById('secret-file');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const terminalOutput = document.getElementById('terminal-output');
+            const terminalInput = document.getElementById('terminal-input');
+
+            if (mainContent) mainContent.style.display = 'none';
+            if (loginScreen) loginScreen.style.display = 'flex';
+            if (loginMessage && currentTerminalData) loginMessage.textContent = currentTerminalData.error_messages[messageKey];
 
             for (const key in controlStates) {
                 controlStates[key] = false;
             }
             updateControlButtonsState();
 
-            // Re-query secretFileElement as it might have been re-rendered
-            secretFileElement = document.getElementById('secret-file');
             if (secretFileElement) {
                  secretFileElement.style.display = 'none';
             }
 
-            usernameInput.value = '';
-            passwordInput.value = '';
-            usernameInput.focus();
+            if (usernameInput) usernameInput.value = '';
+            if (passwordInput) passwordInput.value = '';
+            if (usernameInput) usernameInput.focus();
 
-            terminalOutput.innerHTML = currentTerminalData.error_messages.login_blocked_alert + '\n';
-            terminalOutput.classList.add('terminal-alert');
-            terminalInput.classList.add('terminal-alert');
-            terminalInput.disabled = true;
+            if (terminalOutput && currentTerminalData) {
+                terminalOutput.innerHTML = currentTerminalData.error_messages.login_blocked_alert + '\n';
+                terminalOutput.classList.add('terminal-alert');
+            }
+            if (terminalInput) {
+                terminalInput.classList.add('terminal-alert');
+                terminalInput.disabled = true;
+            }
         }
 
         function updateControlButtonsState() {
-            // Re-query controlButtons as they might have been re-rendered
-            controlButtons = document.querySelectorAll('.control-button');
-            if (!controlButtons) return;
+            const controlButtons = document.querySelectorAll('.control-button');
+            if (!controlButtons || !currentTerminalData) return;
             controlButtons.forEach(button => {
                 const target = button.getAttribute('data-target');
                 button.classList.remove('button-active', 'button-restricted', 'button-unlocked', 'button-toggled');
@@ -1227,8 +1075,11 @@
         }
 
         function handleControlButtonClick() {
+            const controlMessageElement = document.getElementById('control-message');
             const target = this.getAttribute('data-target');
             let message = '';
+
+            if (!currentTerminalData) return;
 
             if (this.classList.contains('button-restricted')) {
                 message = currentTerminalData.page_content.control.messages.access_denied.replace('{target_upper}', target.toUpperCase());
@@ -1242,76 +1093,75 @@
                     message = currentTerminalData.page_content.control.messages.deactivated.replace('{target_upper}', target.toUpperCase());
                 }
             }
-            controlMessageElement.textContent = message;
+            if (controlMessageElement) controlMessageElement.textContent = message;
         }
 
 
         // --- Cabinet Login/Registration Logic (NO SUPABASE AUTH HERE) ---
 
         function updateCabinetUIForLoginStatus() {
-            // Ensure all cabinet-related elements are correctly referenced before use
-            const currentCabinetLoginSection = document.getElementById('cabinet-login-section');
-            const currentPersonalCabinetDataSection = document.getElementById('personal-cabinet-data-section');
-            const currentCabinetDisplayIdInput = document.getElementById('cabinet-display-id');
-            const currentCabinetLogoutButton = document.getElementById('cabinet-logout-button');
-            const currentCabinetAuthMessage = document.getElementById('cabinet-auth-message');
+            const cabinetLoginSection = document.getElementById('cabinet-login-section');
+            const personalCabinetDataSection = document.getElementById('personal-cabinet-data-section');
+            const cabinetDisplayIdInput = document.getElementById('cabinet-display-id');
+            const cabinetLogoutButton = document.getElementById('cabinet-logout-button');
+            const cabinetAuthMessage = document.getElementById('cabinet-auth-message');
 
-            const currentCabinetLoginIdInput = document.getElementById('cabinet-login-id');
-            const currentCabinetLoginPasswordInput = document.getElementById('cabinet-login-password');
+            const cabinetLoginIdInput = document.getElementById('cabinet-login-id');
+            const cabinetLoginPasswordInput = document.getElementById('cabinet-login-password');
 
-            const currentCabinetPasswordInput = document.getElementById('cabinet-password');
-            const currentTaskListDisplay = document.getElementById('task-list-display');
-            const currentPersonalInfoDisplay = document.getElementById('personal-info-display');
-            const currentFinancesDisplay = document.getElementById('finances-display');
-            const currentCabinetPasswordMessage = document.getElementById('cabinet-password-message');
-            const currentTaskMessage = document.getElementById('task-message');
-            const currentPersonalInfoMessage = document.getElementById('personal-info-message');
-            const currentFinancesMessage = document.getElementById('finances-message');
+            const cabinetPasswordInput = document.getElementById('cabinet-password');
+            const taskListDisplay = document.getElementById('task-list-display');
+            const personalInfoDisplay = document.getElementById('personal-info-display');
+            const financesDisplay = document.getElementById('finances-display');
+            const cabinetPasswordMessage = document.getElementById('cabinet-password-message');
+            const taskMessage = document.getElementById('task-message');
+            const personalInfoMessage = document.getElementById('personal-info-message');
+            const financesMessage = document.getElementById('finances-message');
 
 
             if (currentCabinetLogin) {
-                if (currentCabinetLoginSection) currentCabinetLoginSection.style.display = 'none';
-                if (currentPersonalCabinetDataSection) currentPersonalCabinetDataSection.style.display = 'block';
-                if (currentCabinetDisplayIdInput) currentCabinetDisplayIdInput.value = currentCabinetLogin;
-                if (currentCabinetLogoutButton) currentCabinetLogoutButton.style.display = 'block';
-                if (currentCabinetAuthMessage) {
-                    currentCabinetAuthMessage.textContent = `Вы вошли как: ${currentCabinetLogin}`;
-                    currentCabinetAuthMessage.style.color = '#00ff00';
+                if (cabinetLoginSection) cabinetLoginSection.style.display = 'none';
+                if (personalCabinetDataSection) personalCabinetDataSection.style.display = 'block';
+                if (cabinetDisplayIdInput) cabinetDisplayIdInput.value = currentCabinetLogin;
+                if (cabinetLogoutButton) cabinetLogoutButton.style.display = 'block';
+                if (cabinetAuthMessage) {
+                    cabinetAuthMessage.textContent = `Вы вошли как: ${currentCabinetLogin}`;
+                    cabinetAuthMessage.style.color = '#00ff00';
                 }
                 loadCabinetData();
             } else {
-                if (currentCabinetLoginSection) currentCabinetLoginSection.style.display = 'block';
-                if (currentPersonalCabinetDataSection) currentPersonalCabinetDataSection.style.display = 'none';
-                if (currentCabinetLogoutButton) currentCabinetLogoutButton.style.display = 'none';
-                if (currentCabinetAuthMessage) {
-                    currentCabinetAuthMessage.textContent = 'Войдите или зарегистрируйте аккаунт Кабинета.';
-                    currentCabinetAuthMessage.style.color = '#ff0000';
+                if (cabinetLoginSection) cabinetLoginSection.style.display = 'block';
+                if (personalCabinetDataSection) personalCabinetDataSection.style.display = 'none';
+                if (cabinetLogoutButton) cabinetLogoutButton.style.display = 'none';
+                if (cabinetAuthMessage) {
+                    cabinetAuthMessage.textContent = 'Войдите или зарегистрируйте аккаунт Кабинета.';
+                    cabinetAuthMessage.style.color = '#ff0000';
                 }
-                if (currentCabinetDisplayIdInput) currentCabinetDisplayIdInput.value = '';
-                if (currentCabinetLoginIdInput) currentCabinetLoginIdInput.value = '';
-                if (currentCabinetLoginPasswordInput) currentCabinetLoginPasswordInput.value = '';
-                if (currentCabinetPasswordInput) currentCabinetPasswordInput.value = '';
-                if (currentTaskListDisplay && currentTerminalData) currentTaskListDisplay.textContent = currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
-                if (currentPersonalInfoDisplay && currentTerminalData) currentPersonalInfoDisplay.textContent = currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
-                if (currentFinancesDisplay && currentTerminalData) currentFinancesDisplay.textContent = currentTerminalData.page_content.cabinet.sections.finances.initial_content;
-                if (currentCabinetPasswordMessage) currentCabinetPasswordMessage.textContent = '';
-                if (currentTaskMessage) currentTaskMessage.textContent = '';
-                if (currentPersonalInfoMessage) currentPersonalInfoMessage.textContent = '';
-                if (currentFinancesMessage) currentFinancesMessage.textContent = '';
+                if (cabinetDisplayIdInput) cabinetDisplayIdInput.value = '';
+                if (cabinetLoginIdInput) cabinetLoginIdInput.value = '';
+                if (cabinetLoginPasswordInput) cabinetLoginPasswordInput.value = '';
+                if (cabinetPasswordInput) cabinetPasswordInput.value = '';
+                if (taskListDisplay && currentTerminalData) taskListDisplay.textContent = currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
+                if (personalInfoDisplay && currentTerminalData) personalInfoDisplay.textContent = currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
+                if (financesDisplay && currentTerminalData) financesDisplay.textContent = currentTerminalData.page_content.cabinet.sections.finances.initial_content;
+                if (cabinetPasswordMessage) cabinetPasswordMessage.textContent = '';
+                if (taskMessage) taskMessage.textContent = '';
+                if (personalInfoMessage) personalInfoMessage.textContent = '';
+                if (financesMessage) financesMessage.textContent = '';
             }
         }
 
         async function handleCabinetLogin() {
-            const currentCabinetLoginIdInput = document.getElementById('cabinet-login-id');
-            const currentCabinetLoginPasswordInput = document.getElementById('cabinet-login-password');
-            const currentCabinetAuthMessage = document.getElementById('cabinet-auth-message');
+            const cabinetLoginIdInput = document.getElementById('cabinet-login-id');
+            const cabinetLoginPasswordInput = document.getElementById('cabinet-login-password');
+            const cabinetAuthMessage = document.getElementById('cabinet-auth-message');
 
-            const loginId = currentCabinetLoginIdInput ? currentCabinetLoginIdInput.value.trim() : '';
-            const password = currentCabinetLoginPasswordInput ? currentCabinetLoginPasswordInput.value.trim() : '';
-            if (currentCabinetAuthMessage) currentCabinetAuthMessage.textContent = '';
+            const loginId = cabinetLoginIdInput ? cabinetLoginIdInput.value.trim() : '';
+            const password = cabinetLoginPasswordInput ? cabinetLoginPasswordInput.value.trim() : '';
+            if (cabinetAuthMessage) cabinetAuthMessage.textContent = '';
 
             if (!loginId || !password) {
-                if (currentCabinetAuthMessage) currentCabinetAuthMessage.textContent = 'Введите логин и пароль Кабинета.';
+                if (cabinetAuthMessage) cabinetAuthMessage.textContent = 'Введите логин и пароль Кабинета.';
                 return;
             }
 
@@ -1331,26 +1181,26 @@
                     currentCabinetLogin = loginId;
                     updateCabinetUIForLoginStatus();
                 } else {
-                    if (currentCabinetAuthMessage) currentCabinetAuthMessage.textContent = 'Неверный логин или пароль Кабинета.';
-                    if (currentCabinetLoginPasswordInput) currentCabinetLoginPasswordInput.value = '';
+                    if (cabinetAuthMessage) cabinetAuthMessage.textContent = 'Неверный логин или пароль Кабинета.';
+                    if (cabinetLoginPasswordInput) cabinetLoginPasswordInput.value = '';
                 }
             } catch (e) {
                 console.error('Ошибка входа в Кабинет:', e);
-                if (currentCabinetAuthMessage) currentCabinetAuthMessage.textContent = `Ошибка входа: ${e.message}`;
+                if (cabinetAuthMessage) cabinetAuthMessage.textContent = `Ошибка входа: ${e.message}`;
             }
         }
 
         async function handleCabinetRegister() {
-            const currentCabinetLoginIdInput = document.getElementById('cabinet-login-id');
-            const currentCabinetLoginPasswordInput = document.getElementById('cabinet-login-password');
-            const currentCabinetAuthMessage = document.getElementById('cabinet-auth-message');
+            const cabinetLoginIdInput = document.getElementById('cabinet-login-id');
+            const cabinetLoginPasswordInput = document.getElementById('cabinet-login-password');
+            const cabinetAuthMessage = document.getElementById('cabinet-auth-message');
 
-            const loginId = currentCabinetLoginIdInput ? currentCabinetLoginIdInput.value.trim() : '';
-            const password = currentCabinetLoginPasswordInput ? currentCabinetLoginPasswordInput.value.trim() : '';
-            if (currentCabinetAuthMessage) currentCabinetAuthMessage.textContent = '';
+            const loginId = cabinetLoginIdInput ? cabinetLoginIdInput.value.trim() : '';
+            const password = cabinetLoginPasswordInput ? cabinetLoginPasswordInput.value.trim() : '';
+            if (cabinetAuthMessage) cabinetAuthMessage.textContent = '';
 
             if (!loginId || !password) {
-                if (currentCabinetAuthMessage) currentCabinetAuthMessage.textContent = 'Введите логин и пароль для регистрации Кабинета.';
+                if (cabinetAuthMessage) cabinetAuthMessage.textContent = 'Введите логин и пароль для регистрации Кабинета.';
                 return;
             }
 
@@ -1363,7 +1213,7 @@
                     .single();
 
                 if (existingAccount) {
-                    if (currentCabinetAuthMessage) currentCabinetAuthMessage.textContent = `Аккаунт "${loginId}" уже существует для этого терминала.`;
+                    if (cabinetAuthMessage) cabinetAuthMessage.textContent = `Аккаунт "${loginId}" уже существует для этого терминала.`;
                     return;
                 }
                 if (checkError && checkError.code !== 'PGRST116') {
@@ -1385,39 +1235,39 @@
                     .select();
 
                 if (error) throw error;
-                if (currentCabinetAuthMessage) currentCabinetAuthMessage.textContent = `Аккаунт "${loginId}" успешно зарегистрирован! Выполняется вход...`;
+                if (cabinetAuthMessage) cabinetAuthMessage.textContent = `Аккаунт "${loginId}" успешно зарегистрирован! Выполняется вход...`;
                 console.log('Кабинет зарегистрирован:', data);
                 currentCabinetLogin = loginId;
                 updateCabinetUIForLoginStatus();
             } catch (e) {
                 console.error('Ошибка регистрации Кабинета:', e);
-                if (currentCabinetAuthMessage) currentCabinetAuthMessage.textContent = `Ошибка регистрации: ${e.message}`;
+                if (cabinetAuthMessage) cabinetAuthMessage.textContent = `Ошибка регистрации: ${e.message}`;
             }
         }
 
         function handleCabinetLogout() {
             currentCabinetLogin = null;
             updateCabinetUIForLoginStatus();
-            const currentCabinetAuthMessage = document.getElementById('cabinet-auth-message');
-            if (currentCabinetAuthMessage) {
-                currentCabinetAuthMessage.textContent = 'Вы вышли из Кабинета.';
-                currentCabinetAuthMessage.style.color = '#00ffff';
+            const cabinetAuthMessage = document.getElementById('cabinet-auth-message');
+            if (cabinetAuthMessage) {
+                cabinetAuthMessage.textContent = 'Вы вышли из Кабинета.';
+                cabinetAuthMessage.style.color = '#00ffff';
             }
         }
 
         // --- Cabinet Data Management Logic ---
 
         async function loadCabinetData() {
-            const currentCabinetPasswordMessage = document.getElementById('cabinet-password-message');
-            const currentTaskListDisplay = document.getElementById('task-list-display');
-            const currentPersonalInfoDisplay = document.getElementById('personal-info-display');
-            const currentFinancesDisplay = document.getElementById('finances-display');
-            const currentCabinetPasswordInput = document.getElementById('cabinet-password');
+            const cabinetPasswordMessage = document.getElementById('cabinet-password-message');
+            const taskListDisplay = document.getElementById('task-list-display');
+            const personalInfoDisplay = document.getElementById('personal-info-display');
+            const financesDisplay = document.getElementById('finances-display');
+            const cabinetPasswordInput = document.getElementById('cabinet-password');
 
-            if (currentCabinetPasswordMessage && currentTerminalData) currentCabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.loading;
+            if (cabinetPasswordMessage && currentTerminalData) cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.loading;
 
             if (!currentCabinetLogin) {
-                if (currentCabinetPasswordMessage) currentCabinetPasswordMessage.textContent = 'Войдите в Кабинет для загрузки данных.';
+                if (cabinetPasswordMessage) cabinetPasswordMessage.textContent = 'Войдите в Кабинет для загрузки данных.';
                 return;
             }
 
@@ -1434,47 +1284,47 @@
                 }
 
                 if (data) {
-                    if (currentTaskListDisplay && currentTerminalData) currentTaskListDisplay.textContent = data.tasks || currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
-                    if (currentPersonalInfoDisplay && currentTerminalData) currentPersonalInfoDisplay.textContent = data.personal_info || currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
-                    if (currentFinancesDisplay && currentTerminalData) currentFinancesDisplay.textContent = data.finances || currentTerminalData.page_content.cabinet.sections.finances.initial_content;
-                    if (currentCabinetPasswordInput) currentCabinetPasswordInput.value = data.password || '';
-                    if (currentCabinetPasswordMessage && currentTerminalData) currentCabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.loaded_success.replace('{account_id}', currentCabinetLogin);
+                    if (taskListDisplay && currentTerminalData) taskListDisplay.textContent = data.tasks || currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
+                    if (personalInfoDisplay && currentTerminalData) personalInfoDisplay.textContent = data.personal_info || currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
+                    if (financesDisplay && currentTerminalData) financesDisplay.textContent = data.finances || currentTerminalData.page_content.cabinet.sections.finances.initial_content;
+                    if (cabinetPasswordInput) cabinetPasswordInput.value = data.password || '';
+                    if (cabinetPasswordMessage && currentTerminalData) cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.loaded_success.replace('{account_id}', currentCabinetLogin);
                     loadMessages();
                 } else {
-                    if (currentCabinetPasswordMessage && currentTerminalData) currentCabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.not_found.replace('{account_id}', currentCabinetLogin);
-                    if (currentTaskListDisplay && currentTerminalData) currentTaskListDisplay.textContent = currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
-                    if (currentPersonalInfoDisplay && currentTerminalData) currentPersonalInfoDisplay.textContent = currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
-                    if (currentFinancesDisplay && currentTerminalData) currentFinancesDisplay.textContent = currentTerminalData.page_content.cabinet.sections.finances.initial_content;
-                    if (currentCabinetPasswordInput) currentCabinetPasswordInput.value = '';
+                    if (cabinetPasswordMessage && currentTerminalData) cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.not_found.replace('{account_id}', currentCabinetLogin);
+                    if (taskListDisplay && currentTerminalData) taskListDisplay.textContent = currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
+                    if (personalInfoDisplay && currentTerminalData) personalInfoDisplay.textContent = currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
+                    if (financesDisplay && currentTerminalData) financesDisplay.textContent = currentTerminalData.page_content.cabinet.sections.finances.initial_content;
+                    if (cabinetPasswordInput) cabinetPasswordInput.value = '';
                 }
             }
             catch (e) {
                 console.error("Error loading cabinet data from Supabase:", e);
-                if (currentCabinetPasswordMessage) currentCabinetPasswordMessage.textContent = 'Ошибка: Не удалось загрузить данные из Supabase. Проверьте консоль.';
+                if (cabinetPasswordMessage) cabinetPasswordMessage.textContent = 'Ошибка: Не удалось загрузить данные из Supabase. Проверьте консоль.';
             }
         }
 
         async function saveCabinetData() {
-            const currentCabinetPasswordMessage = document.getElementById('cabinet-password-message');
-            const currentCabinetPasswordInput = document.getElementById('cabinet-password');
-            const currentTaskListDisplay = document.getElementById('task-list-display');
-            const currentPersonalInfoDisplay = document.getElementById('personal-info-display');
-            const currentFinancesDisplay = document.getElementById('finances-display');
+            const cabinetPasswordMessage = document.getElementById('cabinet-password-message');
+            const cabinetPasswordInput = document.getElementById('cabinet-password');
+            const taskListDisplay = document.getElementById('task-list-display');
+            const personalInfoDisplay = document.getElementById('personal-info-display');
+            const financesDisplay = document.getElementById('finances-display');
 
-            if (currentCabinetPasswordMessage && currentTerminalData) currentCabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.saving;
+            if (cabinetPasswordMessage && currentTerminalData) cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.saving;
 
             if (!currentCabinetLogin) {
-                if (currentCabinetPasswordMessage) currentCabinetPasswordMessage.textContent = 'Войдите в Кабинет для сохранения данных.';
+                if (cabinetPasswordMessage) cabinetPasswordMessage.textContent = 'Войдите в Кабинет для сохранения данных.';
                 return;
             }
 
-            const cabinetPassword = currentCabinetPasswordInput ? currentCabinetPasswordInput.value.trim() : '';
+            const cabinetPassword = cabinetPasswordInput ? cabinetPasswordInput.value.trim() : '';
 
             const dataToUpdate = {
                 password: cabinetPassword,
-                tasks: currentTaskListDisplay ? currentTaskListDisplay.textContent.trim() : '',
-                personal_info: currentPersonalInfoDisplay ? currentPersonalInfoDisplay.textContent.trim() : '',
-                finances: currentFinancesDisplay ? currentFinancesDisplay.textContent.trim() : ''
+                tasks: taskListDisplay ? taskListDisplay.textContent.trim() : '',
+                personal_info: personalInfoDisplay ? personalInfoDisplay.textContent.trim() : '',
+                finances: financesDisplay ? financesDisplay.textContent.trim() : ''
             };
 
             try {
@@ -1487,10 +1337,10 @@
 
                 if (error) throw error;
                 console.log("Cabinet data saved to Supabase:", data);
-                if (currentCabinetPasswordMessage) currentCabinetPasswordMessage.textContent = `Данные для аккаунта "${currentCabinetLogin}" успешно сохранены в Supabase.`;
+                if (cabinetPasswordMessage) cabinetPasswordMessage.textContent = `Данные для аккаунта "${currentCabinetLogin}" успешно сохранены в Supabase.`;
             } catch (e) {
                 console.error("Error saving cabinet data to Supabase:", e);
-                if (currentCabinetPasswordMessage) currentCabinetPasswordMessage.textContent = 'Ошибка: Не удалось сохранить данные в Supabase. Проверьте консоль.';
+                if (cabinetPasswordMessage) cabinetPasswordMessage.textContent = 'Ошибка: Не удалось сохранить данные в Supabase. Проверьте консоль.';
             }
         }
 
@@ -1522,34 +1372,34 @@
 
         // Send Message
         async function sendMessage() {
-            const currentSendMessageStatus = document.getElementById('send-message-status');
-            const currentMessageRecipientIdInput = document.getElementById('message-recipient-id');
-            const currentMessageSubjectInput = document.getElementById('message-subject');
-            const currentMessageContentTextarea = document.getElementById('message-content');
+            const sendMessageStatus = document.getElementById('send-message-status');
+            const messageRecipientIdInput = document.getElementById('message-recipient-id');
+            const messageSubjectInput = document.getElementById('message-subject');
+            const messageContentTextarea = document.getElementById('message-content');
 
-            if (currentSendMessageStatus) currentSendMessageStatus.textContent = '';
+            if (sendMessageStatus) sendMessageStatus.textContent = '';
             if (!currentCabinetLogin) {
-                if (currentSendMessageStatus) currentSendMessageStatus.textContent = 'Ошибка: Войдите в Кабинет, чтобы отправлять сообщения.';
+                if (sendMessageStatus) sendMessageStatus.textContent = 'Ошибка: Войдите в Кабинет, чтобы отправлять сообщения.';
                 return;
             }
             if (!selectedTerminalId) {
-                if (currentSendMessageStatus) currentSendMessageStatus.textContent = 'Ошибка: Выберите терминал.';
+                if (sendMessageStatus) sendMessageStatus.textContent = 'Ошибка: Выберите терминал.';
                 return;
             }
 
             const senderLogin = currentCabinetLogin;
-            const recipientLogin = currentMessageRecipientIdInput ? currentMessageRecipientIdInput.value.trim() : '';
-            const subject = currentMessageSubjectInput ? currentMessageSubjectInput.value.trim() : '';
-            const content = currentMessageContentTextarea ? currentMessageContentTextarea.value.trim() : '';
+            const recipientLogin = messageRecipientIdInput ? messageRecipientIdInput.value.trim() : '';
+            const subject = messageSubjectInput ? messageSubjectInput.value.trim() : '';
+            const content = messageContentTextarea ? messageContentTextarea.value.trim() : '';
             const senderName = senderLogin;
 
             if (!recipientLogin || !subject || !content) {
-                if (currentSendMessageStatus) currentSendMessageStatus.textContent = 'Заполните все поля для отправки сообщения.';
+                if (sendMessageStatus) sendMessageStatus.textContent = 'Заполните все поля для отправки сообщения.';
                 return;
             }
 
             if (recipientLogin === senderLogin) {
-                if (currentSendMessageStatus) currentSendMessageStatus.textContent = 'Ошибка: Вы не можете отправить сообщение самому себе.';
+                if (sendMessageStatus) sendMessageStatus.textContent = 'Ошибка: Вы не можете отправить сообщение самому себе.';
                 return;
             }
 
@@ -1561,7 +1411,7 @@
                     .single();
 
                 if (!recipientExists) {
-                    if (currentSendMessageStatus) currentSendMessageStatus.textContent = `Ошибка: Получатель с логином "${recipientLogin}" не найден.`;
+                    if (sendMessageStatus) sendMessageStatus.textContent = `Ошибка: Получатель с логином "${recipientLogin}" не найден.`;
                     return;
                 }
                 if (recipientError && recipientError.code !== 'PGRST116') {
@@ -1569,7 +1419,7 @@
                 }
             } catch (e) {
                 console.error('Ошибка проверки получателя:', e);
-                if (currentSendMessageStatus) currentSendMessageStatus.textContent = `Ошибка проверки получателя: ${e.message}`;
+                if (sendMessageStatus) sendMessageStatus.textContent = `Ошибка проверки получателя: ${e.message}`;
                 return;
             }
 
@@ -1594,33 +1444,33 @@
 
                 if (error) throw error;
 
-                if (currentSendMessageStatus) currentSendMessageStatus.textContent = 'Сообщение успешно отправлено!';
-                if (currentMessageRecipientIdInput) currentMessageRecipientIdInput.value = '';
-                if (currentMessageSubjectInput) currentMessageSubjectInput.value = '';
-                if (currentMessageContentTextarea) currentMessageContentTextarea.value = '';
+                if (sendMessageStatus) sendMessageStatus.textContent = 'Сообщение успешно отправлено!';
+                if (messageRecipientIdInput) messageRecipientIdInput.value = '';
+                if (messageSubjectInput) messageSubjectInput.value = '';
+                if (messageContentTextarea) messageContentTextarea.value = '';
                 loadMessages();
                 console.log('Message sent:', data);
             } catch (e) {
                 console.error('Error sending message:', e);
-                if (currentSendMessageStatus) currentSendMessageStatus.textContent = `Ошибка отправки: ${e.message}`;
+                if (sendMessageStatus) sendMessageStatus.textContent = `Ошибка отправки: ${e.message}`;
             }
         }
 
 
         // Load messages for the current cabinet account
         async function loadMessages() {
-            const currentMessagesListContainer = document.getElementById('messages-list-container');
-            const currentMessagesStatus = document.getElementById('messages-status');
+            const messagesListContainer = document.getElementById('messages-list-container');
+            const messagesStatus = document.getElementById('messages-status');
 
-            if (currentMessagesListContainer) currentMessagesListContainer.innerHTML = '';
-            if (currentMessagesStatus) currentMessagesStatus.textContent = 'Загрузка сообщений...';
+            if (messagesListContainer) messagesListContainer.innerHTML = '';
+            if (messagesStatus) messagesStatus.textContent = 'Загрузка сообщений...';
 
             if (!currentCabinetLogin) {
-                if (currentMessagesStatus) currentMessagesStatus.textContent = 'Войдите в Кабинет, чтобы просмотреть сообщения.';
+                if (messagesStatus) messagesStatus.textContent = 'Войдите в Кабинет, чтобы просмотреть сообщения.';
                 return;
             }
             if (!selectedTerminalId) {
-                 if (currentMessagesStatus) currentMessagesStatus.textContent = 'Выберите терминал, чтобы просмотреть сообщения.';
+                 if (messagesStatus) messagesStatus.textContent = 'Выберите терминал, чтобы просмотреть сообщения.';
                  return;
             }
 
@@ -1637,7 +1487,7 @@
                 if (error) throw error;
 
                 if (data && data.length > 0) {
-                    if (currentMessagesStatus) currentMessagesStatus.textContent = '';
+                    if (messagesStatus) messagesStatus.textContent = '';
                     data.forEach(async (message) => {
                         const isSent = message.sender_id === currentLogin;
                         const displaySender = isSent ? `Вам (${message.recipient_id})` : message.sender_name;
@@ -1657,7 +1507,7 @@
                                 </div>
                             </details>
                         `;
-                        if (currentMessagesListContainer) currentMessagesListContainer.appendChild(messageDiv);
+                        if (messagesListContainer) messagesListContainer.appendChild(messageDiv);
 
                         if (!message.read && !isSent) {
                             const { error: updateError } = await supabase
@@ -1668,11 +1518,11 @@
                         }
                     });
                 } else {
-                    if (currentMessagesStatus) currentMessagesStatus.textContent = 'Нет сообщений.';
+                    if (messagesStatus) messagesStatus.textContent = 'Нет сообщений.';
                 }
             } catch (e) {
                 console.error("Error loading messages from Supabase:", e);
-                if (currentMessagesStatus) currentMessagesStatus.textContent = 'Ошибка загрузки сообщений. Проверьте консоль.';
+                if (messagesStatus) messagesStatus.textContent = 'Ошибка загрузки сообщений. Проверьте консоль.';
             }
         }
 
@@ -1680,12 +1530,12 @@
         // --- Terminal Command Handling ---
 
         function maybePrintRandomMessage() {
-            const currentTerminalOutput = document.getElementById('terminal-output');
+            const terminalOutput = document.getElementById('terminal-output');
             if (Math.random() < 0.15 && currentTerminalData && currentTerminalData.random_system_messages) {
                 const randomMessage = currentTerminalData.random_system_messages[Math.floor(Math.random() * currentTerminalData.random_system_messages.length)];
-                if (currentTerminalOutput) {
-                    currentTerminalOutput.innerHTML += randomMessage + '\n';
-                    currentTerminalOutput.scrollTop = currentTerminalOutput.scrollHeight;
+                if (terminalOutput) {
+                    terminalOutput.innerHTML += randomMessage + '\n';
+                    terminalOutput.scrollTop = terminalOutput.scrollHeight;
                 }
             }
         }
@@ -1693,11 +1543,38 @@
         // --- Initialization and Event Handlers ---
 
         function attachGlobalEventListeners() {
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const loginButton = document.getElementById('login-button');
+            const terminalInput = document.getElementById('terminal-input');
+            const terminalOutput = document.getElementById('terminal-output');
+            const controlMessageElement = document.getElementById('control-message');
+            const cabinetPasswordMessage = document.getElementById('cabinet-password-message');
+            const taskMessage = document.getElementById('task-message');
+            const personalInfoMessage = document.getElementById('personal-info-message');
+            const financesMessage = document.getElementById('finances-message');
+            const messagesStatus = document.getElementById('messages-status');
+
+            const cabinetEnterButton = document.getElementById('cabinet-enter-button');
+            const cabinetRegisterButton = document.getElementById('cabinet-register-button');
+            const cabinetLogoutButton = document.getElementById('cabinet-logout-button');
+            const saveCabinetPasswordButton = document.getElementById('save-cabinet-password-button');
+            const editTasksButton = document.getElementById('edit-tasks-button');
+            const editPersonalInfoButton = document.getElementById('edit-personal-info-button');
+            const editFinancesButton = document.getElementById('edit-finances-button');
+            const sendMessageButton = document.getElementById('send-message-button');
+
+            const jsonModal = document.getElementById('jsonModal');
+            const closeButton = document.querySelector('.close-button');
+            const jsonOutputTextarea = document.getElementById('jsonOutput');
+            const copyJsonButton = document.getElementById('copyJsonButton');
+
+
             // Login screen elements
             if (usernameInput) {
                 usernameInput.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') {
-                        passwordInput.focus();
+                        if (passwordInput) passwordInput.focus();
                     }
                 });
             }
@@ -1731,6 +1608,8 @@
                             hackTimer = 0;
                             if (terminalOutput) terminalOutput.innerHTML = terminalOutput.innerHTML.replace(/Таймер: \d+...\n?/, '');
 
+                            const secretFileElement = document.getElementById('secret-file');
+
                             if (rawCommand.toLowerCase() === 'q') {
                                 if (terminalOutput) {
                                     terminalOutput.innerHTML += '> q\n';
@@ -1739,7 +1618,6 @@
                                 isHackMinigameActive = false;
                                 isHacked = true;
                                 hackAttempts = 0;
-                                secretFileElement = document.getElementById('secret-file');
                                 if (secretFileElement) {
                                     secretFileElement.style.display = 'block';
                                 }
@@ -1771,7 +1649,6 @@
                                 isHackMinigameActive = false;
                                 isHacked = true;
                                 hackAttempts = 0;
-                                secretFileElement = document.getElementById('secret-file');
                                 if (secretFileElement) {
                                     secretFileElement.style.display = 'block';
                                 }
@@ -1960,9 +1837,13 @@
             if (cabinetLogoutButton) cabinetLogoutButton.addEventListener('click', handleCabinetLogout);
             if (saveCabinetPasswordButton) saveCabinetPasswordButton.addEventListener('click', saveCabinetData);
 
-            if (editTasksButton) editTasksButton.addEventListener('click', () => toggleEditMode(taskListDisplay, taskMessage, editTasksButton, 'tasks'));
-            if (editPersonalInfoButton) editPersonalInfoButton.addEventListener('click', () => toggleEditMode(personalInfoDisplay, personalInfoMessage, editPersonalInfoButton, 'personal_info'));
-            if (editFinancesButton) editFinancesButton.addEventListener('click', () => toggleEditMode(financesDisplay, financesMessage, editFinancesButton, 'finances'));
+            const taskListDisplay = document.getElementById('task-list-display');
+            const personalInfoDisplay = document.getElementById('personal-info-display');
+            const financesDisplay = document.getElementById('finances-display');
+
+            if (editTasksButton && taskListDisplay && taskMessage) editTasksButton.addEventListener('click', () => toggleEditMode(taskListDisplay, taskMessage, editTasksButton, 'tasks'));
+            if (editPersonalInfoButton && personalInfoDisplay && personalInfoMessage) editPersonalInfoButton.addEventListener('click', () => toggleEditMode(personalInfoDisplay, personalInfoMessage, editPersonalInfoButton, 'personal_info'));
+            if (editFinancesButton && financesDisplay && financesMessage) editFinancesButton.addEventListener('click', () => toggleEditMode(financesDisplay, financesMessage, editFinancesButton, 'finances'));
 
             if (sendMessageButton) sendMessageButton.addEventListener('click', sendMessage);
 
@@ -1994,11 +1875,11 @@
 
         // Initial load function
         window.onload = async () => {
-            // Initialize UI elements once at the very start to ensure login screen elements are ready
-            initializeUIElements();
-            // Attach global event listeners after initial UI elements are ready
-            attachGlobalEventListeners();
-            await loadTerminalConfig();
+            // No need to call initializeUIElements here, as elements are fetched directly where needed.
+            // However, we need to attach event listeners to the *initial* elements that are always present.
+            // This includes the terminal selection screen and login screen elements.
+            attachGlobalEventListeners(); // This will attach listeners to elements that exist at load.
+            await loadTerminalConfig(); // This will then populate the UI and re-attach listeners for dynamic elements.
         };
 
     </script>
