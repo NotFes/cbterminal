@@ -564,7 +564,8 @@
 
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // --- Элементы интерфейса (объявляем, но не присваиваем сразу) ---
+        // --- Элементы интерфейса (объявляем глобально для attachGlobalEventListeners и других функций,
+        // но populateUI будет получать их напрямую) ---
         let terminalSelectionScreen;
         let terminalOptionsContainer;
         let loginScreen;
@@ -674,8 +675,7 @@
         let currentCabinetLogin = null;
 
 
-        // --- Function to initialize all UI elements by ID ---
-        // This function will be called whenever we need to ensure DOM elements are correctly referenced.
+        // --- Function to initialize all UI elements by ID (for global references) ---
         function initializeUIElements() {
             terminalSelectionScreen = document.getElementById('terminal-selection-screen');
             terminalOptionsContainer = document.getElementById('terminal-options-container');
@@ -700,7 +700,7 @@
             filesystemSectionTitle = document.getElementById('filesystem-section-title');
             filesystemIntroText = document.getElementById('filesystem-intro-text');
             filesystemFilesContainer = document.getElementById('filesystem-files-container');
-            secretFileElement = document.getElementById('secret-file'); // This might be null if not yet displayed
+            secretFileElement = document.getElementById('secret-file');
 
             controlSectionTitle = document.getElementById('control-section-title');
             controlIntroText = document.getElementById('control-intro-text');
@@ -777,151 +777,233 @@
         // --- UI Population Functions ---
 
         function populateUI(data) {
-            // !!! IMPORTANT: Re-initialize all UI elements before populating them !!!
-            initializeUIElements();
+            // Re-fetch all elements needed for populateUI directly to ensure fresh references
+            const currentMainTerminalHeader = document.getElementById('main-terminal-header');
+            if (currentMainTerminalHeader) currentMainTerminalHeader.textContent = data.terminal_title;
 
-            mainTerminalHeader.textContent = data.terminal_title;
-            loginTerminalTitle.textContent = data.terminal_title;
-            terminalSectionTitle.textContent = data.terminal_title;
+            const currentLoginTerminalTitle = document.getElementById('login-terminal-title');
+            if (currentLoginTerminalTitle) currentLoginTerminalTitle.textContent = data.terminal_title;
 
-            mainNavLinks.innerHTML = '';
-            const navPages = [
-                { id: "terminal", label: "ТЕРМИНАЛ" },
-                { id: "filesystem", label: "ФАЙЛОВАЯ СИСТЕМА" },
-                { id: "control", label: "УПРАВЛЕНИЕ" },
-                { id: "cabinet", label: "КАБИНЕТ" },
-                { id: "messages", label: "СООБЩЕНИЯ" },
-                { id: "characters", label: "ПЕРСОНАЖИ" },
-                { id: "dossiers", label: "ДОСЬЕ" },
-                { id: "map", label: "КАРТА" }
-            ];
-            navPages.forEach((page, index) => {
-                const link = document.createElement('a');
-                link.href = `#${page.id}`;
-                link.classList.add('nav-link');
-                link.setAttribute('data-page', page.id);
-                link.textContent = `/// ${page.label} ///`;
-                mainNavLinks.appendChild(link);
-                if (page.id === 'control' || page.id === 'messages') {
-                    mainNavLinks.appendChild(document.createElement('br'));
-                }
-            });
-            // Re-attach event listeners after re-creating nav links
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const pageId = link.getAttribute('data-page');
-                    showPage(pageId);
+            const currentTerminalSectionTitle = document.getElementById('terminal-section-title');
+            if (currentTerminalSectionTitle) currentTerminalSectionTitle.textContent = data.terminal_title;
+
+            const currentMainNavLinks = document.getElementById('main-nav-links');
+            if (currentMainNavLinks) {
+                currentMainNavLinks.innerHTML = '';
+                const navPages = [
+                    { id: "terminal", label: "ТЕРМИНАЛ" },
+                    { id: "filesystem", label: "ФАЙЛОВАЯ СИСТЕМА" },
+                    { id: "control", label: "УПРАВЛЕНИЕ" },
+                    { id: "cabinet", label: "КАБИНЕТ" },
+                    { id: "messages", label: "СООБЩЕНИЯ" },
+                    { id: "characters", label: "ПЕРСОНАЖИ" },
+                    { id: "dossiers", label: "ДОСЬЕ" },
+                    { id: "map", label: "КАРТА" }
+                ];
+                navPages.forEach((page, index) => {
+                    const link = document.createElement('a');
+                    link.href = `#${page.id}`;
+                    link.classList.add('nav-link');
+                    link.setAttribute('data-page', page.id);
+                    link.textContent = `/// ${page.label} ///`;
+                    currentMainNavLinks.appendChild(link);
+                    if (page.id === 'control' || page.id === 'messages') {
+                        currentMainNavLinks.appendChild(document.createElement('br'));
+                    }
                 });
-            });
+                // Re-attach event listeners after re-creating nav links
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const pageId = link.getAttribute('data-page');
+                        showPage(pageId);
+                    });
+                });
+            }
 
-            filesystemSectionTitle.textContent = data.page_content.filesystem.title;
-            filesystemIntroText.textContent = data.page_content.filesystem.intro;
-            filesystemFilesContainer.innerHTML = '';
-            data.page_content.filesystem.files.forEach(file => {
-                const details = document.createElement('details');
-                details.classList.add('file-entry');
-                if (file.is_secret) {
-                    details.classList.add('hidden-file');
-                    details.id = 'secret-file';
-                }
-                const summary = document.createElement('summary');
-                summary.textContent = file.summary;
-                const contentDiv = document.createElement('div');
-                contentDiv.classList.add('file-content');
-                contentDiv.innerHTML = file.content.replace(/\n/g, '<br>');
+            const currentFilesystemSectionTitle = document.getElementById('filesystem-section-title');
+            if (currentFilesystemSectionTitle) currentFilesystemSectionTitle.textContent = data.page_content.filesystem.title;
 
-                details.appendChild(summary);
-                details.appendChild(contentDiv);
-                filesystemFilesContainer.appendChild(details);
-            });
-            // Re-get secretFileElement after re-creating filesystem files
-            secretFileElement = document.getElementById('secret-file');
+            const currentFilesystemIntroText = document.getElementById('filesystem-intro-text');
+            if (currentFilesystemIntroText) currentFilesystemIntroText.textContent = data.page_content.filesystem.intro;
 
-            controlSectionTitle.textContent = data.page_content.control.title;
-            controlIntroText.textContent = data.page_content.control.intro;
-            controlButtonsContainer.innerHTML = '';
-            controlStates = {};
-            data.page_content.control.buttons.forEach(buttonConfig => {
-                const button = document.createElement('button');
-                button.classList.add('control-button');
-                button.setAttribute('data-target', buttonConfig.target);
-                button.textContent = buttonConfig.label;
-                controlButtonsContainer.appendChild(button);
-                controlStates[buttonConfig.target] = false;
-            });
-            // Re-get controlButtons and re-attach event listeners
-            controlButtons = document.querySelectorAll('.control-button');
-            controlButtons.forEach(button => {
-                button.addEventListener('click', handleControlButtonClick);
-            });
+            const currentFilesystemFilesContainer = document.getElementById('filesystem-files-container');
+            if (currentFilesystemFilesContainer) {
+                currentFilesystemFilesContainer.innerHTML = '';
+                data.page_content.filesystem.files.forEach(file => {
+                    const details = document.createElement('details');
+                    details.classList.add('file-entry');
+                    if (file.is_secret) {
+                        details.classList.add('hidden-file');
+                        details.id = 'secret-file';
+                    }
+                    const summary = document.createElement('summary');
+                    summary.textContent = file.summary;
+                    const contentDiv = document.createElement('div');
+                    contentDiv.classList.add('file-content');
+                    contentDiv.innerHTML = file.content.replace(/\n/g, '<br>');
 
+                    details.appendChild(summary);
+                    details.appendChild(contentDiv);
+                    currentFilesystemFilesContainer.appendChild(details);
+                });
+                // Update global secretFileElement after re-creating filesystem files
+                secretFileElement = document.getElementById('secret-file');
+            }
 
-            cabinetSectionTitle.textContent = data.page_content.cabinet.title;
-            cabinetIntroText.textContent = data.page_content.cabinet.intro;
+            const currentControlSectionTitle = document.getElementById('control-section-title');
+            if (currentControlSectionTitle) currentControlSectionTitle.textContent = data.page_content.control.title;
 
-            cabinetPasswordLabel.textContent = data.page_content.cabinet.sections.password.label;
-            cabinetPasswordInput.placeholder = data.page_content.cabinet.sections.password.placeholder;
+            const currentControlIntroText = document.getElementById('control-intro-text');
+            if (currentControlIntroText) currentControlIntroText.textContent = data.page_content.control.intro;
 
-            cabinetTasksLabel.textContent = data.page_content.cabinet.sections.tasks.label;
-            editTasksButton.textContent = data.page_content.cabinet.sections.tasks.edit_button;
-            taskListDisplay.textContent = data.page_content.cabinet.sections.tasks.initial_content;
+            const currentControlButtonsContainer = document.getElementById('control-buttons-container');
+            if (currentControlButtonsContainer) {
+                currentControlButtonsContainer.innerHTML = '';
+                controlStates = {};
+                data.page_content.control.buttons.forEach(buttonConfig => {
+                    const button = document.createElement('button');
+                    button.classList.add('control-button');
+                    button.setAttribute('data-target', buttonConfig.target);
+                    button.textContent = buttonConfig.label;
+                    currentControlButtonsContainer.appendChild(button);
+                    controlStates[buttonConfig.target] = false;
+                });
+                // Update global controlButtons after re-creating them
+                controlButtons = document.querySelectorAll('.control-button');
+                controlButtons.forEach(button => {
+                    button.addEventListener('click', handleControlButtonClick);
+                });
+            }
 
-            cabinetPersonalInfoLabel.textContent = data.page_content.cabinet.sections.personal_info.label;
-            editPersonalInfoButton.textContent = data.page_content.cabinet.sections.personal_info.edit_button;
-            personalInfoDisplay.textContent = data.page_content.cabinet.sections.personal_info.initial_content;
+            // Cabinet Section elements
+            const currentCabinetSectionTitle = document.getElementById('cabinet-section-title');
+            if (currentCabinetSectionTitle) currentCabinetSectionTitle.textContent = data.page_content.cabinet.title;
 
-            cabinetFinancesLabel.textContent = data.page_content.cabinet.sections.finances.label;
-            editFinancesButton.textContent = data.page_content.cabinet.sections.finances.edit_button;
-            financesDisplay.textContent = data.page_content.cabinet.sections.finances.initial_content;
+            const currentCabinetIntroText = document.getElementById('cabinet-intro-text');
+            if (currentCabinetIntroText) currentCabinetIntroText.textContent = data.page_content.cabinet.intro;
 
-            charactersSectionTitle.textContent = data.page_content.characters.title;
-            charactersIntroText.textContent = data.page_content.characters.intro;
-            charactersListContainer.innerHTML = '';
-            data.page_content.characters.list.forEach(item => {
-                const li = document.createElement('li');
-                li.textContent = item;
-                charactersListContainer.appendChild(li);
-            });
+            const currentCabinetPasswordLabel = document.getElementById('cabinet-password-label');
+            if (currentCabinetPasswordLabel) currentCabinetPasswordLabel.textContent = data.page_content.cabinet.sections.password.label;
 
-            dossiersSectionTitle.textContent = data.page_content.dossiers.title;
-            dossiersIntroText.textContent = data.page_content.dossiers.intro;
-            dossiersListContainer.innerHTML = '';
-            data.page_content.dossiers.dossiers_list.forEach(dossier => {
-                const pHeading = document.createElement('p');
-                pHeading.innerHTML = `<strong>${dossier.heading}</strong>`;
-                const pContent = document.createElement('p');
-                pContent.textContent = dossier.content;
-                dossiersListContainer.appendChild(pHeading);
-                dossiersListContainer.appendChild(pContent);
-            });
+            const currentCabinetPasswordInput = document.getElementById('cabinet-password');
+            if (currentCabinetPasswordInput) currentCabinetPasswordInput.placeholder = data.page_content.cabinet.sections.password.placeholder;
 
-            mapSectionTitle.textContent = data.page_content.map.title;
-            mapIntroText.textContent = data.page_content.map.intro;
-            mapImageLink.href = data.page_content.map.image_link;
-            mapImage.src = data.page_content.map.image_src;
-            mapImage.alt = data.page_content.map.image_alt;
-            mapDescriptionHeading.textContent = data.page_content.map.description_heading;
-            mapLocationsContainer.innerHTML = '';
-            data.page_content.map.locations.forEach(location => {
-                const pHeading = document.createElement('p');
-                pHeading.innerHTML = `<strong>${location.heading}</strong>`;
-                const pContent = document.createElement('p');
-                pContent.textContent = location.content;
-                mapLocationsContainer.appendChild(pHeading);
-                mapLocationsContainer.appendChild(pContent);
-            });
+            const currentCabinetTasksLabel = document.getElementById('cabinet-tasks-label');
+            if (currentCabinetTasksLabel) currentCabinetTasksLabel.textContent = data.page_content.cabinet.sections.tasks.label;
 
-            messagesSectionTitle.textContent = data.page_content.messages.title;
-            messagesIntroText.textContent = data.page_content.messages.intro;
+            const currentEditTasksButton = document.getElementById('edit-tasks-button');
+            if (currentEditTasksButton) currentEditTasksButton.textContent = data.page_content.cabinet.sections.tasks.edit_button;
+
+            const currentTaskListDisplay = document.getElementById('task-list-display');
+            if (currentTaskListDisplay) currentTaskListDisplay.textContent = data.page_content.cabinet.sections.tasks.initial_content;
+
+            const currentCabinetPersonalInfoLabel = document.getElementById('cabinet-personal-info-label');
+            if (currentCabinetPersonalInfoLabel) currentCabinetPersonalInfoLabel.textContent = data.page_content.cabinet.sections.personal_info.label;
+
+            const currentEditPersonalInfoButton = document.getElementById('edit-personal-info-button');
+            if (currentEditPersonalInfoButton) currentEditPersonalInfoButton.textContent = data.page_content.cabinet.sections.personal_info.edit_button;
+
+            const currentPersonalInfoDisplay = document.getElementById('personal-info-display');
+            if (currentPersonalInfoDisplay) currentPersonalInfoDisplay.textContent = data.page_content.cabinet.sections.personal_info.initial_content;
+
+            const currentCabinetFinancesLabel = document.getElementById('cabinet-finances-label');
+            if (currentCabinetFinancesLabel) currentCabinetFinancesLabel.textContent = data.page_content.cabinet.sections.finances.label;
+
+            const currentEditFinancesButton = document.getElementById('edit-finances-button');
+            if (currentEditFinancesButton) currentEditFinancesButton.textContent = data.page_content.cabinet.sections.finances.edit_button;
+
+            const currentFinancesDisplay = document.getElementById('finances-display');
+            if (currentFinancesDisplay) currentFinancesDisplay.textContent = data.page_content.cabinet.sections.finances.initial_content;
 
 
-            modalTitle.textContent = data.modal_messages.title;
-            modalInstructions.innerHTML = data.modal_messages.instructions.replace('{terminal_id}', data.terminal_id);
-            copyJsonButton.textContent = data.modal_messages.copy_button;
+            const currentCharactersSectionTitle = document.getElementById('characters-section-title');
+            if (currentCharactersSectionTitle) currentCharactersSectionTitle.textContent = data.page_content.characters.title;
 
-            terminalOutput.innerHTML = data.initial_message + '\n> ';
-            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            const currentCharactersIntroText = document.getElementById('characters-intro-text');
+            if (currentCharactersIntroText) currentCharactersIntroText.textContent = data.page_content.characters.intro;
+
+            const currentCharactersListContainer = document.getElementById('characters-list-container');
+            if (currentCharactersListContainer) {
+                currentCharactersListContainer.innerHTML = '';
+                data.page_content.characters.list.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    currentCharactersListContainer.appendChild(li);
+                });
+            }
+
+            const currentDossiersSectionTitle = document.getElementById('dossiers-section-title');
+            if (currentDossiersSectionTitle) currentDossiersSectionTitle.textContent = data.page_content.dossiers.title;
+
+            const currentDossiersIntroText = document.getElementById('dossiers-intro-text');
+            if (currentDossiersIntroText) currentDossiersIntroText.textContent = data.page_content.dossiers.intro;
+
+            const currentDossiersListContainer = document.getElementById('dossiers-list-container');
+            if (currentDossiersListContainer) {
+                currentDossiersListContainer.innerHTML = '';
+                data.page_content.dossiers.dossiers_list.forEach(dossier => {
+                    const pHeading = document.createElement('p');
+                    pHeading.innerHTML = `<strong>${dossier.heading}</strong>`;
+                    const pContent = document.createElement('p');
+                    pContent.textContent = dossier.content;
+                    currentDossiersListContainer.appendChild(pHeading);
+                    currentDossiersListContainer.appendChild(pContent);
+                });
+            }
+
+            const currentMapSectionTitle = document.getElementById('map-section-title');
+            if (currentMapSectionTitle) currentMapSectionTitle.textContent = data.page_content.map.title;
+
+            const currentMapIntroText = document.getElementById('map-intro-text');
+            if (currentMapIntroText) currentMapIntroText.textContent = data.page_content.map.intro;
+
+            const currentMapImageLink = document.getElementById('map-image-link');
+            if (currentMapImageLink) currentMapImageLink.href = data.page_content.map.image_link;
+
+            const currentMapImage = document.getElementById('map-image');
+            if (currentMapImage) {
+                currentMapImage.src = data.page_content.map.image_src;
+                currentMapImage.alt = data.page_content.map.image_alt;
+            }
+
+            const currentMapDescriptionHeading = document.getElementById('map-description-heading');
+            if (currentMapDescriptionHeading) currentMapDescriptionHeading.textContent = data.page_content.map.description_heading;
+
+            const currentMapLocationsContainer = document.getElementById('map-locations-container');
+            if (currentMapLocationsContainer) {
+                currentMapLocationsContainer.innerHTML = '';
+                data.page_content.map.locations.forEach(location => {
+                    const pHeading = document.createElement('p');
+                    pHeading.innerHTML = `<strong>${location.heading}</strong>`;
+                    const pContent = document.createElement('p');
+                    pContent.textContent = location.content;
+                    currentMapLocationsContainer.appendChild(pHeading);
+                    currentMapLocationsContainer.appendChild(pContent);
+                });
+            }
+
+            const currentMessagesSectionTitle = document.getElementById('messages-section-title');
+            if (currentMessagesSectionTitle) currentMessagesSectionTitle.textContent = data.page_content.messages.title;
+
+            const currentMessagesIntroText = document.getElementById('messages-intro-text');
+            if (currentMessagesIntroText) currentMessagesIntroText.textContent = data.page_content.messages.intro;
+
+
+            const currentModalTitle = document.getElementById('modal-title');
+            if (currentModalTitle) currentModalTitle.textContent = data.modal_messages.title;
+
+            const currentModalInstructions = document.getElementById('modal-instructions');
+            if (currentModalInstructions) currentModalInstructions.innerHTML = data.modal_messages.instructions.replace('{terminal_id}', data.terminal_id);
+
+            const currentCopyJsonButton = document.getElementById('copyJsonButton');
+            if (currentCopyJsonButton) currentCopyJsonButton.textContent = data.modal_messages.copy_button;
+
+            // terminalOutput is used globally, so ensure it's initialized
+            if (terminalOutput) {
+                terminalOutput.innerHTML = data.initial_message + '\n> ';
+                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            }
         }
 
 
@@ -1167,42 +1249,69 @@
         // --- Cabinet Login/Registration Logic (NO SUPABASE AUTH HERE) ---
 
         function updateCabinetUIForLoginStatus() {
+            // Ensure all cabinet-related elements are correctly referenced before use
+            const currentCabinetLoginSection = document.getElementById('cabinet-login-section');
+            const currentPersonalCabinetDataSection = document.getElementById('personal-cabinet-data-section');
+            const currentCabinetDisplayIdInput = document.getElementById('cabinet-display-id');
+            const currentCabinetLogoutButton = document.getElementById('cabinet-logout-button');
+            const currentCabinetAuthMessage = document.getElementById('cabinet-auth-message');
+
+            const currentCabinetLoginIdInput = document.getElementById('cabinet-login-id');
+            const currentCabinetLoginPasswordInput = document.getElementById('cabinet-login-password');
+
+            const currentCabinetPasswordInput = document.getElementById('cabinet-password');
+            const currentTaskListDisplay = document.getElementById('task-list-display');
+            const currentPersonalInfoDisplay = document.getElementById('personal-info-display');
+            const currentFinancesDisplay = document.getElementById('finances-display');
+            const currentCabinetPasswordMessage = document.getElementById('cabinet-password-message');
+            const currentTaskMessage = document.getElementById('task-message');
+            const currentPersonalInfoMessage = document.getElementById('personal-info-message');
+            const currentFinancesMessage = document.getElementById('finances-message');
+
+
             if (currentCabinetLogin) {
-                cabinetLoginSection.style.display = 'none';
-                personalCabinetDataSection.style.display = 'block';
-                cabinetDisplayIdInput.value = currentCabinetLogin; // Display the logged-in cabinet ID
-                cabinetLogoutButton.style.display = 'block';
-                cabinetAuthMessage.textContent = `Вы вошли как: ${currentCabinetLogin}`;
-                cabinetAuthMessage.style.color = '#00ff00'; // Green for success
-                loadCabinetData(); // Load data for the logged-in cabinet
+                if (currentCabinetLoginSection) currentCabinetLoginSection.style.display = 'none';
+                if (currentPersonalCabinetDataSection) currentPersonalCabinetDataSection.style.display = 'block';
+                if (currentCabinetDisplayIdInput) currentCabinetDisplayIdInput.value = currentCabinetLogin;
+                if (currentCabinetLogoutButton) currentCabinetLogoutButton.style.display = 'block';
+                if (currentCabinetAuthMessage) {
+                    currentCabinetAuthMessage.textContent = `Вы вошли как: ${currentCabinetLogin}`;
+                    currentCabinetAuthMessage.style.color = '#00ff00';
+                }
+                loadCabinetData();
             } else {
-                cabinetLoginSection.style.display = 'block';
-                personalCabinetDataSection.style.display = 'none';
-                cabinetLogoutButton.style.display = 'none';
-                cabinetAuthMessage.textContent = 'Войдите или зарегистрируйте аккаунт Кабинета.';
-                cabinetAuthMessage.style.color = '#ff0000'; // Red for warning/info
-                // Clear all cabinet data displays
-                cabinetDisplayIdInput.value = '';
-                cabinetLoginIdInput.value = '';
-                cabinetLoginPasswordInput.value = '';
-                cabinetPasswordInput.value = '';
-                taskListDisplay.textContent = currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
-                personalInfoDisplay.textContent = currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
-                financesDisplay.textContent = currentTerminalData.page_content.cabinet.sections.finances.initial_content;
-                cabinetPasswordMessage.textContent = '';
-                taskMessage.textContent = '';
-                personalInfoMessage.textContent = '';
-                financesMessage.textContent = '';
+                if (currentCabinetLoginSection) currentCabinetLoginSection.style.display = 'block';
+                if (currentPersonalCabinetDataSection) currentPersonalCabinetDataSection.style.display = 'none';
+                if (currentCabinetLogoutButton) currentCabinetLogoutButton.style.display = 'none';
+                if (currentCabinetAuthMessage) {
+                    currentCabinetAuthMessage.textContent = 'Войдите или зарегистрируйте аккаунт Кабинета.';
+                    currentCabinetAuthMessage.style.color = '#ff0000';
+                }
+                if (currentCabinetDisplayIdInput) currentCabinetDisplayIdInput.value = '';
+                if (currentCabinetLoginIdInput) currentCabinetLoginIdInput.value = '';
+                if (currentCabinetLoginPasswordInput) currentCabinetLoginPasswordInput.value = '';
+                if (currentCabinetPasswordInput) currentCabinetPasswordInput.value = '';
+                if (currentTaskListDisplay && currentTerminalData) currentTaskListDisplay.textContent = currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
+                if (currentPersonalInfoDisplay && currentTerminalData) currentPersonalInfoDisplay.textContent = currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
+                if (currentFinancesDisplay && currentTerminalData) currentFinancesDisplay.textContent = currentTerminalData.page_content.cabinet.sections.finances.initial_content;
+                if (currentCabinetPasswordMessage) currentCabinetPasswordMessage.textContent = '';
+                if (currentTaskMessage) currentTaskMessage.textContent = '';
+                if (currentPersonalInfoMessage) currentPersonalInfoMessage.textContent = '';
+                if (currentFinancesMessage) currentFinancesMessage.textContent = '';
             }
         }
 
         async function handleCabinetLogin() {
-            const loginId = cabinetLoginIdInput.value.trim();
-            const password = cabinetLoginPasswordInput.value.trim();
-            cabinetAuthMessage.textContent = '';
+            const currentCabinetLoginIdInput = document.getElementById('cabinet-login-id');
+            const currentCabinetLoginPasswordInput = document.getElementById('cabinet-login-password');
+            const currentCabinetAuthMessage = document.getElementById('cabinet-auth-message');
+
+            const loginId = currentCabinetLoginIdInput ? currentCabinetLoginIdInput.value.trim() : '';
+            const password = currentCabinetLoginPasswordInput ? currentCabinetLoginPasswordInput.value.trim() : '';
+            if (currentCabinetAuthMessage) currentCabinetAuthMessage.textContent = '';
 
             if (!loginId || !password) {
-                cabinetAuthMessage.textContent = 'Введите логин и пароль Кабинета.';
+                if (currentCabinetAuthMessage) currentCabinetAuthMessage.textContent = 'Введите логин и пароль Кабинета.';
                 return;
             }
 
@@ -1214,7 +1323,7 @@
                     .eq('terminal_id', selectedTerminalId)
                     .single();
 
-                if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
+                if (error && error.code !== 'PGRST116') {
                     throw error;
                 }
 
@@ -1222,27 +1331,30 @@
                     currentCabinetLogin = loginId;
                     updateCabinetUIForLoginStatus();
                 } else {
-                    cabinetAuthMessage.textContent = 'Неверный логин или пароль Кабинета.';
-                    cabinetLoginPasswordInput.value = '';
+                    if (currentCabinetAuthMessage) currentCabinetAuthMessage.textContent = 'Неверный логин или пароль Кабинета.';
+                    if (currentCabinetLoginPasswordInput) currentCabinetLoginPasswordInput.value = '';
                 }
             } catch (e) {
                 console.error('Ошибка входа в Кабинет:', e);
-                cabinetAuthMessage.textContent = `Ошибка входа: ${e.message}`;
+                if (currentCabinetAuthMessage) currentCabinetAuthMessage.textContent = `Ошибка входа: ${e.message}`;
             }
         }
 
         async function handleCabinetRegister() {
-            const loginId = cabinetLoginIdInput.value.trim();
-            const password = cabinetLoginPasswordInput.value.trim();
-            cabinetAuthMessage.textContent = '';
+            const currentCabinetLoginIdInput = document.getElementById('cabinet-login-id');
+            const currentCabinetLoginPasswordInput = document.getElementById('cabinet-login-password');
+            const currentCabinetAuthMessage = document.getElementById('cabinet-auth-message');
+
+            const loginId = currentCabinetLoginIdInput ? currentCabinetLoginIdInput.value.trim() : '';
+            const password = currentCabinetLoginPasswordInput ? currentCabinetLoginPasswordInput.value.trim() : '';
+            if (currentCabinetAuthMessage) currentCabinetAuthMessage.textContent = '';
 
             if (!loginId || !password) {
-                cabinetAuthMessage.textContent = 'Введите логин и пароль для регистрации Кабинета.';
+                if (currentCabinetAuthMessage) currentCabinetAuthMessage.textContent = 'Введите логин и пароль для регистрации Кабинета.';
                 return;
             }
 
             try {
-                // Check if account already exists
                 const { data: existingAccount, error: checkError } = await supabase
                     .from('cabinet_accounts')
                     .select('id')
@@ -1251,14 +1363,13 @@
                     .single();
 
                 if (existingAccount) {
-                    cabinetAuthMessage.textContent = `Аккаунт "${loginId}" уже существует для этого терминала.`;
+                    if (currentCabinetAuthMessage) currentCabinetAuthMessage.textContent = `Аккаунт "${loginId}" уже существует для этого терминала.`;
                     return;
                 }
-                if (checkError && checkError.code !== 'PGRST116') { // Not found is okay
+                if (checkError && checkError.code !== 'PGRST116') {
                     throw checkError;
                 }
 
-                // Register new account
                 const { data, error } = await supabase
                     .from('cabinet_accounts')
                     .insert([
@@ -1274,30 +1385,39 @@
                     .select();
 
                 if (error) throw error;
-                cabinetAuthMessage.textContent = `Аккаунт "${loginId}" успешно зарегистрирован! Выполняется вход...`;
+                if (currentCabinetAuthMessage) currentCabinetAuthMessage.textContent = `Аккаунт "${loginId}" успешно зарегистрирован! Выполняется вход...`;
                 console.log('Кабинет зарегистрирован:', data);
                 currentCabinetLogin = loginId;
                 updateCabinetUIForLoginStatus();
             } catch (e) {
                 console.error('Ошибка регистрации Кабинета:', e);
-                cabinetAuthMessage.textContent = `Ошибка регистрации: ${e.message}`;
+                if (currentCabinetAuthMessage) currentCabinetAuthMessage.textContent = `Ошибка регистрации: ${e.message}`;
             }
         }
 
         function handleCabinetLogout() {
             currentCabinetLogin = null;
             updateCabinetUIForLoginStatus();
-            cabinetAuthMessage.textContent = 'Вы вышли из Кабинета.';
-            cabinetAuthMessage.style.color = '#00ffff'; // Blue for info
+            const currentCabinetAuthMessage = document.getElementById('cabinet-auth-message');
+            if (currentCabinetAuthMessage) {
+                currentCabinetAuthMessage.textContent = 'Вы вышли из Кабинета.';
+                currentCabinetAuthMessage.style.color = '#00ffff';
+            }
         }
 
         // --- Cabinet Data Management Logic ---
 
         async function loadCabinetData() {
-            cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.loading;
+            const currentCabinetPasswordMessage = document.getElementById('cabinet-password-message');
+            const currentTaskListDisplay = document.getElementById('task-list-display');
+            const currentPersonalInfoDisplay = document.getElementById('personal-info-display');
+            const currentFinancesDisplay = document.getElementById('finances-display');
+            const currentCabinetPasswordInput = document.getElementById('cabinet-password');
+
+            if (currentCabinetPasswordMessage && currentTerminalData) currentCabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.loading;
 
             if (!currentCabinetLogin) {
-                cabinetPasswordMessage.textContent = 'Войдите в Кабинет для загрузки данных.';
+                if (currentCabinetPasswordMessage) currentCabinetPasswordMessage.textContent = 'Войдите в Кабинет для загрузки данных.';
                 return;
             }
 
@@ -1314,43 +1434,47 @@
                 }
 
                 if (data) {
-                    taskListDisplay.textContent = data.tasks || currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
-                    personalInfoDisplay.textContent = data.personal_info || currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
-                    financesDisplay.textContent = data.finances || currentTerminalData.page_content.cabinet.sections.finances.initial_content;
-                    cabinetPasswordInput.value = data.password || ''; // Set narrative password field
-                    cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.loaded_success.replace('{account_id}', currentCabinetLogin);
-                    loadMessages(); // Load messages for this cabinet login
+                    if (currentTaskListDisplay && currentTerminalData) currentTaskListDisplay.textContent = data.tasks || currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
+                    if (currentPersonalInfoDisplay && currentTerminalData) currentPersonalInfoDisplay.textContent = data.personal_info || currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
+                    if (currentFinancesDisplay && currentTerminalData) currentFinancesDisplay.textContent = data.finances || currentTerminalData.page_content.cabinet.sections.finances.initial_content;
+                    if (currentCabinetPasswordInput) currentCabinetPasswordInput.value = data.password || '';
+                    if (currentCabinetPasswordMessage && currentTerminalData) currentCabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.loaded_success.replace('{account_id}', currentCabinetLogin);
+                    loadMessages();
                 } else {
-                    // This case should ideally not happen if currentCabinetLogin is set,
-                    // but as a fallback:
-                    cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.not_found.replace('{account_id}', currentCabinetLogin);
-                    taskListDisplay.textContent = currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
-                    personalInfoDisplay.textContent = currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
-                    financesDisplay.textContent = currentTerminalData.page_content.cabinet.sections.finances.initial_content;
-                    cabinetPasswordInput.value = '';
+                    if (currentCabinetPasswordMessage && currentTerminalData) currentCabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.not_found.replace('{account_id}', currentCabinetLogin);
+                    if (currentTaskListDisplay && currentTerminalData) currentTaskListDisplay.textContent = currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
+                    if (currentPersonalInfoDisplay && currentTerminalData) currentPersonalInfoDisplay.textContent = currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
+                    if (currentFinancesDisplay && currentTerminalData) currentFinancesDisplay.textContent = currentTerminalData.page_content.cabinet.sections.finances.initial_content;
+                    if (currentCabinetPasswordInput) currentCabinetPasswordInput.value = '';
                 }
             }
             catch (e) {
                 console.error("Error loading cabinet data from Supabase:", e);
-                cabinetPasswordMessage.textContent = 'Ошибка: Не удалось загрузить данные из Supabase. Проверьте консоль.';
+                if (currentCabinetPasswordMessage) currentCabinetPasswordMessage.textContent = 'Ошибка: Не удалось загрузить данные из Supabase. Проверьте консоль.';
             }
         }
 
-        async function saveCabinetData() { // This function is now specifically for saving the narrative password
-            cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.saving;
+        async function saveCabinetData() {
+            const currentCabinetPasswordMessage = document.getElementById('cabinet-password-message');
+            const currentCabinetPasswordInput = document.getElementById('cabinet-password');
+            const currentTaskListDisplay = document.getElementById('task-list-display');
+            const currentPersonalInfoDisplay = document.getElementById('personal-info-display');
+            const currentFinancesDisplay = document.getElementById('finances-display');
+
+            if (currentCabinetPasswordMessage && currentTerminalData) currentCabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.saving;
 
             if (!currentCabinetLogin) {
-                cabinetPasswordMessage.textContent = 'Войдите в Кабинет для сохранения данных.';
+                if (currentCabinetPasswordMessage) currentCabinetPasswordMessage.textContent = 'Войдите в Кабинет для сохранения данных.';
                 return;
             }
 
-            const cabinetPassword = cabinetPasswordInput.value.trim();
+            const cabinetPassword = currentCabinetPasswordInput ? currentCabinetPasswordInput.value.trim() : '';
 
             const dataToUpdate = {
                 password: cabinetPassword,
-                tasks: taskListDisplay.textContent.trim(),
-                personal_info: personalInfoDisplay.textContent.trim(),
-                finances: financesDisplay.textContent.trim()
+                tasks: currentTaskListDisplay ? currentTaskListDisplay.textContent.trim() : '',
+                personal_info: currentPersonalInfoDisplay ? currentPersonalInfoDisplay.textContent.trim() : '',
+                finances: currentFinancesDisplay ? currentFinancesDisplay.textContent.trim() : ''
             };
 
             try {
@@ -1363,65 +1487,72 @@
 
                 if (error) throw error;
                 console.log("Cabinet data saved to Supabase:", data);
-                cabinetPasswordMessage.textContent = `Данные для аккаунта "${currentCabinetLogin}" успешно сохранены в Supabase.`;
+                if (currentCabinetPasswordMessage) currentCabinetPasswordMessage.textContent = `Данные для аккаунта "${currentCabinetLogin}" успешно сохранены в Supabase.`;
             } catch (e) {
                 console.error("Error saving cabinet data to Supabase:", e);
-                cabinetPasswordMessage.textContent = 'Ошибка: Не удалось сохранить данные в Supabase. Проверьте консоль.';
+                if (currentCabinetPasswordMessage) currentCabinetPasswordMessage.textContent = 'Ошибка: Не удалось сохранить данные в Supabase. Проверьте консоль.';
             }
         }
 
         function toggleEditMode(displayElement, messageElement, buttonElement, sectionKey) {
             if (!currentCabinetLogin) {
-                messageElement.textContent = 'Войдите в Кабинет, чтобы редактировать данные.';
-                messageElement.style.color = '#ff0000';
+                if (messageElement) {
+                    messageElement.textContent = 'Войдите в Кабинет, чтобы редактировать данные.';
+                    messageElement.style.color = '#ff0000';
+                }
                 return;
             }
-            messageElement.style.color = '#00ffff'; // Reset color
+            if (messageElement) messageElement.style.color = '#00ffff';
 
             const isEditable = displayElement.contentEditable === 'true';
-            displayElement.contentEditable = !isEditable;
-            buttonElement.textContent = isEditable ? currentTerminalData.page_content.cabinet.sections[sectionKey].edit_button : currentTerminalData.page_content.cabinet.sections[sectionKey].save_button;
+            if (displayElement) displayElement.contentEditable = !isEditable;
+            if (buttonElement && currentTerminalData) buttonElement.textContent = isEditable ? currentTerminalData.page_content.cabinet.sections[sectionKey].edit_button : currentTerminalData.page_content.cabinet.sections[sectionKey].save_button;
             if (isEditable) {
-                messageElement.textContent = currentTerminalData.page_content.cabinet.sections[sectionKey].messages.saved_local;
-                displayElement.classList.remove('cabinet-data-area-editing');
-                // Auto-save edited section to DB
+                if (messageElement && currentTerminalData) messageElement.textContent = currentTerminalData.page_content.cabinet.sections[sectionKey].messages.saved_local;
+                if (displayElement) displayElement.classList.remove('cabinet-data-area-editing');
                 saveCabinetData();
             } else {
-                messageElement.textContent = currentTerminalData.page_content.cabinet.sections[sectionKey].messages.editing;
-                displayElement.focus();
-                displayElement.classList.add('cabinet-data-area-editing');
+                if (messageElement && currentTerminalData) messageElement.textContent = currentTerminalData.page_content.cabinet.sections[sectionKey].messages.editing;
+                if (displayElement) {
+                    displayElement.focus();
+                    displayElement.classList.add('cabinet-data-area-editing');
+                }
             }
         }
 
         // Send Message
         async function sendMessage() {
-            sendMessageStatus.textContent = '';
+            const currentSendMessageStatus = document.getElementById('send-message-status');
+            const currentMessageRecipientIdInput = document.getElementById('message-recipient-id');
+            const currentMessageSubjectInput = document.getElementById('message-subject');
+            const currentMessageContentTextarea = document.getElementById('message-content');
+
+            if (currentSendMessageStatus) currentSendMessageStatus.textContent = '';
             if (!currentCabinetLogin) {
-                sendMessageStatus.textContent = 'Ошибка: Войдите в Кабинет, чтобы отправлять сообщения.';
+                if (currentSendMessageStatus) currentSendMessageStatus.textContent = 'Ошибка: Войдите в Кабинет, чтобы отправлять сообщения.';
                 return;
             }
             if (!selectedTerminalId) {
-                sendMessageStatus.textContent = 'Ошибка: Выберите терминал.';
+                if (currentSendMessageStatus) currentSendMessageStatus.textContent = 'Ошибка: Выберите терминал.';
                 return;
             }
 
             const senderLogin = currentCabinetLogin;
-            const recipientLogin = messageRecipientIdInput.value.trim();
-            const subject = messageSubjectInput.value.trim();
-            const content = messageContentTextarea.value.trim();
-            const senderName = senderLogin; // For now, sender name is their login
+            const recipientLogin = currentMessageRecipientIdInput ? currentMessageRecipientIdInput.value.trim() : '';
+            const subject = currentMessageSubjectInput ? currentMessageSubjectInput.value.trim() : '';
+            const content = currentMessageContentTextarea ? currentMessageContentTextarea.value.trim() : '';
+            const senderName = senderLogin;
 
             if (!recipientLogin || !subject || !content) {
-                sendMessageStatus.textContent = 'Заполните все поля для отправки сообщения.';
+                if (currentSendMessageStatus) currentSendMessageStatus.textContent = 'Заполните все поля для отправки сообщения.';
                 return;
             }
 
             if (recipientLogin === senderLogin) {
-                sendMessageStatus.textContent = 'Ошибка: Вы не можете отправить сообщение самому себе.';
+                if (currentSendMessageStatus) currentSendMessageStatus.textContent = 'Ошибка: Вы не можете отправить сообщение самому себе.';
                 return;
             }
 
-            // Optional: Check if recipient ID exists in cabinet_accounts
             try {
                 const { data: recipientExists, error: recipientError } = await supabase
                     .from('cabinet_accounts')
@@ -1430,7 +1561,7 @@
                     .single();
 
                 if (!recipientExists) {
-                    sendMessageStatus.textContent = `Ошибка: Получатель с логином "${recipientLogin}" не найден.`;
+                    if (currentSendMessageStatus) currentSendMessageStatus.textContent = `Ошибка: Получатель с логином "${recipientLogin}" не найден.`;
                     return;
                 }
                 if (recipientError && recipientError.code !== 'PGRST116') {
@@ -1438,7 +1569,7 @@
                 }
             } catch (e) {
                 console.error('Ошибка проверки получателя:', e);
-                sendMessageStatus.textContent = `Ошибка проверки получателя: ${e.message}`;
+                if (currentSendMessageStatus) currentSendMessageStatus.textContent = `Ошибка проверки получателя: ${e.message}`;
                 return;
             }
 
@@ -1452,41 +1583,44 @@
                             sender_id: senderLogin,
                             sender_terminal_id: selectedTerminalId,
                             recipient_id: recipientLogin,
-                            recipient_terminal_id: selectedTerminalId, // Assume same terminal for user-to-user for simplicity
+                            recipient_terminal_id: selectedTerminalId,
                             sender_name: senderName,
                             subject: subject,
                             content: content,
-                            read: false // New messages are unread
+                            read: false
                         }
                     ])
                     .select();
 
                 if (error) throw error;
 
-                sendMessageStatus.textContent = 'Сообщение успешно отправлено!';
-                messageRecipientIdInput.value = '';
-                messageSubjectInput.value = '';
-                messageContentTextarea.value = '';
-                loadMessages(); // Reload messages to show the sent one
+                if (currentSendMessageStatus) currentSendMessageStatus.textContent = 'Сообщение успешно отправлено!';
+                if (currentMessageRecipientIdInput) currentMessageRecipientIdInput.value = '';
+                if (currentMessageSubjectInput) currentMessageSubjectInput.value = '';
+                if (currentMessageContentTextarea) currentMessageContentTextarea.value = '';
+                loadMessages();
                 console.log('Message sent:', data);
             } catch (e) {
                 console.error('Error sending message:', e);
-                sendMessageStatus.textContent = `Ошибка отправки: ${e.message}`;
+                if (currentSendMessageStatus) currentSendMessageStatus.textContent = `Ошибка отправки: ${e.message}`;
             }
         }
 
 
         // Load messages for the current cabinet account
         async function loadMessages() {
-            messagesListContainer.innerHTML = ''; // Clear previous messages
-            messagesStatus.textContent = 'Загрузка сообщений...';
+            const currentMessagesListContainer = document.getElementById('messages-list-container');
+            const currentMessagesStatus = document.getElementById('messages-status');
 
-            if (!currentCabinetLogin) { // Check for cabinet login
-                messagesStatus.textContent = 'Войдите в Кабинет, чтобы просмотреть сообщения.';
+            if (currentMessagesListContainer) currentMessagesListContainer.innerHTML = '';
+            if (currentMessagesStatus) currentMessagesStatus.textContent = 'Загрузка сообщений...';
+
+            if (!currentCabinetLogin) {
+                if (currentMessagesStatus) currentMessagesStatus.textContent = 'Войдите в Кабинет, чтобы просмотреть сообщения.';
                 return;
             }
             if (!selectedTerminalId) {
-                 messagesStatus.textContent = 'Выберите терминал, чтобы просмотреть сообщения.';
+                 if (currentMessagesStatus) currentMessagesStatus.textContent = 'Выберите терминал, чтобы просмотреть сообщения.';
                  return;
             }
 
@@ -1496,20 +1630,20 @@
                 const { data, error } = await supabase
                     .from('terminal_messages')
                     .select('*')
-                    .or(`recipient_id.eq.${currentLogin},sender_id.eq.${currentLogin}`) // Messages where user is recipient OR sender
-                    .eq('recipient_terminal_id', selectedTerminalId) // Filter by current terminal for received messages
-                    .order('timestamp', { ascending: false }); // Order by newest first
+                    .or(`recipient_id.eq.${currentLogin},sender_id.eq.${currentLogin}`)
+                    .eq('recipient_terminal_id', selectedTerminalId)
+                    .order('timestamp', { ascending: false });
 
                 if (error) throw error;
 
                 if (data && data.length > 0) {
-                    messagesStatus.textContent = ''; // Clear status message
+                    if (currentMessagesStatus) currentMessagesStatus.textContent = '';
                     data.forEach(async (message) => {
                         const isSent = message.sender_id === currentLogin;
                         const displaySender = isSent ? `Вам (${message.recipient_id})` : message.sender_name;
-                        const icon = message.read ? '&#10003;' : '&#9888;'; // Checkmark or warning icon
+                        const icon = message.read ? '&#10003;' : '&#9888;';
                         const messageTypeLabel = isSent ? 'Исходящее' : 'Входящее';
-                        const summaryColorClass = isSent ? 'text-green-400' : 'text-blue-400'; // Different color for sent/received
+                        const summaryColorClass = isSent ? 'text-green-400' : 'text-blue-400';
 
                         const messageDiv = document.createElement('div');
                         messageDiv.classList.add('file-entry', 'mb-4');
@@ -1523,9 +1657,8 @@
                                 </div>
                             </details>
                         `;
-                        messagesListContainer.appendChild(messageDiv);
+                        if (currentMessagesListContainer) currentMessagesListContainer.appendChild(messageDiv);
 
-                        // Mark message as read if it's not already and it's a received message
                         if (!message.read && !isSent) {
                             const { error: updateError } = await supabase
                                 .from('terminal_messages')
@@ -1535,11 +1668,11 @@
                         }
                     });
                 } else {
-                    messagesStatus.textContent = 'Нет сообщений.';
+                    if (currentMessagesStatus) currentMessagesStatus.textContent = 'Нет сообщений.';
                 }
             } catch (e) {
                 console.error("Error loading messages from Supabase:", e);
-                messagesStatus.textContent = 'Ошибка загрузки сообщений. Проверьте консоль.';
+                if (currentMessagesStatus) currentMessagesStatus.textContent = 'Ошибка загрузки сообщений. Проверьте консоль.';
             }
         }
 
@@ -1547,283 +1680,315 @@
         // --- Terminal Command Handling ---
 
         function maybePrintRandomMessage() {
-            const chance = 0.15;
-            if (Math.random() < chance && currentTerminalData && currentTerminalData.random_system_messages) {
+            const currentTerminalOutput = document.getElementById('terminal-output');
+            if (Math.random() < 0.15 && currentTerminalData && currentTerminalData.random_system_messages) {
                 const randomMessage = currentTerminalData.random_system_messages[Math.floor(Math.random() * currentTerminalData.random_system_messages.length)];
-                terminalOutput.innerHTML += randomMessage + '\n';
-                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                if (currentTerminalOutput) {
+                    currentTerminalOutput.innerHTML += randomMessage + '\n';
+                    currentTerminalOutput.scrollTop = currentTerminalOutput.scrollHeight;
+                }
             }
         }
 
         // --- Initialization and Event Handlers ---
 
         function attachGlobalEventListeners() {
-            // Login screen elements (already handled by displayTerminalSelection, but here for robustness if needed)
-            usernameInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    passwordInput.focus();
-                }
-            });
-
-            passwordInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    handleLogin();
-                }
-            });
-
-            loginButton.addEventListener('click', handleLogin);
+            // Login screen elements
+            if (usernameInput) {
+                usernameInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        passwordInput.focus();
+                    }
+                });
+            }
+            if (passwordInput) {
+                passwordInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        handleLogin();
+                    }
+                });
+            }
+            if (loginButton) loginButton.addEventListener('click', handleLogin);
 
             // Terminal input listener
-            terminalInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    const command = terminalInput.value.trim();
-                    const rawCommand = terminalInput.value;
-                    terminalInput.value = '';
+            if (terminalInput) {
+                terminalInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        const command = terminalInput.value.trim();
+                        const rawCommand = terminalInput.value;
+                        terminalInput.value = '';
 
-                    if (!currentTerminalData) {
-                        terminalOutput.innerHTML += "> " + command + "\nОшибка: Терминал не загружен. Выберите терминал.\n> ";
-                        terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                        return;
-                    }
-
-                    if (isHackMinigameActive) {
-                        clearInterval(hackTimerInterval);
-                        hackTimer = 0;
-                        terminalOutput.innerHTML = terminalOutput.innerHTML.replace(/Таймер: \d+...\n?/, '');
-
-                        if (rawCommand.toLowerCase() === 'q') {
-                            terminalOutput.innerHTML += '> q\n';
-                            terminalOutput.innerHTML += currentTerminalData.hack_game.override_success + '\n> ';
-                            isHackMinigameActive = false;
-                            isHacked = true;
-                            hackAttempts = 0;
-                            secretFileElement = document.getElementById('secret-file');
-                            if (secretFileElement) {
-                                secretFileElement.style.display = 'block';
+                        if (!currentTerminalData) {
+                            if (terminalOutput) {
+                                terminalOutput.innerHTML += "> " + command + "\nОшибка: Терминал не загружен. Выберите терминал.\n> ";
+                                terminalOutput.scrollTop = terminalOutput.scrollHeight;
                             }
-                            updateControlButtonsState();
-                            terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                            terminalInput.focus();
                             return;
                         }
 
-                        if (rawCommand.trim() === '') {
-                            terminalOutput.innerHTML += '> [ПУСТОЙ ВВОД]\n';
-                            hackAttempts++;
-                            if (hackAttempts >= currentTerminalData.hack_game.max_attempts) {
-                                resetHackAndLogout('too_many_hack_attempts');
-                            } else {
-                                terminalOutput.innerHTML += currentTerminalData.error_messages.empty_hack_input.replace('{attempts_left}', currentTerminalData.hack_game.max_attempts - hackAttempts) + '\n> ';
-                                terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                                terminalInput.focus();
-                            }
-                            isHackMinigameActive = false;
-                            return;
-                        }
+                        if (isHackMinigameActive) {
+                            clearInterval(hackTimerInterval);
+                            hackTimer = 0;
+                            if (terminalOutput) terminalOutput.innerHTML = terminalOutput.innerHTML.replace(/Таймер: \d+...\n?/, '');
 
-                        terminalOutput.innerHTML += command + '\n';
-
-                        if (command.toLowerCase() === currentHackPhrase.toLowerCase()) {
-                            isHackMinigameActive = false;
-                            isHacked = true;
-                            hackAttempts = 0;
-                            secretFileElement = document.getElementById('secret-file');
-                            if (secretFileElement) {
-                                secretFileElement.style.display = 'block';
-                            }
-                            updateControlButtonsState();
-                            terminalOutput.innerHTML += currentTerminalData.hack_game.success_message + '\n> ';
-                            terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                            terminalInput.focus();
-                        } else {
-                            hackAttempts++;
-                            if (hackAttempts >= currentTerminalData.hack_game.max_attempts) {
-                                resetHackAndLogout('too_many_hack_attempts');
-                            } else {
-                                terminalOutput.innerHTML += currentTerminalData.hack_game.failure_message.replace('{attempts_left}', currentTerminalData.hack_game.max_attempts - hackAttempts) + '\n> ';
-                                terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                                terminalInput.focus();
-                            }
-                        }
-                        return;
-                    }
-
-                    let commandOutput = '> ' + command + '\n';
-
-                    switch (command.toLowerCase()) {
-                        case 'help':
-                            commandOutput += 'Доступные команды:\n';
-                            currentTerminalData.commands.forEach(cmd => {
-                                commandOutput += `  ${cmd.name} - ${cmd.description}\n`;
-                            });
-                            break;
-                        case 'clear':
-                            terminalOutput.innerHTML = '> clear\n';
-                            break;
-                        case 'status':
-                            commandOutput += currentTerminalData.command_outputs.status.default;
-                            if (isHacked) {
-                                commandOutput += currentTerminalData.command_outputs.status.hacked;
-                            }
-                            break;
-                        case 'navigate filesystem':
-                        case 'navigate control':
-                        case 'navigate cabinet':
-                        case 'navigate characters':
-                        case 'navigate dossiers':
-                        case 'navigate map':
-                        case 'navigate terminal':
-                        case 'navigate messages':
-                            const pageId = command.split(' ')[1];
-                            showPage(pageId);
-                            commandOutput += `Переход на страницу: ${pageId.charAt(0).toUpperCase() + pageId.slice(1)}`;
-                            if (pageId === 'control') controlMessageElement.textContent = '';
-                            if (pageId === 'cabinet') {
-                                cabinetPasswordMessage.textContent = '';
-                                taskMessage.textContent = '';
-                                personalInfoMessage.textContent = '';
-                                financesMessage.textContent = '';
-                            }
-                            if (pageId === 'messages') {
-                                messagesStatus.textContent = '';
-                            }
-                            break;
-                        case 'message':
-                            showPage('messages');
-                            commandOutput += `Переход на страницу: СООБЩЕНИЯ`;
-                            messagesStatus.textContent = '';
-                            break;
-                        case 'info':
-                            if (currentTerminalData.command_outputs.info.default) {
-                                commandOutput += currentTerminalData.command_outputs.info.default.join('\n');
-                            }
-                            if (isHacked && currentTerminalData.command_outputs.info.hacked) {
-                                commandOutput += '\n' + currentTerminalData.command_outputs.info.hacked.join('\n');
-                            }
-                            break;
-                        case 'hack':
-                            if (isHacked) {
-                                commandOutput += currentTerminalData.command_outputs.hack.already_hacked;
-                                terminalOutput.innerHTML += commandOutput + '\n';
-                                terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                                maybePrintRandomMessage();
-                                terminalOutput.innerHTML += '> ';
-                                terminalInput.focus();
-                                return;
-                            } else if (!isHackMinigameActive) {
-                                isHackMinigameActive = true;
+                            if (rawCommand.toLowerCase() === 'q') {
+                                if (terminalOutput) {
+                                    terminalOutput.innerHTML += '> q\n';
+                                    terminalOutput.innerHTML += currentTerminalData.hack_game.override_success + '\n> ';
+                                }
+                                isHackMinigameActive = false;
+                                isHacked = true;
                                 hackAttempts = 0;
+                                secretFileElement = document.getElementById('secret-file');
+                                if (secretFileElement) {
+                                    secretFileElement.style.display = 'block';
+                                }
+                                updateControlButtonsState();
+                                if (terminalOutput) terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                                if (terminalInput) terminalInput.focus();
+                                return;
+                            }
 
-                                const shuffledWords = currentTerminalData.hack_game.words.sort(() => 0.5 - Math.random());
-                                currentHackPhrase = shuffledWords.slice(0, 5).join(' ');
-
-                                let hackStartOutput = '> ' + command + '\n';
-                                hackStartOutput += currentTerminalData.hack_game.start_message
-                                    .replace('{timer_duration}', currentTerminalData.hack_game.timer_duration)
-                                    .replace('{phrase}', currentHackPhrase.toUpperCase())
-                                    .replace('{timer_value}', currentTerminalData.hack_game.timer_duration);
-
-                                terminalOutput.innerHTML += hackStartOutput;
-                                terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                                terminalInput.focus();
-
-                                hackTimer = currentTerminalData.hack_game.timer_duration;
-                                hackTimerInterval = setInterval(() => {
-                                    hackTimer--;
-                                    const lines = terminalOutput.innerHTML.split('\n');
-                                    let timerLineIndex = -1;
-                                    for(let i = lines.length - 1; i >= 0; i--) {
-                                        if (lines[i].startsWith('Таймер:')) {
-                                            timerLineIndex = i;
-                                            break;
-                                        }
+                            if (rawCommand.trim() === '') {
+                                if (terminalOutput) terminalOutput.innerHTML += '> [ПУСТОЙ ВВОД]\n';
+                                hackAttempts++;
+                                if (hackAttempts >= currentTerminalData.hack_game.max_attempts) {
+                                    resetHackAndLogout('too_many_hack_attempts');
+                                } else {
+                                    if (terminalOutput) {
+                                        terminalOutput.innerHTML += currentTerminalData.error_messages.empty_hack_input.replace('{attempts_left}', currentTerminalData.hack_game.max_attempts - hackAttempts) + '\n> ';
+                                        terminalOutput.scrollTop = terminalOutput.scrollHeight;
                                     }
+                                    if (terminalInput) terminalInput.focus();
+                                }
+                                isHackMinigameActive = false;
+                                return;
+                            }
 
-                                    if (timerLineIndex !== -1) {
-                                        lines[timerLineIndex] = 'Таймер: ' + hackTimer + '...\n';
-                                        terminalOutput.innerHTML = lines.join('\n');
-                                    } else {
-                                        terminalOutput.innerHTML += 'Таймер: ' + hackTimer + '...\n';
-                                    }
+                            if (terminalOutput) terminalOutput.innerHTML += command + '\n';
+
+                            if (command.toLowerCase() === currentHackPhrase.toLowerCase()) {
+                                isHackMinigameActive = false;
+                                isHacked = true;
+                                hackAttempts = 0;
+                                secretFileElement = document.getElementById('secret-file');
+                                if (secretFileElement) {
+                                    secretFileElement.style.display = 'block';
+                                }
+                                updateControlButtonsState();
+                                if (terminalOutput) {
+                                    terminalOutput.innerHTML += currentTerminalData.hack_game.success_message + '\n> ';
                                     terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                                }
+                                if (terminalInput) terminalInput.focus();
+                            } else {
+                                hackAttempts++;
+                                if (hackAttempts >= currentTerminalData.hack_game.max_attempts) {
+                                    resetHackAndLogout('too_many_hack_attempts');
+                                } else {
+                                    if (terminalOutput) {
+                                        terminalOutput.innerHTML += currentTerminalData.hack_game.failure_message.replace('{attempts_left}', currentTerminalData.hack_game.max_attempts - hackAttempts) + '\n> ';
+                                        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                                    }
+                                    if (terminalInput) terminalInput.focus();
+                                }
+                            }
+                            return;
+                        }
 
-                                    if (hackTimer <= 0) {
-                                        clearInterval(hackTimerInterval);
-                                        isHackMinigameActive = false;
-                                        const currentLines = terminalOutput.innerHTML.split('\n');
-                                        let lastTimerLineIndex = -1;
-                                        for(let i = currentLines.length - 1; i >= 0; i--) {
-                                            if (currentLines[i].startsWith('Таймер:')) {
-                                                lastTimerLineIndex = i;
+                        let commandOutput = '> ' + command + '\n';
+
+                        switch (command.toLowerCase()) {
+                            case 'help':
+                                commandOutput += 'Доступные команды:\n';
+                                currentTerminalData.commands.forEach(cmd => {
+                                    commandOutput += `  ${cmd.name} - ${cmd.description}\n`;
+                                });
+                                break;
+                            case 'clear':
+                                if (terminalOutput) terminalOutput.innerHTML = '> clear\n';
+                                break;
+                            case 'status':
+                                commandOutput += currentTerminalData.command_outputs.status.default;
+                                if (isHacked) {
+                                     commandOutput += currentTerminalData.command_outputs.status.hacked;
+                                }
+                                break;
+                            case 'navigate filesystem':
+                            case 'navigate control':
+                            case 'navigate cabinet':
+                            case 'navigate characters':
+                            case 'navigate dossiers':
+                            case 'navigate map':
+                            case 'navigate terminal':
+                            case 'navigate messages':
+                                const pageId = command.split(' ')[1];
+                                showPage(pageId);
+                                commandOutput += `Переход на страницу: ${pageId.charAt(0).toUpperCase() + pageId.slice(1)}`;
+                                if (pageId === 'control' && controlMessageElement) controlMessageElement.textContent = '';
+                                if (pageId === 'cabinet') {
+                                    if (cabinetPasswordMessage) cabinetPasswordMessage.textContent = '';
+                                    if (taskMessage) taskMessage.textContent = '';
+                                    if (personalInfoMessage) personalInfoMessage.textContent = '';
+                                    if (financesMessage) financesMessage.textContent = '';
+                                }
+                                if (pageId === 'messages' && messagesStatus) {
+                                    messagesStatus.textContent = '';
+                                }
+                                break;
+                            case 'message':
+                                 showPage('messages');
+                                 commandOutput += `Переход на страницу: СООБЩЕНИЯ`;
+                                 if (messagesStatus) messagesStatus.textContent = '';
+                                 break;
+                            case 'info':
+                                if (currentTerminalData.command_outputs.info.default) {
+                                    commandOutput += currentTerminalData.command_outputs.info.default.join('\n');
+                                }
+                                if (isHacked && currentTerminalData.command_outputs.info.hacked) {
+                                    commandOutput += '\n' + currentTerminalData.command_outputs.info.hacked.join('\n');
+                                }
+                                break;
+                            case 'hack':
+                                if (isHacked) {
+                                    commandOutput += currentTerminalData.command_outputs.hack.already_hacked;
+                                    if (terminalOutput) {
+                                        terminalOutput.innerHTML += commandOutput + '\n';
+                                        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                                    }
+                                    maybePrintRandomMessage();
+                                    if (terminalOutput) terminalOutput.innerHTML += '> ';
+                                    if (terminalInput) terminalInput.focus();
+                                    return;
+                                } else if (!isHackMinigameActive) {
+                                    isHackMinigameActive = true;
+                                    hackAttempts = 0;
+
+                                    const shuffledWords = currentTerminalData.hack_game.words.sort(() => 0.5 - Math.random());
+                                    currentHackPhrase = shuffledWords.slice(0, 5).join(' ');
+
+                                    let hackStartOutput = '> ' + command + '\n';
+                                    hackStartOutput += currentTerminalData.hack_game.start_message
+                                        .replace('{timer_duration}', currentTerminalData.hack_game.timer_duration)
+                                        .replace('{phrase}', currentHackPhrase.toUpperCase())
+                                        .replace('{timer_value}', currentTerminalData.hack_game.timer_duration);
+
+                                    if (terminalOutput) {
+                                        terminalOutput.innerHTML += hackStartOutput;
+                                        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                                    }
+                                    if (terminalInput) terminalInput.focus();
+
+                                    hackTimer = currentTerminalData.hack_game.timer_duration;
+                                    hackTimerInterval = setInterval(() => {
+                                        hackTimer--;
+                                        const lines = terminalOutput.innerHTML.split('\n');
+                                        let timerLineIndex = -1;
+                                        for(let i = lines.length - 1; i >= 0; i--) {
+                                            if (lines[i].startsWith('Таймер:')) {
+                                                timerLineIndex = i;
                                                 break;
                                             }
                                         }
-                                        if (lastTimerLineIndex !== -1) {
-                                            currentLines.splice(lastTimerLineIndex, 1);
-                                            terminalOutput.innerHTML = currentLines.join('\n');
-                                        }
-                                        hackAttempts++;
-                                        if (hackAttempts >= currentTerminalData.hack_game.max_attempts) {
-                                            resetHackAndLogout('too_many_hack_attempts');
-                                        } else {
-                                            terminalOutput.innerHTML += currentTerminalData.hack_game.timeout_message.replace('{attempts_left}', currentTerminalData.hack_game.max_attempts - hackAttempts) + '\n> ';
-                                            terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                                            terminalInput.focus();
-                                        }
-                                    }
-                                }, 1000);
-                                return;
-                            } else {
-                                commandOutput += currentTerminalData.command_outputs.hack.in_progress;
-                                terminalOutput.innerHTML += commandOutput + '\n';
-                                terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                                return;
-                            }
-                        default:
-                            commandOutput += currentTerminalData.error_messages.command_not_found;
-                            break;
-                    }
 
-                    if (command.toLowerCase() !== 'clear' && command.toLowerCase() !== 'hack') {
-                        terminalOutput.innerHTML += commandOutput + '\n';
-                        terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                        maybePrintRandomMessage();
-                        terminalOutput.innerHTML += '> ';
-                        terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                        terminalInput.focus();
+                                        if (timerLineIndex !== -1) {
+                                             lines[timerLineIndex] = 'Таймер: ' + hackTimer + '...\n';
+                                             if (terminalOutput) terminalOutput.innerHTML = lines.join('\n');
+                                        } else {
+                                             if (terminalOutput) terminalOutput.innerHTML += 'Таймер: ' + hackTimer + '...\n';
+                                        }
+                                        if (terminalOutput) terminalOutput.scrollTop = terminalOutput.scrollHeight;
+
+                                        if (hackTimer <= 0) {
+                                            clearInterval(hackTimerInterval);
+                                            isHackMinigameActive = false;
+                                             const currentLines = terminalOutput.innerHTML.split('\n');
+                                             let lastTimerLineIndex = -1;
+                                             for(let i = currentLines.length - 1; i >= 0; i--) {
+                                                if (currentLines[i].startsWith('Таймер:')) {
+                                                    lastTimerLineIndex = i;
+                                                    break;
+                                                }
+                                             }
+                                             if (lastTimerLineIndex !== -1) {
+                                                 currentLines.splice(lastTimerLineIndex, 1);
+                                                 if (terminalOutput) terminalOutput.innerHTML = currentLines.join('\n');
+                                             }
+                                            hackAttempts++;
+                                            if (hackAttempts >= currentTerminalData.hack_game.max_attempts) {
+                                                resetHackAndLogout('too_many_hack_attempts');
+                                            } else {
+                                                if (terminalOutput) {
+                                                    terminalOutput.innerHTML += currentTerminalData.hack_game.timeout_message.replace('{attempts_left}', currentTerminalData.hack_game.max_attempts - hackAttempts) + '\n> ';
+                                                    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                                                }
+                                                if (terminalInput) terminalInput.focus();
+                                            }
+                                        }
+                                    }, 1000);
+                                    return;
+                                } else {
+                                     commandOutput += currentTerminalData.command_outputs.hack.in_progress;
+                                     if (terminalOutput) {
+                                         terminalOutput.innerHTML += commandOutput + '\n';
+                                         terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                                     }
+                                     return;
+                                }
+                            default:
+                                commandOutput += currentTerminalData.error_messages.command_not_found;
+                                break;
+                        }
+
+                        if (command.toLowerCase() !== 'clear' && command.toLowerCase() !== 'hack') {
+                             if (terminalOutput) {
+                                 terminalOutput.innerHTML += commandOutput + '\n';
+                                 terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                             }
+                             maybePrintRandomMessage();
+                             if (terminalOutput) terminalOutput.innerHTML += '> ';
+                             if (terminalOutput) terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                             if (terminalInput) terminalInput.focus();
+                        }
                     }
-                }
-            });
+                });
+            }
 
             // Cabinet specific event listeners
-            cabinetEnterButton.addEventListener('click', handleCabinetLogin);
-            cabinetRegisterButton.addEventListener('click', handleCabinetRegister);
-            cabinetLogoutButton.addEventListener('click', handleCabinetLogout);
-            saveCabinetPasswordButton.addEventListener('click', saveCabinetData);
+            if (cabinetEnterButton) cabinetEnterButton.addEventListener('click', handleCabinetLogin);
+            if (cabinetRegisterButton) cabinetRegisterButton.addEventListener('click', handleCabinetRegister);
+            if (cabinetLogoutButton) cabinetLogoutButton.addEventListener('click', handleCabinetLogout);
+            if (saveCabinetPasswordButton) saveCabinetPasswordButton.addEventListener('click', saveCabinetData);
 
-            editTasksButton.addEventListener('click', () => toggleEditMode(taskListDisplay, taskMessage, editTasksButton, 'tasks'));
-            editPersonalInfoButton.addEventListener('click', () => toggleEditMode(personalInfoDisplay, personalInfoMessage, editPersonalInfoButton, 'personal_info'));
-            editFinancesButton.addEventListener('click', () => toggleEditMode(financesDisplay, financesMessage, editFinancesButton, 'finances'));
+            if (editTasksButton) editTasksButton.addEventListener('click', () => toggleEditMode(taskListDisplay, taskMessage, editTasksButton, 'tasks'));
+            if (editPersonalInfoButton) editPersonalInfoButton.addEventListener('click', () => toggleEditMode(personalInfoDisplay, personalInfoMessage, editPersonalInfoButton, 'personal_info'));
+            if (editFinancesButton) editFinancesButton.addEventListener('click', () => toggleEditMode(financesDisplay, financesMessage, editFinancesButton, 'finances'));
 
-            sendMessageButton.addEventListener('click', sendMessage);
+            if (sendMessageButton) sendMessageButton.addEventListener('click', sendMessage);
 
             // JSON modal event handlers
-            closeButton.addEventListener('click', () => {
-                jsonModal.style.display = 'none';
-            });
+            if (closeButton) {
+                closeButton.addEventListener('click', () => {
+                    if (jsonModal) jsonModal.style.display = 'none';
+                });
+            }
 
             window.addEventListener('click', (event) => {
                 if (event.target === jsonModal) {
-                    jsonModal.style.display = 'none';
+                    if (jsonModal) jsonModal.style.display = 'none';
                 }
             });
 
-            copyJsonButton.addEventListener('click', () => {
-                jsonOutputTextarea.select();
-                document.execCommand('copy');
-                alert(currentTerminalData.modal_messages.copy_alert.replace('{terminal_id}', currentTerminalData.terminal_id));
-                jsonModal.style.display = 'none';
-            });
+            if (copyJsonButton) {
+                copyJsonButton.addEventListener('click', () => {
+                    if (jsonOutputTextarea) {
+                        jsonOutputTextarea.select();
+                        document.execCommand('copy');
+                        if (currentTerminalData) alert(currentTerminalData.modal_messages.copy_alert.replace('{terminal_id}', currentTerminalData.terminal_id));
+                        if (jsonModal) jsonModal.style.display = 'none';
+                    }
+                });
+            }
         }
 
 
