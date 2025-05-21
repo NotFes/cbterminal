@@ -525,8 +525,8 @@
         const SUPABASE_URL = 'https://vnfswyztlwgkhkkmhhhs.supabase.co'; // e.g., 'https://abcdefg.supabase.co'
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZuZnN3eXp0bHdna2hra21oaGhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc4Mjg0MzYsImV4cCI6MjA2MzQwNDQzNn0.jvs2X_61LZaZxcmDoSK9ZRnHo-S2wblifiV4Vogdkyo'; // e.g., 'eyJhbGciOiJIUzI1Ni...'
 
-        // ИСПРАВЛЕНО: Изменено Supabase.createClient на supabase.createClient
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // ИСПРАВЛЕНО: Изменено Supabase.createClient на window.supabase.createClient
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // --- Элементы интерфейса ---
         const terminalSelectionScreen = document.getElementById('terminal-selection-screen');
@@ -903,7 +903,7 @@
                 terminalOutput.innerHTML = currentTerminalData.login_messages.welcome + '\n> ';
                 terminalOutput.scrollTop = terminalOutput.scrollHeight;
             } else {
-                loginMessage.textContent = currentTerminalData.login_messages.access_denied;
+                loginMessage.textContent = currentTerminalData.login_credentials.access_denied;
                 usernameInput.value = '';
                 passwordInput.value = '';
                 usernameInput.focus();
@@ -1039,7 +1039,8 @@
                     personalInfoDisplay.textContent = currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
                     financesDisplay.textContent = currentTerminalData.page_content.cabinet.sections.finances.initial_content;
                 }
-            } catch (e) {
+            }
+            catch (e) {
                 console.error("Error loading cabinet data from Supabase:", e);
                 cabinetPasswordMessage.textContent = 'Ошибка: Не удалось загрузить данные из Supabase. Проверьте консоль.';
             }
@@ -1256,7 +1257,7 @@
                             hackStartOutput += currentTerminalData.hack_game.start_message
                                 .replace('{timer_duration}', currentTerminalData.hack_game.timer_duration)
                                 .replace('{phrase}', currentHackPhrase.toUpperCase())
-                                .replace('{timer_value}', currentHackPhrase.toUpperCase()); // Исправлено: было {timer_value}
+                                .replace('{timer_value}', hackTimer); // Исправлено: было {timer_value}
 
                             terminalOutput.innerHTML += hackStartOutput;
                             terminalOutput.scrollTop = terminalOutput.scrollHeight;
