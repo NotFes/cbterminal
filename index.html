@@ -146,7 +146,6 @@
         .file-entry {
             margin-bottom: 1rem;
             border: 1px solid #00ff00;
-            /* Уменьшаем отступы */
             padding: 0.25rem 0.5rem; 
             border-radius: 5px;
             background-color: #0d0d0d;
@@ -156,17 +155,15 @@
             outline: none;
             color: #00ffff;
             font-weight: bold;
-            /* Убедимся, что summary не центрирует текст */
             text-align: left; 
-            padding: 0.25rem 0; /* Немного padding для текста внутри summary */
+            padding: 0.25rem 0;
         }
         .file-content {
-            margin-top: 0.5rem; /* Уменьшил отступ сверху */
-            padding-top: 0.5rem; /* Уменьшил отступ внутри */
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
             border-top: 1px dashed #00ff00;
             white-space: pre-wrap;
             word-break: break-all;
-            /* Убедимся, что текст выравнивается по левому краю */
             text-align: left;
         }
         .hidden-file {
@@ -346,7 +343,7 @@
 
         /* Стиль для экрана выбора терминала */
         #terminal-selection-screen {
-            display: flex; /* Показываем изначально */
+            display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
@@ -358,8 +355,8 @@
         }
 
         #terminal-selection-screen .terminal-option {
-            background-color: #ff00ff; /* Пурпурная кнопка */
-            color: #0f0f0f; /* Темный текст на кнопке */
+            background-color: #ff00ff;
+            color: #0f0f0f;
             padding: 0.75rem 2rem;
             border: none;
             border-radius: 5px;
@@ -368,10 +365,10 @@
             font-size: 1.1rem;
             transition: background-color 0.3s ease, color 0.3s ease;
             margin-bottom: 1rem;
-            width: 300px; /* Фиксированная ширина */
+            width: 300px;
         }
         #terminal-selection-screen .terminal-option:hover {
-            background-color: #ffff00; /* Желтая при наведении */
+            background-color: #ffff00;
             color: #0f0f0f;
         }
         #terminal-selection-screen p {
@@ -384,18 +381,18 @@
         /* Styles for the notification toast */
         #notification-toast {
             position: fixed;
-            bottom: 1rem; /* Adjust for mobile */
-            right: 1rem; /* Adjust for mobile */
-            background-color: #8B008B; /* Dark Magenta */
-            color: #00ff00; /* Neon Green */
+            bottom: 1rem;
+            right: 1rem;
+            background-color: #8B008B;
+            color: #00ff00;
             padding: 1rem 1.5rem;
             border-radius: 0.5rem;
-            box-shadow: 0 0 15px rgba(255, 0, 255, 0.7); /* Pink glow */
-            z-index: 1000; /* High z-index to be on top */
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.7);
+            z-index: 1000;
             opacity: 0;
             transform: translateY(100%);
             transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-            max-width: 90%; /* For mobile responsiveness */
+            max-width: 90%;
             text-align: center;
         }
         #notification-toast.show {
@@ -546,9 +543,9 @@
             <div class="page-content">
                 <h2 class="text-2xl" id="map-section-title"></h2>
                 <p id="map-intro-text"></p>
-                <a href="#" target="_blank" id="map-image-link">
-                    <img src="" alt="" class="map-image" id="map-image">
-                </a>
+                <div class="mt-4 text-center">
+                    <button id="open-interactive-map-button" class="cabinet-button">Открыть Интерактивную Карту</button>
+                </div>
                 <p class="mt-4" id="map-description-heading"></p>
                 <div id="map-locations-container">
                     </div>
@@ -605,9 +602,8 @@
 
     <script>
         // --- Supabase Client Initialization ---
-        // Replace with your actual Supabase URL and anon key
-        const SUPABASE_URL = 'https://vnfswyztlwgkhkkmhhhs.supabase.co'; // e.g., 'https://abcdefg.supabase.co'
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZuZnN3eXp0bHdna2hra21oaGhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc4Mjg0MzYsImV4cCI6MjA2MzQwNDQzNn0.jvs2X_61LZaZxcmDoSK9ZRnHo-S2wblifiV4Vogdkyo'; // e.g., 'eyJhbGciOiJIUzI1Ni...'
+        const SUPABASE_URL = 'https://vnfswyztlwgkhkkmhhhs.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZuZnN3eXp0bHdna2hra21oaGhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc4Mjg0MzYsImV4cCI6MjA2MzQwNDQzNn0.jvs2X_61LZaZxcmDoSK9ZRnHo-S2wblifiV4Vogdkyo';
 
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -622,11 +618,8 @@
         let controlStates = {};
         let selectedTerminalId = '';
         let currentCabinetLogin = null;
-        // Новая переменная для хранения подписки на сообщения
         let messageSubscription = null;
-        // Переменная для текущего фильтра сообщений
-        let currentMessageFilter = 'all'; // 'all', 'incoming', 'outgoing', 'archived'
-
+        let currentMessageFilter = 'all';
 
         // --- UI Population Functions ---
 
@@ -659,21 +652,19 @@
                     link.classList.add('nav-link');
                     link.setAttribute('data-page', page.id);
                     link.textContent = `/// ${page.label} `;
-                    // Добавляем счетчик непрочитанных сообщений только для ссылки "СООБЩЕНИЯ"
                     if (page.id === 'messages') {
                         const unreadCountSpan = document.createElement('span');
                         unreadCountSpan.id = 'unread-messages-count';
                         unreadCountSpan.classList.add('ml-1', 'text-yellow-400', 'text-xs', 'font-bold');
-                        unreadCountSpan.textContent = '(0)'; // Initial count
+                        unreadCountSpan.textContent = '(0)';
                         link.appendChild(unreadCountSpan);
                     }
-                    link.innerHTML += ' ///'; // Closing slashes
+                    link.innerHTML += ' ///';
                     mainNavLinks.appendChild(link);
                     if (page.id === 'control' || page.id === 'messages') {
                         mainNavLinks.appendChild(document.createElement('br'));
                     }
                 });
-                // Re-attach event listeners after re-creating nav links
                 document.querySelectorAll('.nav-link').forEach(link => {
                     link.addEventListener('click', (e) => {
                         e.preventDefault();
@@ -729,13 +720,11 @@
                     controlButtonsContainer.appendChild(button);
                     controlStates[buttonConfig.target] = false;
                 });
-                // Re-attach event listeners for control buttons
                 document.querySelectorAll('.control-button').forEach(button => {
                     button.addEventListener('click', handleControlButtonClick);
                 });
             }
 
-            // Cabinet Section elements
             const cabinetSectionTitle = document.getElementById('cabinet-section-title');
             if (cabinetSectionTitle) cabinetSectionTitle.textContent = data.page_content.cabinet.title;
 
@@ -811,19 +800,24 @@
                 });
             }
 
+            // Map Section elements - UPDATED FOR EXTERNAL MAP
             const mapSectionTitle = document.getElementById('map-section-title');
             if (mapSectionTitle) mapSectionTitle.textContent = data.page_content.map.title;
 
             const mapIntroText = document.getElementById('map-intro-text');
             if (mapIntroText) mapIntroText.textContent = data.page_content.map.intro;
 
-            const mapImageLink = document.getElementById('map-image-link');
-            if (mapImageLink) mapImageLink.href = data.page_content.map.image_link;
-
-            const mapImage = document.getElementById('map-image');
-            if (mapImage) {
-                mapImage.src = data.page_content.map.image_src;
-                mapImage.alt = data.page_content.map.image_alt;
+            // Remove image related elements, add button
+            const openInteractiveMapButton = document.getElementById('open-interactive-map-button');
+            if (openInteractiveMapButton) {
+                openInteractiveMapButton.onclick = () => {
+                    if (selectedTerminalId) {
+                        const mapUrl = `${data.page_content.map.external_map_url_base}?terminal_id=${selectedTerminalId}&cabinet_login=${currentCabinetLogin || 'anonymous'}`;
+                        window.open(mapUrl, '_blank');
+                    } else {
+                        showNotification('Выберите терминал, чтобы открыть карту.');
+                    }
+                };
             }
 
             const mapDescriptionHeading = document.getElementById('map-description-heading');
@@ -842,12 +836,10 @@
                 });
             }
 
-            // Messages Section elements
             const messagesSectionTitle = document.getElementById('messages-section-title');
             if (messagesSectionTitle && data.page_content.messages) {
                 messagesSectionTitle.textContent = data.page_content.messages.title;
             } else if (messagesSectionTitle) {
-                // Fallback or error message if messages data is missing
                 messagesSectionTitle.textContent = '/// СООБЩЕНИЯ (ДАННЫЕ ОТСУТСТВУЮТ) ///';
                 console.warn("messages.title is missing in terminal data config.");
             }
@@ -931,7 +923,6 @@
             if (loginScreen) loginScreen.style.display = 'none';
             if (mainContent) mainContent.style.display = 'none';
 
-            // Attach initial event listeners for login screen elements
             if (usernameInput) {
                 usernameInput.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') {
@@ -975,7 +966,7 @@
                 }
                 currentTerminalData = data.config;
                 console.log("Terminal data loaded from Supabase:", currentTerminalData);
-                populateUI(currentTerminalData); // Call populateUI after data is loaded
+                populateUI(currentTerminalData);
             } catch (e) {
                 console.error(`Failed to load data for terminal ${terminal.name} from Supabase.`, e);
                 if (loginMessage) loginMessage.textContent = `Ошибка: Не удалось загрузить данные для терминала "${terminal.name}". Проверьте консоль.`;
@@ -1001,10 +992,9 @@
             if (targetSection) {
                 targetSection.classList.add('active');
                 history.pushState(null, '', `#${pageId}`);
-                // Управление подпиской на сообщения в зависимости от активной страницы
                 if (pageId === 'messages' && currentCabinetLogin) {
-                    loadMessages(currentMessageFilter); // Загружаем сообщения при переходе на страницу с текущим фильтром
-                    setupMessageSubscription(); // Подписываемся на realtime обновления
+                    loadMessages(currentMessageFilter);
+                    setupMessageSubscription();
                 } else {
                     if (messageSubscription) {
                         supabase.removeChannel(messageSubscription);
@@ -1013,7 +1003,7 @@
                     }
                 }
                 if (pageId === 'cabinet') {
-                    updateCabinetUIForLoginStatus(); // Update cabinet UI based on its own login status
+                    updateCabinetUIForLoginStatus();
                 }
             } else {
                 showPage('terminal');
@@ -1055,7 +1045,7 @@
                      terminalOutput.innerHTML = currentTerminalData.login_messages.master_access + '\n> ';
                      terminalOutput.scrollTop = terminalOutput.scrollHeight;
                  }
-                 updateUnreadMessageCount(); // Update count on master login
+                 updateUnreadMessageCount();
             }
             else if (username === currentTerminalData.login_credentials.username && password === currentTerminalData.login_credentials.password) {
                 if (loginScreen) loginScreen.style.display = 'none';
@@ -1071,7 +1061,7 @@
                     terminalOutput.innerHTML = currentTerminalData.login_messages.welcome + '\n> ';
                     terminalOutput.scrollTop = terminalOutput.scrollHeight;
                 }
-                updateUnreadMessageCount(); // Update count on regular login
+                updateUnreadMessageCount();
             } else {
                 if (loginMessage) loginMessage.textContent = currentTerminalData.login_credentials.access_denied;
                 if (usernameInput) usernameInput.value = '';
@@ -1122,13 +1112,12 @@
                 terminalInput.classList.add('terminal-alert');
                 terminalInput.disabled = true;
             }
-            // При выходе из системы или блокировке, отписываемся от сообщений
             if (messageSubscription) {
                 supabase.removeChannel(messageSubscription);
                 messageSubscription = null;
                 console.log('Отписались от обновлений сообщений при выходе.');
             }
-            updateUnreadMessageCount(0); // Reset unread count
+            updateUnreadMessageCount(0);
         }
 
         function updateControlButtonsState() {
@@ -1216,11 +1205,10 @@
                     cabinetAuthMessage.style.color = '#00ff00';
                 }
                 loadCabinetData();
-                // Если пользователь уже на странице сообщений, настраиваем подписку
                 if (document.getElementById('messages').classList.contains('active')) {
                     setupMessageSubscription();
                 }
-                updateUnreadMessageCount(); // Update count on cabinet login
+                updateUnreadMessageCount();
             } else {
                 if (cabinetLoginSection) cabinetLoginSection.style.display = 'block';
                 if (personalCabinetDataSection) personalCabinetDataSection.style.display = 'none';
@@ -1240,13 +1228,12 @@
                 if (personalInfoMessage) personalInfoMessage.textContent = '';
                 if (financesMessage) financesMessage.textContent = '';
 
-                // При выходе из кабинета, отписываемся от сообщений
                 if (messageSubscription) {
                     supabase.removeChannel(messageSubscription);
                     messageSubscription = null;
                     console.log('Отписались от обновлений сообщений при выходе из кабинета.');
                 }
-                updateUnreadMessageCount(0); // Reset unread count
+                updateUnreadMessageCount(0);
             }
         }
 
@@ -1352,13 +1339,12 @@
                 cabinetAuthMessage.textContent = 'Вы вышли из Кабинета.';
                 cabinetAuthMessage.style.color = '#00ffff';
             }
-            // При выходе из кабинета, отписываемся от сообщений
             if (messageSubscription) {
                 supabase.removeChannel(messageSubscription);
                 messageSubscription = null;
                 console.log('Отписались от обновлений сообщений при выходе из кабинета (logout).');
             }
-            updateUnreadMessageCount(0); // Reset unread count
+            updateUnreadMessageCount(0);
         }
 
         // --- Cabinet Data Management Logic ---
@@ -1395,7 +1381,6 @@
                     if (financesDisplay && currentTerminalData) financesDisplay.textContent = data.finances || currentTerminalData.page_content.cabinet.sections.finances.initial_content;
                     if (cabinetPasswordInput) cabinetPasswordInput.value = data.password || '';
                     if (cabinetPasswordMessage && currentTerminalData) cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.loaded_success.replace('{account_id}', currentCabinetLogin);
-                    // loadMessages(); // Загрузка сообщений перенесена в updateCabinetUIForLoginStatus
                 } else {
                     if (cabinetPasswordMessage && currentTerminalData) cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.not_found.replace('{account_id}', currentCabinetLogin);
                     if (taskListDisplay && currentTerminalData) taskListDisplay.textContent = currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
@@ -1476,7 +1461,6 @@
             }
         }
 
-        // Send Message
         async function sendMessage() {
             const sendMessageStatus = document.getElementById('send-message-status');
             const messageRecipientIdInput = document.getElementById('message-recipient-id');
@@ -1544,7 +1528,7 @@
                             subject: subject,
                             content: content,
                             read: false,
-                            status: 'active' // New: default status is active
+                            status: 'active'
                         }
                     ])
                     .select();
@@ -1555,8 +1539,8 @@
                 if (messageRecipientIdInput) messageRecipientIdInput.value = '';
                 if (messageSubjectInput) messageSubjectInput.value = '';
                 if (messageContentTextarea) messageContentTextarea.value = '';
-                loadMessages(currentMessageFilter); // Reload messages with current filter after sending
-                updateUnreadMessageCount(); // Update count after sending
+                loadMessages(currentMessageFilter);
+                updateUnreadMessageCount();
                 console.log('Message sent:', data);
             } catch (e) {
                 console.error('Error sending message:', e);
@@ -1565,7 +1549,6 @@
         }
 
 
-        // Load messages for the current cabinet account
         async function loadMessages(filter = 'all') {
             const messagesListContainer = document.getElementById('messages-list-container');
             const messagesStatus = document.getElementById('messages-status');
@@ -1585,7 +1568,6 @@
             const currentLogin = currentCabinetLogin;
             let query = supabase.from('terminal_messages').select('*');
 
-            // Apply filter based on currentMessageFilter and status
             if (filter === 'incoming') {
                 query = query.eq('recipient_id', currentLogin).eq('recipient_terminal_id', selectedTerminalId).eq('status', 'active');
             } else if (filter === 'outgoing') {
@@ -1594,7 +1576,7 @@
                 query = query.or(`recipient_id.eq.${currentLogin},sender_id.eq.${currentLogin}`)
                              .eq('recipient_terminal_id', selectedTerminalId)
                              .eq('status', 'archived');
-            } else { // 'all' (meaning 'active' messages for both incoming/outgoing)
+            } else {
                 query = query.or(`recipient_id.eq.${currentLogin},sender_id.eq.${currentLogin}`)
                              .eq('recipient_terminal_id', selectedTerminalId)
                              .eq('status', 'active');
@@ -1612,7 +1594,7 @@
                     data.forEach(async (message) => {
                         const isSent = message.sender_id === currentLogin;
                         const displaySender = isSent ? `Вам (${message.recipient_id})` : message.sender_name;
-                        const icon = message.read ? '&#10003;' : '&#9888;'; // Checkmark for read, warning for unread
+                        const icon = message.read ? '&#10003;' : '&#9888;';
                         const messageTypeLabel = isSent ? 'Исходящее' : 'Входящее';
                         const summaryColorClass = isSent ? 'text-green-400' : 'text-blue-400';
 
@@ -1633,11 +1615,10 @@
                         `;
                         if (messagesListContainer) messagesListContainer.appendChild(messageDiv);
 
-                        // Attach event listener for archive/unarchive button
                         const archiveButton = messageDiv.querySelector(`button[data-message-id="${message.id}"]`);
                         if (archiveButton) {
                             archiveButton.addEventListener('click', (e) => {
-                                e.stopPropagation(); // Prevent details from toggling
+                                e.stopPropagation();
                                 const msgId = e.target.dataset.messageId;
                                 const action = e.target.dataset.action;
                                 if (action === 'archive') {
@@ -1648,7 +1629,6 @@
                             });
                         }
 
-                        // Пометить сообщение как прочитанное, если оно входящее и не прочитано
                         if (!message.read && !isSent) {
                             const { error: updateError } = await supabase
                                 .from('terminal_messages')
@@ -1660,14 +1640,13 @@
                 } else {
                     if (messagesStatus) messagesStatus.textContent = 'Нет сообщений.';
                 }
-                updateUnreadMessageCount(); // Update count after loading messages
+                updateUnreadMessageCount();
             } catch (e) {
                 console.error("Error loading messages from Supabase:", e);
                 if (messagesStatus) messagesStatus.textContent = 'Ошибка загрузки сообщений. Проверьте консоль.';
             }
         }
 
-        // Новая функция для архивации сообщения
         async function archiveMessage(messageId) {
             try {
                 const { error } = await supabase
@@ -1677,14 +1656,13 @@
 
                 if (error) throw error;
                 showNotification('Сообщение заархивировано!');
-                loadMessages(currentMessageFilter); // Reload messages with current filter
+                loadMessages(currentMessageFilter);
             } catch (e) {
                 console.error('Error archiving message:', e);
                 showNotification(`Ошибка архивации: ${e.message}`);
             }
         }
 
-        // Новая функция для разархивации сообщения
         async function unarchiveMessage(messageId) {
             try {
                 const { error } = await supabase
@@ -1694,7 +1672,7 @@
 
                 if (error) throw error;
                 showNotification('Сообщение разархивировано!');
-                loadMessages(currentMessageFilter); // Reload messages with current filter
+                loadMessages(currentMessageFilter);
             } catch (e) {
                 console.error('Error unarchiving message:', e);
                 showNotification(`Ошибка разархивации: ${e.message}`);
@@ -1702,9 +1680,7 @@
         }
 
 
-        // Новая функция для настройки Realtime подписки
         function setupMessageSubscription() {
-            // Если подписка уже существует, отписываемся от нее, чтобы избежать дублирования
             if (messageSubscription) {
                 supabase.removeChannel(messageSubscription);
                 messageSubscription = null;
@@ -1719,25 +1695,23 @@
             console.log(`Попытка подписки на сообщения для пользователя: ${currentCabinetLogin}, терминал: ${selectedTerminalId}`);
 
             messageSubscription = supabase
-                .channel('terminal_messages_updates') // Уникальное имя канала
+                .channel('terminal_messages_updates')
                 .on(
                     'postgres_changes',
                     {
                         event: 'INSERT',
                         schema: 'public',
                         table: 'terminal_messages',
-                        filter: `recipient_id=eq.${currentCabinetLogin}` // Отфильтровать только для входящих сообщений текущего пользователя
+                        filter: `recipient_id=eq.${currentCabinetLogin}`
                     },
                     (payload) => {
                         console.log('Новое сообщение получено (Realtime):', payload.new);
-                        // Проверить, что новое сообщение для текущего терминала
                         if (payload.new.recipient_terminal_id === selectedTerminalId) {
                             showNotification(`Новое сообщение от ${payload.new.sender_name}: ${payload.new.subject}`);
-                            // Если на странице сообщений, обновить список
                             if (document.getElementById('messages').classList.contains('active')) {
-                                loadMessages(currentMessageFilter); // Reload messages with current filter
+                                loadMessages(currentMessageFilter);
                             } else {
-                                updateUnreadMessageCount(); // Just update count if not on messages page
+                                updateUnreadMessageCount();
                             }
                         }
                     }
@@ -1747,7 +1721,6 @@
             console.log('Подписка на Realtime обновления сообщений настроена.');
         }
 
-        // Функция для обновления счетчика непрочитанных сообщений
         async function updateUnreadMessageCount(count = null) {
             const unreadCountSpan = document.getElementById('unread-messages-count');
             if (!unreadCountSpan) return;
@@ -1771,7 +1744,7 @@
                     .eq('recipient_id', currentCabinetLogin)
                     .eq('recipient_terminal_id', selectedTerminalId)
                     .eq('read', false)
-                    .eq('status', 'active'); // Only count active, unread messages
+                    .eq('status', 'active');
 
                 if (error) throw error;
 
@@ -1779,12 +1752,11 @@
                 unreadCountSpan.style.display = unreadCount > 0 ? 'inline' : 'none';
             } catch (e) {
                 console.error("Error updating unread message count:", e);
-                unreadCountSpan.textContent = '(?)'; // Indicate error
+                unreadCountSpan.textContent = '(?)';
                 unreadCountSpan.style.display = 'inline';
             }
         }
 
-        // Функция для отображения кастомных уведомлений
         function showNotification(message, duration = 5000) {
             const notificationToast = document.getElementById('notification-toast');
             const notificationMessage = document.getElementById('notification-message');
@@ -1792,7 +1764,6 @@
             if (notificationToast && notificationMessage) {
                 notificationMessage.textContent = message;
                 notificationToast.classList.remove('hidden');
-                // Trigger reflow to ensure transition plays
                 void notificationToast.offsetWidth;
                 notificationToast.classList.add('show');
 
@@ -1800,7 +1771,7 @@
                     notificationToast.classList.remove('show');
                     setTimeout(() => {
                         notificationToast.classList.add('hidden');
-                    }, 500); // Wait for transition to finish before hiding
+                    }, 500);
                 }, duration);
             }
         }
@@ -1855,7 +1826,6 @@
             const copyJsonButton = document.getElementById('copyJsonButton');
 
 
-            // Login screen elements
             if (usernameInput) {
                 usernameInput.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') {
@@ -1872,7 +1842,6 @@
             }
             if (loginButton) loginButton.addEventListener('click', handleLogin);
 
-            // Terminal input listener
             if (terminalInput) {
                 terminalInput.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') {
@@ -2116,7 +2085,6 @@
                 });
             }
 
-            // Cabinet specific event listeners
             if (cabinetEnterButton) cabinetEnterButton.addEventListener('click', handleCabinetLogin);
             if (cabinetRegisterButton) cabinetRegisterButton.addEventListener('click', handleCabinetRegister);
             if (cabinetLogoutButton) cabinetLogoutButton.addEventListener('click', handleCabinetLogout);
@@ -2132,7 +2100,6 @@
 
             if (sendMessageButton) sendMessageButton.addEventListener('click', sendMessage);
 
-            // Message filter buttons
             if (filterAllButton) filterAllButton.addEventListener('click', () => {
                 currentMessageFilter = 'all';
                 loadMessages('all');
@@ -2167,7 +2134,6 @@
             });
 
 
-            // JSON modal event handlers
             if (closeButton) {
                 closeButton.addEventListener('click', () => {
                     if (jsonModal) jsonModal.style.display = 'none';
@@ -2193,11 +2159,10 @@
         }
 
 
-        // Initial load function
         window.onload = async () => {
-            attachGlobalEventListeners(); // This will attach listeners to elements that exist at load.
-            await loadTerminalConfig(); // This will then populate the UI and re-attach listeners for dynamic elements.
-            updateUnreadMessageCount(); // Initial update of unread count
+            attachGlobalEventListeners();
+            await loadTerminalConfig();
+            updateUnreadMessageCount();
         };
 
     </script>
