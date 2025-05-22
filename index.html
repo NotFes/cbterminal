@@ -3,82 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Киберпанк Сеть v5</title>
+    <title>Киберпанк Сеть v6 (с Supabase)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body {
-            font-family: 'Roboto Mono', monospace; /* Применяем шрифт */
-            background-color: #0f0f0f; /* Очень темный фон */
-            color: #00ff00; /* Яркий неоновый зеленый цвет текста */
-            overflow-x: hidden; /* Избегаем горизонтальной прокрутки */
-            display: flex; /* Используем flexbox для центрирования логина */
+            font-family: 'Roboto Mono', monospace;
+            background-color: #0f0f0f;
+            color: #00ff00;
+            overflow-x: hidden;
+            display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh; /* Минимальная высота во весь экран */
+            min-height: 100vh;
         }
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 1rem;
-            width: 100%; /* Контейнер занимает всю доступную ширину */
+            width: 100%;
         }
         .terminal-input {
-            background-color: #000; /* Черный фон для поля ввода */
-            border: 1px solid #00ff00; /* Зеленая рамка */
-            color: #00ff00; /* Зеленый текст */
+            background-color: #000;
+            border: 1px solid #00ff00;
+            color: #00ff00;
             padding: 0.5rem;
-            outline: none; /* Убираем стандартную обводку при фокусе */
+            outline: none;
             width: 100%;
         }
         .terminal-output {
-            white-space: pre-wrap; /* Сохраняем переносы строк и пробелы */
-            word-break: break-all; /* Переносим длинные слова */
+            white-space: pre-wrap;
+            word-break: break-all;
             margin-top: 1rem;
-            min-height: 200px; /* Минимальная высота для вывода терминала */
-            border: 1px dashed #00ff00; /* Пунктирная рамка */
+            min-height: 200px;
+            border: 1px dashed #00ff00;
             padding: 0.5rem;
-            overflow-y: auto; /* Добавляем прокрутку, если контента много */
-            max-height: 60vh; /* Максимальная высота */
+            overflow-y: auto;
+            max-height: 60vh;
         }
-        /* Стиль для терминала в режиме тревоги */
         .terminal-alert {
-            color: #ff0000; /* Красный текст */
-            border-color: #ff0000; /* Красная рамка */
+            color: #ff0000;
+            border-color: #ff0000;
         }
          .terminal-alert .terminal-input {
              color: #ff0000;
              border-color: #ff0000;
          }
-
-
         .nav-link {
-            cursor: pointer; /* Курсор-указатель для ссылок */
-            text-decoration: none; /* Убираем подчеркивание */
-            color: #00ffff; /* Неоновый голубой для ссылок */
+            cursor: pointer;
+            text-decoration: none;
+            color: #00ffff;
             margin-right: 1rem;
-            transition: color 0.3s ease; /* Плавное изменение цвета при наведении */
+            transition: color 0.3s ease;
         }
         .nav-link:hover {
-            color: #ffff00; /* Неоновый желтый при наведении */
+            color: #ffff00;
         }
         .page-section {
-            display: none; /* Скрываем все секции по умолчанию */
+            display: none;
         }
         .page-section.active {
-            display: block; /* Показываем активную секцию */
+            display: block;
         }
         h1, h2 {
-            color: #ff00ff; /* Неоновый пурпурный для заголовков */
-            text-shadow: 0 0 5px #ff00ff; /* Тень для эффекта свечения */
+            color: #ff00ff;
+            text-shadow: 0 0 5px #ff00ff;
             margin-bottom: 1rem;
         }
-        /* Стили для контента страниц */
         .page-content {
-            background-color: #1a1a1a; /* Более светлый темный фон для контента */
+            background-color: #1a1a1a;
             border: 1px solid #00ff00;
             padding: 1.5rem;
-            border-radius: 8px; /* Скругленные углы */
+            border-radius: 8px;
         }
         .page-content p {
             margin-bottom: 1rem;
@@ -91,21 +88,18 @@
         .page-content li {
             margin-bottom: 0.5rem;
         }
-        /* Стили для изображения карты */
         .map-image {
-            max-width: 100%; /* Изображение не будет шире своего контейнера */
-            height: auto; /* Сохраняем пропорции */
-            border: 2px solid #00ffff; /* Неоновая голубая рамка */
-            margin-top: 1.5rem; /* Отступ сверху */
-            display: block; /* Делаем блочным элементом для центрирования и отступов */
+            max-width: 100%;
+            height: auto;
+            border: 2px solid #00ffff;
+            margin-top: 1.5rem;
+            display: block;
             margin-left: auto;
             margin-right: auto;
-            cursor: pointer; /* Курсор-указатель при наведении */
+            cursor: pointer;
         }
-
-        /* Стили для экрана входа */
         #login-screen {
-            display: flex; /* Изначально показываем */
+            display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
@@ -115,7 +109,6 @@
             border-radius: 10px;
             text-align: center;
         }
-
         #login-screen input {
             background-color: #000;
             border: 1px solid #00ff00;
@@ -125,12 +118,11 @@
             outline: none;
             font-family: 'Roboto Mono', monospace;
             font-size: 1rem;
-            width: 250px; /* Фиксированная ширина для полей ввода */
+            width: 250px;
         }
-
         #login-screen button {
-            background-color: #ff00ff; /* Пурпурная кнопка */
-            color: #0f0f0f; /* Темный текст на кнопке */
+            background-color: #ff00ff;
+            color: #0f0f0f;
             padding: 0.75rem 2rem;
             border: none;
             border-radius: 5px;
@@ -139,58 +131,52 @@
             font-size: 1rem;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
-
         #login-screen button:hover {
-            background-color: #ffff00; /* Желтая при наведении */
+            background-color: #ffff00;
             color: #0f0f0f;
         }
-
         #login-message {
-            color: #ff0000; /* Красный для сообщений об ошибке */
+            color: #ff0000;
             margin-top: 1rem;
-            min-height: 1.5rem; /* Занимаем место, чтобы не прыгало при появлении текста */
+            min-height: 1.5rem;
         }
-
         #main-content {
-            display: none; /* Изначально скрываем основной контент */
+            display: none;
         }
-
-        /* Стили для файловой системы (спойлеры) */
         .file-entry {
             margin-bottom: 1rem;
             border: 1px solid #00ff00;
-            padding: 0.75rem;
+            /* Уменьшаем отступы */
+            padding: 0.25rem 0.5rem; 
             border-radius: 5px;
-            background-color: #0d0d0d; /* Чуть темнее фона контента */
+            background-color: #0d0d0d;
         }
-
         .file-entry summary {
             cursor: pointer;
             outline: none;
-            color: #00ffff; /* Неоновый голубой для названия файла */
+            color: #00ffff;
             font-weight: bold;
+            /* Убедимся, что summary не центрирует текст */
+            text-align: left; 
+            padding: 0.25rem 0; /* Немного padding для текста внутри summary */
         }
-
         .file-content {
-            margin-top: 0.75rem;
-            padding-top: 0.75rem;
+            margin-top: 0.5rem; /* Уменьшил отступ сверху */
+            padding-top: 0.5rem; /* Уменьшил отступ внутри */
             border-top: 1px dashed #00ff00;
-            white-space: pre-wrap; /* Сохраняем форматирование текста внутри */
+            white-space: pre-wrap;
             word-break: break-all;
+            /* Убедимся, что текст выравнивается по левому краю */
+            text-align: left;
         }
-
-        /* Стили для скрытого файла */
         .hidden-file {
-            display: none; /* Изначально скрываем второй файл */
+            display: none;
         }
-
-        /* Стили для страницы управления */
         .control-buttons {
             display: flex;
             flex-direction: column;
-            gap: 1rem; /* Отступ между кнопками */
+            gap: 1rem;
         }
-
         .control-button {
             padding: 1rem;
             border: 2px solid;
@@ -201,48 +187,37 @@
             transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
             text-align: center;
         }
-
         .button-active {
-            background-color: #00ff00; /* Зеленый фон (неактивен, доступен) */
-            color: #0f0f0f; /* Темный текст */
+            background-color: #00ff00;
+            color: #0f0f0f;
             border-color: #00ff00;
         }
-
         .button-restricted {
-            background-color: #ff0000; /* Красный фон (недоступен) */
+            background-color: #ff0000;
             color: #0f0f0f;
             border-color: #ff0000;
-            cursor: not-allowed; /* Курсор "запрещено" */
-            opacity: 0.6; /* Сделать немного прозрачнее */
+            cursor: not-allowed;
+            opacity: 0.6;
         }
-
          .button-unlocked {
-            background-color: #ffff00; /* Желтый фон (неактивен, доступен после взлома) */
+            background-color: #ffff00;
             color: #0f0f0f;
             border-color: #ffff00;
         }
-
-        /* Стиль для активного (включенного) состояния кнопки */
         .button-toggled {
-            background-color: #00ffff; /* Неоновый голубой фон */
+            background-color: #00ffff;
             color: #0f0f0f;
             border-color: #00ffff;
         }
-
-        /* Эффекты наведения */
         .button-active:hover:not(.button-toggled):not(.button-restricted) {
-             background-color: #00cc00; /* Темнее зеленый при наведении */
+             background-color: #00cc00;
         }
-
          .button-unlocked:hover:not(.button-toggled):not(.button-restricted) {
-             background-color: #cccc00; /* Темнее желтый при наведении */
+             background-color: #cccc00;
         }
-
          .button-toggled:hover:not(.button-restricted) {
-             background-color: #00cccc; /* Темнее голубой при наведении */
+             background-color: #00cccc;
          }
-
-        /* Стили для Кабинета */
         .cabinet-section {
             display: flex;
             flex-direction: column;
@@ -251,12 +226,10 @@
             padding-bottom: 1rem;
             border-bottom: 1px dashed #00ff00;
         }
-
         .cabinet-section:last-child {
             border-bottom: none;
             padding-bottom: 0;
         }
-
         .cabinet-data-area {
             background-color: #000;
             border: 1px solid #00ff00;
@@ -268,15 +241,13 @@
             max-height: 200px;
             line-height: 1.4;
             font-size: 0.95rem;
-            resize: vertical; /* Разрешаем изменение размера по вертикали */
+            resize: vertical;
         }
-
         .cabinet-data-area[contenteditable="true"] {
-            border-color: #ffff00; /* Желтая рамка при редактировании */
+            border-color: #ffff00;
             background-color: #0a0a0a;
             color: #ffff00;
         }
-
         .cabinet-input {
             background-color: #000;
             border: 1px solid #00ffff;
@@ -286,13 +257,11 @@
             width: 200px;
             font-family: 'Roboto Mono', monospace;
         }
-        .cabinet-input-account { /* Новый стиль для поля ввода ID аккаунта */
-            width: 100px; /* Уменьшенная ширина */
-            border-color: #ff00ff; /* Пурпурная рамка */
+        .cabinet-input-account {
+            width: 100px;
+            border-color: #ff00ff;
             color: #ff00ff;
         }
-
-
         .cabinet-button {
             background-color: #ff00ff;
             color: #0f0f0f;
@@ -310,52 +279,45 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
-
         .cabinet-message {
             color: #00ffff;
             margin-top: 0.5rem;
             min-height: 1.2rem;
             font-size: 0.9rem;
         }
-
-        /* Стили для модального окна JSON */
         .modal {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place */
-            z-index: 1; /* Sit on top */
+            display: none;
+            position: fixed;
+            z-index: 1;
             left: 0;
             top: 0;
-            width: 100%; /* Full width */
-            height: 100%; /* Full height */
-            overflow: auto; /* Enable scroll if needed */
-            background-color: rgba(0,0,0,0.8); /* Black w/ opacity */
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.8);
             padding-top: 60px;
         }
-
         .modal-content {
             background-color: #1a1a1a;
-            margin: 5% auto; /* 5% from the top and centered */
+            margin: 5% auto;
             padding: 20px;
             border: 1px solid #00ff00;
-            width: 80%; /* Could be more or less, depending on screen size */
+            width: 80%;
             box-shadow: 0 0 15px #00ff00;
             position: relative;
         }
-
         .close-button {
             color: #aaaaaa;
             float: right;
             font-size: 28px;
             font-weight: bold;
         }
-
         .close-button:hover,
         .close-button:focus {
             color: #fff;
             text-decoration: none;
             cursor: pointer;
         }
-
         .json-textarea {
             width: 100%;
             height: 300px;
@@ -367,7 +329,6 @@
             font-size: 0.9rem;
             resize: vertical;
         }
-
         .copy-json-button {
             background-color: #00ffff;
             color: #0f0f0f;
@@ -382,39 +343,104 @@
         .copy-json-button:hover {
             background-color: #00cccc;
         }
+
+        /* Стиль для экрана выбора терминала */
+        #terminal-selection-screen {
+            display: flex; /* Показываем изначально */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #1a1a1a;
+            border: 2px solid #00ffff;
+            padding: 3rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        #terminal-selection-screen .terminal-option {
+            background-color: #ff00ff; /* Пурпурная кнопка */
+            color: #0f0f0f; /* Темный текст на кнопке */
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1.1rem;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            margin-bottom: 1rem;
+            width: 300px; /* Фиксированная ширина */
+        }
+        #terminal-selection-screen .terminal-option:hover {
+            background-color: #ffff00; /* Желтая при наведении */
+            color: #0f0f0f;
+        }
+        #terminal-selection-screen p {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-top: -0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Styles for the notification toast */
+        #notification-toast {
+            position: fixed;
+            bottom: 1rem; /* Adjust for mobile */
+            right: 1rem; /* Adjust for mobile */
+            background-color: #8B008B; /* Dark Magenta */
+            color: #00ff00; /* Neon Green */
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.7); /* Pink glow */
+            z-index: 1000; /* High z-index to be on top */
+            opacity: 0;
+            transform: translateY(100%);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+            max-width: 90%; /* For mobile responsiveness */
+            text-align: center;
+        }
+        #notification-toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (min-width: 768px) {
+            #notification-toast {
+                bottom: 2rem;
+                right: 2rem;
+                max-width: 300px;
+            }
+        }
+
     </style>
 </head>
 <body class="antialiased">
 
-    <div id="login-screen">
-        <h2 class="text-2xl mb-4">/// СИСТЕМНЫЙ ДОСТУП ///</h2>
+    <div id="terminal-selection-screen">
+        <h2 class="text-2xl mb-4">/// ВЫБОР ТЕРМИНАЛА ///</h2>
+        <div id="terminal-options-container" class="flex flex-col items-center">
+            </div>
+    </div>
+
+
+    <div id="login-screen" style="display: none;">
+        <h2 class="text-2xl mb-4" id="login-terminal-title"></h2>
         <input type="text" id="username" placeholder="Логин">
         <input type="password" id="password" placeholder="Пароль">
         <button id="login-button">ВОЙТИ</button>
         <div id="login-message"></div>
     </div>
 
-    <div id="main-content" class="container mt-8">
+    <div id="main-content" class="container mt-8" style="display: none;">
         <header class="mb-8 border-b border-green-500 pb-4">
-            <h1 class="text-3xl font-bold text-center">/// КИБЕРНЕТИЧЕСКАЯ СЕТЬ ///</h1>
-            <nav class="mt-4 text-center">
-                <a href="#terminal" class="nav-link" data-page="terminal">/// ТЕРМИНАЛ ///</a>
-                <a href="#filesystem" class="nav-link" data-page="filesystem">/// ФАЙЛОВАЯ СИСТЕМА ///</a>
-                <a href="#control" class="nav-link" data-page="control">/// УПРАВЛЕНИЕ ///</a><br>
-                <a href="#cabinet" class="nav-link" data-page="cabinet">/// КАБИНЕТ ///</a>
-                <a href="#characters" class="nav-link" data-page="characters">/// ПЕРСОНАЖИ ///</a>
-                <a href="#dossiers" class="nav-link" data-page="dossiers">/// ДОСЬЕ ///</a>
-                <a href="#map" class="nav-link" data-page="map">/// КАРТА ///</a>
-            </nav>
+            <h1 class="text-3xl font-bold text-center" id="main-terminal-header"></h1>
+            <nav class="mt-4 text-center" id="main-nav-links">
+                </nav>
         </header>
 
         <section id="terminal" class="page-section active">
             <div class="page-content">
-                <h2 class="text-2xl">/// СИСТЕМНЫЙ ТЕРМИНАЛ ///</h2>
-                <div id="terminal-output" class="terminal-output">
-                    Подключение к сети... Успешно.<br>
-                    Введите команду или 'help' для списка команд.
-                </div>
+                <h2 class="text-2xl" id="terminal-section-title"></h2>
+                <div id="terminal-output" class="terminal-output"></div>
                 <div class="flex items-center mt-4">
                     <span class="mr-2 text-green-500">></span>
                     <input type="text" id="terminal-input" class="terminal-input flex-grow" autofocus>
@@ -424,157 +450,140 @@
 
         <section id="filesystem" class="page-section">
             <div class="page-content">
-                <h2 class="text-2xl">/// ФАЙЛОВАЯ СИСТЕМА ///</h2>
-                <p>Используйте терминал для получения более глубокого доступа.</p>
-
-                <details class="file-entry">
-                    <summary>log_001_system_status.txt</summary>
-                    <div class="file-content">
-[2077-10-23 14:35:12] Системный статус: Норма. Загрузка ЦПУ: 12%. Память: 45% занято.
-[2077-10-23 14:36:01] Проверка подсистем: ОК.
-[2077-10-23 14:37:55] Входящее соединение с IP: 192.168.1.105. Пользователь: admin. Аутентификация успешна.
-[2077-10-23 14:38:02] Выполнена команда: 'status'.
-[2077-10-23 14:39:18] Выполнена команда: 'message'.
+                <h2 class="text-2xl" id="filesystem-section-title"></h2>
+                <p id="filesystem-intro-text"></p>
+                <div id="filesystem-files-container">
                     </div>
-                </details>
-
-                <details class="file-entry hidden-file" id="secret-file">
-                    <summary>dossier_corp_ares.dat</summary>
-                    <div class="file-content">
-/// ДОСЬЕ: КОРПОРАЦИЯ "АРЕС ИНДАСТРИЗ" ///
-
-**Сектор:** Военно-промышленный комплекс, кибернетика.
-**Штаб-квартира:** Найт-Сити, Сектор А, Башня Арес.
-**Ключевые фигуры:**
-- Генеральный директор: Элайджа Вэнс (статус: жив, местоположение: неизвестно после инцидента в 2076)
-- Глава отдела R&D: Доктор Акира Сато (статус: активен)
-
-**Секретные проекты:**
-- Проект "Орсус": Разработка боевых кибер-имплантов нового поколения (статус: в активной фазе).
-- Проект "Феникс": Исследование технологий клонирования и переноса сознания (статус: приостановлен из-за этических и технических проблем).
-
-**Уязвимости:**
-- Высокая зависимость от поставок редких металлов из спорных территорий.
-- Внутренние конфликты между отделами R&D и безопасности.
-- Недавно обнаруженная уязвимость в протоколе шифрования (см. отчет 77-В).
-
-**Последняя активность:** Увеличение производства боевых дронов в Секторе Б. Набор наемников с высоким уровнем кибернетизации.
-                    </div>
-                </details>
-
             </div>
         </section>
 
          <section id="control" class="page-section">
             <div class="page-content">
-                <h2 class="text-2xl">/// СИСТЕМА УПРАВЛЕНИЯ ///</h2>
-                <p>Взаимодействие с объектами окружения.</p>
-
-                <div class="control-buttons">
-                    <button class="control-button button-active" data-target="door">ДВЕРЬ</button>
-                    <button class="control-button button-restricted" data-target="turret">ТУРЕЛЬ</button>
-                    <button class="control-button button-restricted" data-target="camera">КАМЕРЫ НАБЛЮДЕНИЯ</button>
-                </div>
-
-                 <div id="control-message" class="mt-4 text-center text-yellow-400 min-h-[1.5rem]">
-                     </div>
-
+                <h2 class="text-2xl" id="control-section-title"></h2>
+                <p id="control-intro-text"></p>
+                <div class="control-buttons" id="control-buttons-container">
+                    </div>
+                 <div id="control-message" class="mt-4 text-center text-yellow-400 min-h-[1.5rem]"></div>
             </div>
         </section>
 
         <section id="cabinet" class="page-section">
             <div class="page-content">
-                <h2 class="text-2xl">/// ЛИЧНЫЙ КАБИНЕТ ///</h2>
-                <p>Управление персональными данными.</p>
+                <h2 class="text-2xl" id="cabinet-section-title"></h2>
+                <p id="cabinet-intro-text"></p>
 
-                <div class="cabinet-section">
-                    <h3 class="text-xl text-purple-400 mb-2">ID Аккаунта:</h3>
-                    <input type="text" id="cabinet-account-id" class="cabinet-input cabinet-input-account" value="account_1" placeholder="Например: account_1">
-                    <p class="text-xs text-gray-400 mt-1">Используйте ID аккаунта (например, "account_1", "account_2") для доступа к разным наборам данных.</p>
+                <div id="cabinet-login-section" class="cabinet-section">
+                    <h3 class="text-xl text-purple-400 mb-2">Вход в Кабинет</h3>
+                    <input type="text" id="cabinet-login-id" class="cabinet-input" placeholder="Логин Кабинета">
+                    <input type="password" id="cabinet-login-password" class="cabinet-input" placeholder="Пароль Кабинета">
+                    <div class="flex gap-2 mt-2">
+                        <button id="cabinet-enter-button" class="cabinet-button">Войти</button>
+                        <button id="cabinet-register-button" class="cabinet-button">Зарегистрировать</button>
+                    </div>
+                    <div id="cabinet-auth-message" class="cabinet-message text-red-500"></div>
                 </div>
 
-                <div class="cabinet-section">
-                    <h3 class="text-xl text-purple-400 mb-2">Пароль для доступа к данным:</h3>
-                    <div class="flex items-center gap-2">
-                        <input type="password" id="cabinet-password" class="cabinet-input" placeholder="Введите пароль">
-                        <button id="load-cabinet-data" class="cabinet-button">Загрузить</button>
-                        <button id="save-cabinet-data" class="cabinet-button">Сохранить</button>
+                <div id="personal-cabinet-data-section" style="display: none;">
+                    <div class="cabinet-section">
+                        <h3 class="text-xl text-purple-400 mb-2">Ваш логин Кабинета:</h3>
+                        <input type="text" id="cabinet-display-id" class="cabinet-input cabinet-input-account" placeholder="" readonly>
+                        <p class="text-xs text-gray-400 mt-1">Используйте этот логин для отправки сообщений другим пользователям.</p>
+                        <button id="cabinet-logout-button" class="cabinet-button mt-4">Выйти из Кабинета</button>
                     </div>
-                    <div id="cabinet-password-message" class="cabinet-message text-red-500"></div>
-                </div>
 
-                <div class="cabinet-section">
-                    <h3 class="text-xl text-purple-400 mb-2">Список заданий:</h3>
-                    <div id="task-list-display" class="cabinet-data-area" contenteditable="false">
-                        Задание 1: Взломать корпоративный сервер Арес.
-Задание 2: Найти информацию о проекте "Феникс".
-Задание 3: Встретиться с информатором в "Синем Лотосе".
+                    <div class="cabinet-section">
+                        <h3 class="text-xl text-purple-400 mb-2" id="cabinet-password-label">Пароль Кабинета:</h3>
+                        <div class="flex items-center gap-2">
+                            <input type="password" id="cabinet-password" class="cabinet-input" placeholder="Пароль">
+                            <button id="save-cabinet-password-button" class="cabinet-button">Сохранить пароль</button>
+                        </div>
+                        <div id="cabinet-password-message" class="cabinet-message text-red-500"></div>
                     </div>
-                    <button id="edit-tasks-button" class="cabinet-button">Изменить</button>
-                    <div id="task-message" class="cabinet-message"></div>
-                </div>
 
-                <div class="cabinet-section">
-                    <h3 class="text-xl text-purple-400 mb-2">Личная информация:</h3>
-                    <div id="personal-info-display" class="cabinet-data-area" contenteditable="false">
-                        Имя: Призрак
-Псевдоним: Ghost
-Профессия: Нейрохакер, фрилансер
-Контакты: [Зашифровано]
+                    <div class="cabinet-section">
+                        <h3 class="text-xl text-purple-400 mb-2" id="cabinet-tasks-label">Задания:</h3>
+                        <div id="task-list-display" class="cabinet-data-area" contenteditable="false"></div>
+                        <button id="edit-tasks-button" class="cabinet-button">Редактировать</button>
+                        <div id="task-message" class="cabinet-message"></div>
                     </div>
-                    <button id="edit-personal-info-button" class="cabinet-button">Изменить</button>
-                    <div id="personal-info-message" class="cabinet-message"></div>
-                </div>
 
-                <div class="cabinet-section">
-                    <h3 class="text-xl text-purple-400 mb-2">Финансы и Имущество:</h3>
-                    <div id="finances-display" class="cabinet-data-area" contenteditable="false">
-                        Кредиты: 15,000 евродолларов
-Банковский счет: [Оффлайн]
-Квартира: Найт-Сити, Сектор Б, трущобы
-Транспорт: Мотоцикл "Красный Дракон"
+                    <div class="cabinet-section">
+                        <h3 class="text-xl text-purple-400 mb-2" id="cabinet-personal-info-label">Личная информация:</h3>
+                        <div id="personal-info-display" class="cabinet-data-area" contenteditable="false"></div>
+                        <button id="edit-personal-info-button" class="cabinet-button">Редактировать</button>
+                        <div id="personal-info-message" class="cabinet-message"></div>
                     </div>
-                    <button id="edit-finances-button" class="cabinet-button">Изменить</button>
-                    <div id="finances-message" class="cabinet-message"></div>
+
+                    <div class="cabinet-section">
+                        <h3 class="text-xl text-purple-400 mb-2" id="cabinet-finances-label">Финансы:</h3>
+                        <div id="finances-display" class="cabinet-data-area" contenteditable="false"></div>
+                        <button id="edit-finances-button" class="cabinet-button">Редактировать</button>
+                        <div id="finances-message" class="cabinet-message"></div>
+                    </div>
                 </div>
             </div>
         </section>
 
-
         <section id="characters" class="page-section">
             <div class="page-content">
-                <h2 class="text-2xl">/// СПИСОК ПЕРСОНАЖЕЙ ///</h2>
-                <p>Здесь будет информация о ключевых персонажах в вашей киберпанк-истории.</p>
-                <ul>
-                    <li>Нейрохакер "Призрак"</li>
-                    <li>Корпоративный агент "Сокол"</li>
-                    <li>Уличный самурай "Кенши"</li>
+                <h2 class="text-2xl" id="characters-section-title"></h2>
+                <p id="characters-intro-text"></p>
+                <ul id="characters-list-container">
                     </ul>
             </div>
         </section>
 
         <section id="dossiers" class="page-section">
             <div class="page-content">
-                <h2 class="text-2xl">/// СЕКРЕТНЫЕ ДОСЬЕ ///</h2>
-                <p>В этом разделе можно хранить информацию о фракциях, организациях, технологиях или важных событиях.</p>
-                <p><strong>Досье: Корпорация "Арес Индастриз"</strong></p>
-                <p>Крупнейший производитель кибернетических имплантов и оружия. Контролирует значительную часть городской инфраструктуры.</p>
-                </div>
+                <h2 class="text-2xl" id="dossiers-section-title"></h2>
+                <p id="dossiers-intro-text"></p>
+                <div id="dossiers-list-container">
+                    </div>
+            </div>
         </section>
 
         <section id="map" class="page-section">
             <div class="page-content">
-                <h2 class="text-2xl">/// КАРТА ГОРОДА ///</h2>
-                <p>Нажмите на изображение ниже, чтобы открыть карту в полном размере.</p>
-                <a href="https://i.ytimg.com/vi/xdxOkTjfuzU/maxresdefault.jpg" target="_blank" class="block">
-                    [Image of Киберпанк Город]
-                    <img src="https://i.ytimg.com/vi/xdxOkTjfuzU/maxresdefault.jpg" alt="Карта Киберпанк Города" class="map-image">
+                <h2 class="text-2xl" id="map-section-title"></h2>
+                <p id="map-intro-text"></p>
+                <a href="#" target="_blank" id="map-image-link">
+                    <img src="" alt="" class="map-image" id="map-image">
                 </a>
-                <button id="open-interactive-map-button" class="cabinet-button mt-4">Открыть Интерактивную Карту</button>
-                <p class="mt-4">Здесь также можно добавить описание ключевых локаций:</p>
-                <p><strong>Локация: Район Красных Фонарей</strong></p>
-                <p>Известен своими подпольными барами, нелегальными клиниками и точками обмена информацией.</p>
+                <p class="mt-4" id="map-description-heading"></p>
+                <div id="map-locations-container">
+                    </div>
+            </div>
+        </section>
+
+        <section id="messages" class="page-section">
+            <div class="page-content">
+                <h2 class="text-2xl" id="messages-section-title">/// СООБЩЕНИЯ ///</h2>
+                <p id="messages-intro-text">Здесь отображаются входящие и исходящие сообщения для вашего аккаунта.</p>
+
+                <div class="cabinet-section mt-8">
+                    <h3 class="text-xl text-purple-400 mb-2">Отправить сообщение</h3>
+                    <p class="text-gray-400 text-sm mb-2">
+                        Отправляйте сообщения другим пользователям. Укажите логин Кабинета получателя.
+                    </p>
+                    <input type="text" id="message-recipient-id" class="cabinet-input w-full mb-2" placeholder="Логин Кабинета получателя">
+                    <input type="text" id="message-subject" class="cabinet-input w-full mb-2" placeholder="Тема сообщения">
+                    <textarea id="message-content" class="cabinet-data-area w-full mb-2" placeholder="Содержание сообщения..." rows="5"></textarea>
+                    <button id="send-message-button" class="cabinet-button w-full">Отправить сообщение</button>
+                    <div id="send-message-status" class="cabinet-message mt-2"></div>
                 </div>
+
+                <h3 class="text-xl text-purple-400 mt-8 mb-2">Входящие и исходящие:</h3>
+                <div class="flex gap-2 mb-4">
+                    <button id="filter-all-messages" class="cabinet-button text-xs px-3 py-1 button-toggled">Активные</button>
+                    <button id="filter-incoming-messages" class="cabinet-button text-xs px-3 py-1">Входящие</button>
+                    <button id="filter-outgoing-messages" class="cabinet-button text-xs px-3 py-1">Исходящие</button>
+                    <button id="filter-archived-messages" class="cabinet-button text-xs px-3 py-1">Архив</button>
+                </div>
+
+                <div id="messages-list-container" class="mt-4">
+                    </div>
+                <div id="messages-status" class="text-yellow-400 mt-4 min-h-[1.5rem]"></div>
+            </div>
         </section>
 
     </div>
@@ -582,183 +591,570 @@
     <div id="jsonModal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
-            <h2 class="text-2xl text-center text-purple-400 mb-4">/// JSON ДАННЫЕ ДЛЯ КОПИРОВАНИЯ ///</h2>
-            <p class="text-yellow-400 mb-2">Скопируйте этот JSON-код и вставьте его в ваш файл `id_list.json` на GitHub (или локально), затем обновите страницу, чтобы изменения вступили в силу.</p>
+            <h2 class="text-2xl text-center text-purple-400 mb-4" id="modal-title"></h2>
+            <p class="text-yellow-400 mb-2" id="modal-instructions"></p>
             <textarea id="jsonOutput" class="json-textarea" readonly></textarea>
-            <button id="copyJsonButton" class="copy-json-button">Копировать JSON</button>
+            <button id="copyJsonButton" class="copy-json-button"></button>
         </div>
+    </div>
+
+    <div id="notification-toast" class="fixed bottom-4 right-4 bg-purple-800 text-white p-4 rounded-lg shadow-lg hidden z-50 transition-all duration-300 ease-in-out transform translate-y-full opacity-0 md:bottom-8 md:right-8">
+        <p id="notification-message" class="text-sm"></p>
     </div>
 
 
     <script>
-        const navLinks = document.querySelectorAll('.nav-link');
-        const pageSections = document.querySelectorAll('.page-section');
-        const terminalInput = document.getElementById('terminal-input');
-        const terminalOutput = document.getElementById('terminal-output');
-        const loginScreen = document.getElementById('login-screen');
-        const mainContent = document.getElementById('main-content');
-        const usernameInput = document.getElementById('username');
-        const passwordInput = document.getElementById('password');
-        const loginButton = document.getElementById('login-button');
-        const loginMessage = document.getElementById('login-message');
-        const secretFileElement = document.getElementById('secret-file');
-        const controlButtons = document.querySelectorAll('.control-button');
-        const controlMessageElement = document.getElementById('control-message');
+        // --- Supabase Client Initialization ---
+        // Replace with your actual Supabase URL and anon key
+        const SUPABASE_URL = 'https://vnfswyztlwgkhkkmhhhs.supabase.co'; // e.g., 'https://abcdefg.supabase.co'
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZuZnN3eXp0bHdna2hra21oaGhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc4Mjg0MzYsImV4cCI6MjA2MzQwNDQzNn0.jvs2X_61LZaZxcmDoSK9ZRnHo-S2wblifiV4Vogdkyo'; // e.g., 'eyJhbGciOiJIUzI1Ni...'
 
-        // Элементы Кабинета
-        const cabinetAccountIdInput = document.getElementById('cabinet-account-id');
-        const cabinetPasswordInput = document.getElementById('cabinet-password');
-        const loadCabinetDataButton = document.getElementById('load-cabinet-data');
-        const saveCabinetDataButton = document.getElementById('save-cabinet-data');
-        const cabinetPasswordMessage = document.getElementById('cabinet-password-message');
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        const taskListDisplay = document.getElementById('task-list-display');
-        const editTasksButton = document.getElementById('edit-tasks-button');
-        const taskMessage = document.getElementById('task-message');
-
-        const personalInfoDisplay = document.getElementById('personal-info-display');
-        const editPersonalInfoButton = document.getElementById('edit-personal-info-button');
-        const personalInfoMessage = document.getElementById('personal-info-message');
-
-        const financesDisplay = document.getElementById('finances-display');
-        const editFinancesButton = document.getElementById('edit-finances-button');
-        const financesMessage = document.getElementById('finances-message');
-
-        // Модальное окно и связанные элементы
-        const jsonModal = document.getElementById('jsonModal');
-        const closeButton = document.querySelector('.close-button');
-        const jsonOutputTextarea = document.getElementById('jsonOutput');
-        const copyJsonButton = document.getElementById('copyJsonButton');
-
-        // Добавлено: Новая кнопка для открытия интерактивной карты
-        const openInteractiveMapButton = document.getElementById('open-interactive-map-button');
-
-
-        // Флаг, указывающий, был ли терминал успешно взломан
+        // --- Global variables (ONLY for state, NOT for DOM elements) ---
+        let currentTerminalData = null;
         let isHacked = false;
-        // Счетчик неудачных попыток взлома через мини-игру
         let hackAttempts = 0;
-        const MAX_HACK_ATTEMPTS = 3;
-
-        // Состояние мини-игры взлома
         let isHackMinigameActive = false;
         let currentHackPhrase = '';
         let hackTimer = 0;
         let hackTimerInterval = null;
-        const HACK_TIMER_DURATION = 10; // 10 секунд
-
-        // Список слов для мини-игры взлома
-        const hackWords = [
-            "нейросеть", "протокол", "шифрование", "бэкдор", "алгоритм",
-            "система", "доступ", "данные", "сервер", "матрица",
-            "киберпространство", "уязвимость", "фаервол", "трафик", "идентификация"
-        ];
-
-        // Состояние кнопок управления (true = включено, false = выключено)
-        const controlStates = {
-            door: false,
-            turret: false,
-            camera: false
-        };
-
-        // Временное хранилище для всех данных аккаунтов, загруженных из id_list.json
-        let allCabinetAccountsData = [];
-
-        // Глобальные переменные для terminal_id и cabinet_login
-        // terminal_id будет по умолчанию 'arasaka', как в вашем примере URL
-        let currentTerminalId = 'arasaka';
-        // cabinet_login будет устанавливаться после успешного логина
-        let currentCabinetLogin = '';
+        let controlStates = {};
+        let selectedTerminalId = '';
+        let currentCabinetLogin = null;
+        // Новая переменная для хранения подписки на сообщения
+        let messageSubscription = null;
+        // Переменная для текущего фильтра сообщений
+        let currentMessageFilter = 'all'; // 'all', 'incoming', 'outgoing', 'archived'
 
 
-        // Список случайных системных сообщений
-        const randomSystemMessages = [
-            "/// СИСТЕМА: Проверка целостности данных... ОК.",
-            "/// СИСТЕМА: Активность сети: 1.2 Гбит/с.",
-            "/// СИСТЕМА: Подсистема безопасности: Патруль в секторе В.",
-            "/// СИСТЕМА: Температура ЦПУ: 45°C.",
-            "/// СИСТЕМА: Ожидание команд...",
-            "/// СИСТЕМА: Фоновый процесс запущен.",
-            "/// СИСТЕМА: Обнаружен низкий приоритетный трафик.",
-            "/// СИСТЕМА: Соединение с внешним узлом установлено.",
-            "/// СИСТЕМА: Журнал ошибок: Пусто.",
-            "/// СИСТЕМА: Энергопотребление в норме."
-        ];
+        // --- UI Population Functions ---
 
-        // Функция для вывода случайного системного сообщения с небольшой вероятностью
-        function maybePrintRandomMessage() {
-            const chance = 0.15; // 15% шанс появления сообщения после команды
-            if (Math.random() < chance) {
-                const randomMessage = randomSystemMessages[Math.floor(Math.random() * randomSystemMessages.length)];
-                // Добавляем сообщение перед следующим приглашением
-                terminalOutput.innerHTML += randomMessage + '\n';
+        function populateUI(data) {
+            const mainTerminalHeader = document.getElementById('main-terminal-header');
+            if (mainTerminalHeader) mainTerminalHeader.textContent = data.terminal_title;
+
+            const loginTerminalTitle = document.getElementById('login-terminal-title');
+            if (loginTerminalTitle) loginTerminalTitle.textContent = data.terminal_title;
+
+            const terminalSectionTitle = document.getElementById('terminal-section-title');
+            if (terminalSectionTitle) terminalSectionTitle.textContent = data.terminal_title;
+
+            const mainNavLinks = document.getElementById('main-nav-links');
+            if (mainNavLinks) {
+                mainNavLinks.innerHTML = '';
+                const navPages = [
+                    { id: "terminal", label: "ТЕРМИНАЛ" },
+                    { id: "filesystem", label: "ФАЙЛОВАЯ СИСТЕМА" },
+                    { id: "control", label: "УПРАВЛЕНИЕ" },
+                    { id: "cabinet", label: "КАБИНЕТ" },
+                    { id: "messages", label: "СООБЩЕНИЯ" },
+                    { id: "characters", label: "ПЕРСОНАЖИ" },
+                    { id: "dossiers", label: "ДОСЬЕ" },
+                    { id: "map", label: "КАРТА" }
+                ];
+                navPages.forEach((page, index) => {
+                    const link = document.createElement('a');
+                    link.href = `#${page.id}`;
+                    link.classList.add('nav-link');
+                    link.setAttribute('data-page', page.id);
+                    link.textContent = `/// ${page.label} `;
+                    // Добавляем счетчик непрочитанных сообщений только для ссылки "СООБЩЕНИЯ"
+                    if (page.id === 'messages') {
+                        const unreadCountSpan = document.createElement('span');
+                        unreadCountSpan.id = 'unread-messages-count';
+                        unreadCountSpan.classList.add('ml-1', 'text-yellow-400', 'text-xs', 'font-bold');
+                        unreadCountSpan.textContent = '(0)'; // Initial count
+                        link.appendChild(unreadCountSpan);
+                    }
+                    link.innerHTML += ' ///'; // Closing slashes
+                    mainNavLinks.appendChild(link);
+                    if (page.id === 'control' || page.id === 'messages') {
+                        mainNavLinks.appendChild(document.createElement('br'));
+                    }
+                });
+                // Re-attach event listeners after re-creating nav links
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const pageId = link.getAttribute('data-page');
+                        showPage(pageId);
+                    });
+                });
+            }
+
+            const filesystemSectionTitle = document.getElementById('filesystem-section-title');
+            if (filesystemSectionTitle) filesystemSectionTitle.textContent = data.page_content.filesystem.title;
+
+            const filesystemIntroText = document.getElementById('filesystem-intro-text');
+            if (filesystemIntroText) filesystemIntroText.textContent = data.page_content.filesystem.intro;
+
+            const filesystemFilesContainer = document.getElementById('filesystem-files-container');
+            if (filesystemFilesContainer) {
+                filesystemFilesContainer.innerHTML = '';
+                data.page_content.filesystem.files.forEach(file => {
+                    const details = document.createElement('details');
+                    details.classList.add('file-entry');
+                    if (file.is_secret) {
+                        details.classList.add('hidden-file');
+                        details.id = 'secret-file';
+                    }
+                    const summary = document.createElement('summary');
+                    summary.textContent = file.summary;
+                    const contentDiv = document.createElement('div');
+                    contentDiv.classList.add('file-content');
+                    contentDiv.innerHTML = file.content.replace(/\n/g, '<br>');
+
+                    details.appendChild(summary);
+                    details.appendChild(contentDiv);
+                    filesystemFilesContainer.appendChild(details);
+                });
+            }
+
+            const controlSectionTitle = document.getElementById('control-section-title');
+            if (controlSectionTitle) controlSectionTitle.textContent = data.page_content.control.title;
+
+            const controlIntroText = document.getElementById('control-intro-text');
+            if (controlIntroText) controlIntroText.textContent = data.page_content.control.intro;
+
+            const controlButtonsContainer = document.getElementById('control-buttons-container');
+            if (controlButtonsContainer) {
+                controlButtonsContainer.innerHTML = '';
+                controlStates = {};
+                data.page_content.control.buttons.forEach(buttonConfig => {
+                    const button = document.createElement('button');
+                    button.classList.add('control-button');
+                    button.setAttribute('data-target', buttonConfig.target);
+                    button.textContent = buttonConfig.label;
+                    controlButtonsContainer.appendChild(button);
+                    controlStates[buttonConfig.target] = false;
+                });
+                // Re-attach event listeners for control buttons
+                document.querySelectorAll('.control-button').forEach(button => {
+                    button.addEventListener('click', handleControlButtonClick);
+                });
+            }
+
+            // Cabinet Section elements
+            const cabinetSectionTitle = document.getElementById('cabinet-section-title');
+            if (cabinetSectionTitle) cabinetSectionTitle.textContent = data.page_content.cabinet.title;
+
+            const cabinetIntroText = document.getElementById('cabinet-intro-text');
+            if (cabinetIntroText) cabinetIntroText.textContent = data.page_content.cabinet.intro;
+
+            const cabinetPasswordLabel = document.getElementById('cabinet-password-label');
+            if (cabinetPasswordLabel) cabinetPasswordLabel.textContent = data.page_content.cabinet.sections.password.label;
+
+            const cabinetPasswordInput = document.getElementById('cabinet-password');
+            if (cabinetPasswordInput) cabinetPasswordInput.placeholder = data.page_content.cabinet.sections.password.placeholder;
+
+            const cabinetTasksLabel = document.getElementById('cabinet-tasks-label');
+            if (cabinetTasksLabel) cabinetTasksLabel.textContent = data.page_content.cabinet.sections.tasks.label;
+
+            const editTasksButton = document.getElementById('edit-tasks-button');
+            if (editTasksButton) editTasksButton.textContent = data.page_content.cabinet.sections.tasks.edit_button;
+
+            const taskListDisplay = document.getElementById('task-list-display');
+            if (taskListDisplay) taskListDisplay.textContent = data.page_content.cabinet.sections.tasks.initial_content;
+
+            const cabinetPersonalInfoLabel = document.getElementById('cabinet-personal-info-label');
+            if (cabinetPersonalInfoLabel) cabinetPersonalInfoLabel.textContent = data.page_content.cabinet.sections.personal_info.label;
+
+            const editPersonalInfoButton = document.getElementById('edit-personal-info-button');
+            if (editPersonalInfoButton) editPersonalInfoButton.textContent = data.page_content.cabinet.sections.personal_info.edit_button;
+
+            const personalInfoDisplay = document.getElementById('personal-info-display');
+            if (personalInfoDisplay) personalInfoDisplay.textContent = data.page_content.cabinet.sections.personal_info.initial_content;
+
+            const cabinetFinancesLabel = document.getElementById('cabinet-finances-label');
+            if (cabinetFinancesLabel) cabinetFinancesLabel.textContent = data.page_content.cabinet.sections.finances.label;
+
+            const editFinancesButton = document.getElementById('edit-finances-button');
+            if (editFinancesButton) editFinancesButton.textContent = data.page_content.cabinet.sections.finances.edit_button;
+
+            const financesDisplay = document.getElementById('finances-display');
+            if (financesDisplay) financesDisplay.textContent = data.page_content.cabinet.sections.finances.initial_content;
+
+
+            const charactersSectionTitle = document.getElementById('characters-section-title');
+            if (charactersSectionTitle) charactersSectionTitle.textContent = data.page_content.characters.title;
+
+            const charactersIntroText = document.getElementById('characters-intro-text');
+            if (charactersIntroText) charactersIntroText.textContent = data.page_content.characters.intro;
+
+            const charactersListContainer = document.getElementById('characters-list-container');
+            if (charactersListContainer) {
+                charactersListContainer.innerHTML = '';
+                data.page_content.characters.list.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    charactersListContainer.appendChild(li);
+                });
+            }
+
+            const dossiersSectionTitle = document.getElementById('dossiers-section-title');
+            if (dossiersSectionTitle) dossiersSectionTitle.textContent = data.page_content.dossiers.title;
+
+            const dossiersIntroText = document.getElementById('dossiers-intro-text');
+            if (dossiersIntroText) dossiersIntroText.textContent = data.page_content.dossiers.intro;
+
+            const dossiersListContainer = document.getElementById('dossiers-list-container');
+            if (dossiersListContainer) {
+                dossiersListContainer.innerHTML = '';
+                data.page_content.dossiers.dossiers_list.forEach(dossier => {
+                    const pHeading = document.createElement('p');
+                    pHeading.innerHTML = `<strong>${dossier.heading}</strong>`;
+                    const pContent = document.createElement('p');
+                    pContent.textContent = dossier.content;
+                    dossiersListContainer.appendChild(pHeading);
+                    dossiersListContainer.appendChild(pContent);
+                });
+            }
+
+            const mapSectionTitle = document.getElementById('map-section-title');
+            if (mapSectionTitle) mapSectionTitle.textContent = data.page_content.map.title;
+
+            const mapIntroText = document.getElementById('map-intro-text');
+            if (mapIntroText) mapIntroText.textContent = data.page_content.map.intro;
+
+            const mapImageLink = document.getElementById('map-image-link');
+            if (mapImageLink) mapImageLink.href = data.page_content.map.image_link;
+
+            const mapImage = document.getElementById('map-image');
+            if (mapImage) {
+                mapImage.src = data.page_content.map.image_src;
+                mapImage.alt = data.page_content.map.image_alt;
+            }
+
+            const mapDescriptionHeading = document.getElementById('map-description-heading');
+            if (mapDescriptionHeading) mapDescriptionHeading.textContent = data.page_content.map.description_heading;
+
+            const mapLocationsContainer = document.getElementById('map-locations-container');
+            if (mapLocationsContainer) {
+                mapLocationsContainer.innerHTML = '';
+                data.page_content.map.locations.forEach(location => {
+                    const pHeading = document.createElement('p');
+                    pHeading.innerHTML = `<strong>${location.heading}</strong>`;
+                    const pContent = document.createElement('p');
+                    pContent.textContent = location.content;
+                    mapLocationsContainer.appendChild(pHeading);
+                    mapLocationsContainer.appendChild(pContent);
+                });
+            }
+
+            // Messages Section elements
+            const messagesSectionTitle = document.getElementById('messages-section-title');
+            if (messagesSectionTitle && data.page_content.messages) {
+                messagesSectionTitle.textContent = data.page_content.messages.title;
+            } else if (messagesSectionTitle) {
+                // Fallback or error message if messages data is missing
+                messagesSectionTitle.textContent = '/// СООБЩЕНИЯ (ДАННЫЕ ОТСУТСТВУЮТ) ///';
+                console.warn("messages.title is missing in terminal data config.");
+            }
+
+            const messagesIntroText = document.getElementById('messages-intro-text');
+            if (messagesIntroText && data.page_content.messages) {
+                messagesIntroText.textContent = data.page_content.messages.intro;
+            } else if (messagesIntroText) {
+                messagesIntroText.textContent = 'Данные о сообщениях отсутствуют.';
+                console.warn("messages.intro is missing in terminal data config.");
+            }
+
+
+            const modalTitle = document.getElementById('modal-title');
+            if (modalTitle) modalTitle.textContent = data.modal_messages.title;
+
+            const modalInstructions = document.getElementById('modal-instructions');
+            if (modalInstructions) modalInstructions.innerHTML = data.modal_messages.instructions.replace('{terminal_id}', data.terminal_id);
+
+            const copyJsonButton = document.getElementById('copyJsonButton');
+            if (copyJsonButton) copyJsonButton.textContent = data.modal_messages.copy_button;
+
+            const terminalOutput = document.getElementById('terminal-output');
+            if (terminalOutput) {
+                terminalOutput.innerHTML = data.initial_message + '\n> ';
                 terminalOutput.scrollTop = terminalOutput.scrollHeight;
             }
         }
 
-        // Функция для сброса состояния взлома и возврата на экран логина
-        function resetHackAndLogout(message) {
+
+        // --- Core Functions ---
+
+        let terminalsConfig = [];
+        async function loadTerminalConfig() {
+            const terminalSelectionScreen = document.getElementById('terminal-selection-screen');
+            try {
+                const { data, error } = await supabase
+                    .from('terminals')
+                    .select('*');
+
+                if (error) throw error;
+                terminalsConfig = data;
+                console.log("Terminal configuration loaded from Supabase:", terminalsConfig);
+                displayTerminalSelection();
+            } catch (e) {
+                console.error("Failed to load terminal configuration from Supabase.", e);
+                if (terminalSelectionScreen) terminalSelectionScreen.innerHTML = `<h2 class="text-2xl mb-4 text-red-500">!!! ОШИБКА ЗАГРУЗКИ КОНФИГУРАЦИИ !!!</h2><p class="text-red-400">Не удалось загрузить список терминалов из Supabase. Проверьте консоль.</p>`;
+            }
+        }
+
+        function displayTerminalSelection() {
+            const terminalSelectionScreen = document.getElementById('terminal-selection-screen');
+            const terminalOptionsContainer = document.getElementById('terminal-options-container');
+            const loginScreen = document.getElementById('login-screen');
+            const mainContent = document.getElementById('main-content');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const loginButton = document.getElementById('login-button');
+
+            if (terminalOptionsContainer) {
+                terminalOptionsContainer.innerHTML = '';
+                terminalsConfig.forEach(term => {
+                    const button = document.createElement('button');
+                    button.classList.add('terminal-option');
+                    button.textContent = term.name;
+                    button.setAttribute('data-terminal-id', term.id);
+                    button.addEventListener('click', () => selectTerminal(term));
+
+                    const description = document.createElement('p');
+                    description.textContent = term.description;
+                    description.classList.add('text-center', 'text-gray-400', 'mb-4');
+
+                    const wrapper = document.createElement('div');
+                    wrapper.classList.add('flex', 'flex-col', 'items-center', 'mb-6');
+                    wrapper.appendChild(button);
+                    wrapper.appendChild(description);
+                    terminalOptionsContainer.appendChild(wrapper);
+                });
+            }
+            if (terminalSelectionScreen) terminalSelectionScreen.style.display = 'flex';
+            if (loginScreen) loginScreen.style.display = 'none';
+            if (mainContent) mainContent.style.display = 'none';
+
+            // Attach initial event listeners for login screen elements
+            if (usernameInput) {
+                usernameInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        if (passwordInput) passwordInput.focus();
+                    }
+                });
+            }
+            if (passwordInput) {
+                passwordInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        handleLogin();
+                    }
+                });
+            }
+            if (loginButton) loginButton.addEventListener('click', handleLogin);
+        }
+
+        async function selectTerminal(terminal) {
+            const terminalSelectionScreen = document.getElementById('terminal-selection-screen');
+            const loginScreen = document.getElementById('login-screen');
+            const loginTerminalTitle = document.getElementById('login-terminal-title');
+            const usernameInput = document.getElementById('username');
+            const loginMessage = document.getElementById('login-message');
+
+            if (terminalSelectionScreen) terminalSelectionScreen.style.display = 'none';
+            if (loginScreen) loginScreen.style.display = 'flex';
+            if (loginTerminalTitle) loginTerminalTitle.textContent = terminal.name;
+            if (usernameInput) usernameInput.focus();
+            selectedTerminalId = terminal.id;
+
+            try {
+                const { data, error } = await supabase
+                    .from('terminal_details')
+                    .select('config')
+                    .eq('id', terminal.details_id)
+                    .single();
+
+                if (error) throw error;
+                if (!data || !data.config) {
+                    throw new Error(`No configuration found for terminal details ID: ${terminal.details_id}`);
+                }
+                currentTerminalData = data.config;
+                console.log("Terminal data loaded from Supabase:", currentTerminalData);
+                populateUI(currentTerminalData); // Call populateUI after data is loaded
+            } catch (e) {
+                console.error(`Failed to load data for terminal ${terminal.name} from Supabase.`, e);
+                if (loginMessage) loginMessage.textContent = `Ошибка: Не удалось загрузить данные для терминала "${terminal.name}". Проверьте консоль.`;
+                if (terminalSelectionScreen) terminalSelectionScreen.style.display = 'flex';
+                if (loginScreen) loginScreen.style.display = 'none';
+            }
+        }
+
+        function showPage(pageId) {
+            const pageSections = document.querySelectorAll('.page-section');
+            const terminalOutput = document.getElementById('terminal-output');
+            const controlMessageElement = document.getElementById('control-message');
+            const cabinetPasswordMessage = document.getElementById('cabinet-password-message');
+            const taskMessage = document.getElementById('task-message');
+            const personalInfoMessage = document.getElementById('personal-info-message');
+            const financesMessage = document.getElementById('finances-message');
+            const messagesStatus = document.getElementById('messages-status');
+
+            pageSections.forEach(section => {
+                section.classList.remove('active');
+            });
+            const targetSection = document.getElementById(pageId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+                history.pushState(null, '', `#${pageId}`);
+                // Управление подпиской на сообщения в зависимости от активной страницы
+                if (pageId === 'messages' && currentCabinetLogin) {
+                    loadMessages(currentMessageFilter); // Загружаем сообщения при переходе на страницу с текущим фильтром
+                    setupMessageSubscription(); // Подписываемся на realtime обновления
+                } else {
+                    if (messageSubscription) {
+                        supabase.removeChannel(messageSubscription);
+                        messageSubscription = null;
+                        console.log('Отписались от обновлений сообщений.');
+                    }
+                }
+                if (pageId === 'cabinet') {
+                    updateCabinetUIForLoginStatus(); // Update cabinet UI based on its own login status
+                }
+            } else {
+                showPage('terminal');
+                if (terminalOutput && currentTerminalData) {
+                    terminalOutput.innerHTML += `\n> navigate ${pageId}\n${currentTerminalData.error_messages.page_not_found.replace('{page_id}', pageId)}\n> `;
+                    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                }
+            }
+        }
+
+        function handleLogin() {
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const loginScreen = document.getElementById('login-screen');
+            const mainContent = document.getElementById('main-content');
+            const loginMessage = document.getElementById('login-message');
+            const terminalInput = document.getElementById('terminal-input');
+            const terminalOutput = document.getElementById('terminal-output');
+
+            const username = usernameInput ? usernameInput.value.trim() : '';
+            const password = passwordInput ? passwordInput.value.trim() : '';
+
+            if (!currentTerminalData) {
+                if (loginMessage) loginMessage.textContent = "Ошибка: Данные терминала не загружены. Выберите терминал.";
+                return;
+            }
+
+            if (username === currentTerminalData.login_credentials.master_username && password === currentTerminalData.login_credentials.master_password) {
+                 if (loginScreen) loginScreen.style.display = 'none';
+                 if (mainContent) mainContent.style.display = 'block';
+                 if (loginMessage) loginMessage.textContent = '';
+                 showPage('terminal');
+                 if (terminalInput) terminalInput.focus();
+                 updateControlButtonsState();
+                 if (terminalOutput) terminalOutput.classList.remove('terminal-alert');
+                 if (terminalInput) terminalInput.classList.remove('terminal-alert');
+                 if (terminalInput) terminalInput.disabled = false;
+                 if (terminalOutput) {
+                     terminalOutput.innerHTML = currentTerminalData.login_messages.master_access + '\n> ';
+                     terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                 }
+                 updateUnreadMessageCount(); // Update count on master login
+            }
+            else if (username === currentTerminalData.login_credentials.username && password === currentTerminalData.login_credentials.password) {
+                if (loginScreen) loginScreen.style.display = 'none';
+                if (mainContent) mainContent.style.display = 'block';
+                if (loginMessage) loginMessage.textContent = '';
+                showPage('terminal');
+                if (terminalInput) terminalInput.focus();
+                updateControlButtonsState();
+                if (terminalOutput) terminalOutput.classList.remove('terminal-alert');
+                if (terminalInput) terminalInput.classList.remove('terminal-alert');
+                if (terminalInput) terminalInput.disabled = false;
+                if (terminalOutput) {
+                    terminalOutput.innerHTML = currentTerminalData.login_messages.welcome + '\n> ';
+                    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                }
+                updateUnreadMessageCount(); // Update count on regular login
+            } else {
+                if (loginMessage) loginMessage.textContent = currentTerminalData.login_credentials.access_denied;
+                if (usernameInput) usernameInput.value = '';
+                if (passwordInput) passwordInput.value = '';
+                if (usernameInput) usernameInput.focus();
+            }
+        }
+
+        function resetHackAndLogout(messageKey) {
             isHacked = false;
             hackAttempts = 0;
             isHackMinigameActive = false;
             currentHackPhrase = '';
-            clearInterval(hackTimerInterval); // Останавливаем таймер мини-игры
-            hackTimer = 0; // Сбрасываем отображение таймера
+            clearInterval(hackTimerInterval);
+            hackTimer = 0;
 
-            // Скрываем основной контент и показываем экран логина
-            mainContent.style.display = 'none';
-            loginScreen.style.display = 'flex';
-            loginMessage.textContent = message; // Выводим сообщение о причине выхода
+            const mainContent = document.getElementById('main-content');
+            const loginScreen = document.getElementById('login-screen');
+            const loginMessage = document.getElementById('login-message');
+            const secretFileElement = document.getElementById('secret-file');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const terminalOutput = document.getElementById('terminal-output');
+            const terminalInput = document.getElementById('terminal-input');
 
-            // Сбрасываем состояние кнопок управления в неактивное и обновляем их вид
+            if (mainContent) mainContent.style.display = 'none';
+            if (loginScreen) loginScreen.style.display = 'flex';
+            if (loginMessage && currentTerminalData) loginMessage.textContent = currentTerminalData.error_messages[messageKey];
+
             for (const key in controlStates) {
                 controlStates[key] = false;
             }
             updateControlButtonsState();
 
-            // Скрываем секретный файл
             if (secretFileElement) {
                  secretFileElement.style.display = 'none';
             }
 
-            // Очищаем поля логина/пароля и ставим фокус
-            usernameInput.value = '';
-            passwordInput.value = '';
-            usernameInput.focus();
+            if (usernameInput) usernameInput.value = '';
+            if (passwordInput) passwordInput.value = '';
+            if (usernameInput) usernameInput.focus();
 
-             // Очищаем терминал и добавляем стиль тревоги
-            terminalOutput.innerHTML = '/// ДОСТУП ЗАБЛОКИРОВАН ///\nСлишком много неудачных попыток взлома.\nОхрана предупреждена.\n';
-            terminalOutput.classList.add('terminal-alert');
-            terminalInput.classList.add('terminal-alert');
-            // Убираем возможность ввода в заблокированном терминале
-            terminalInput.disabled = true;
-
+            if (terminalOutput && currentTerminalData) {
+                terminalOutput.innerHTML = currentTerminalData.error_messages.login_blocked_alert + '\n';
+                terminalOutput.classList.add('terminal-alert');
+            }
+            if (terminalInput) {
+                terminalInput.classList.add('terminal-alert');
+                terminalInput.disabled = true;
+            }
+            // При выходе из системы или блокировке, отписываемся от сообщений
+            if (messageSubscription) {
+                supabase.removeChannel(messageSubscription);
+                messageSubscription = null;
+                console.log('Отписались от обновлений сообщений при выходе.');
+            }
+            updateUnreadMessageCount(0); // Reset unread count
         }
 
-
-        // Функция для обновления состояния кнопок управления (визуально)
         function updateControlButtonsState() {
+            const controlButtons = document.querySelectorAll('.control-button');
+            if (!controlButtons || !currentTerminalData) return;
             controlButtons.forEach(button => {
                 const target = button.getAttribute('data-target');
                 button.classList.remove('button-active', 'button-restricted', 'button-unlocked', 'button-toggled');
 
-                // Определяем базовый класс доступности
-                if (target === 'door') {
-                    button.classList.add('button-active'); // Дверь всегда доступна (зеленая база)
+                const buttonConfig = currentTerminalData.page_content.control.buttons.find(btn => btn.target === target);
+                if (!buttonConfig) return;
+
+                if (!buttonConfig.restricted) {
+                    button.classList.add('button-active');
                 } else {
                     if (isHacked) {
-                        button.classList.add('button-unlocked'); // Турель/Камера доступны после взлома (желтая база)
+                        button.classList.add('button-unlocked');
                     } else {
-                        button.classList.add('button-restricted'); // Турель/Камера недоступны (красная база)
+                        button.classList.add('button-restricted');
                     }
                 }
 
-                // Если кнопка доступна и включена, добавляем класс 'button-toggled'
-                if ((target === 'door' || isHacked) && controlStates[target]) {
+                if ((!buttonConfig.restricted || isHacked) && controlStates[target]) {
                      button.classList.add('button-toggled');
                 }
 
-                // Если кнопка недоступна, убираем курсор pointer
                  if (button.classList.contains('button-restricted')) {
                      button.style.cursor = 'not-allowed';
                  } else {
@@ -767,610 +1163,1042 @@
             });
         }
 
+        function handleControlButtonClick() {
+            const controlMessageElement = document.getElementById('control-message');
+            const target = this.getAttribute('data-target');
+            let message = '';
 
-        // Функция для переключения страниц
-        function showPage(pageId) {
-            pageSections.forEach(section => {
-                section.classList.remove('active');
-            });
-            const targetSection = document.getElementById(pageId);
-            if (targetSection) {
-                targetSection.classList.add('active');
-                // Обновляем URL без перезагрузки страницы
-                history.pushState(null, '', `#${pageId}`);
+            if (!currentTerminalData) return;
+
+            if (this.classList.contains('button-restricted')) {
+                message = currentTerminalData.page_content.control.messages.access_denied.replace('{target_upper}', target.toUpperCase());
             } else {
-                // Если страница не найдена, переходим на терминал
-                showPage('terminal');
-                terminalOutput.innerHTML += `\n> navigate ${pageId}\nОшибка: Страница "${pageId}" не найдена. Переход на терминал.\n`;
-                terminalOutput.scrollTop = terminalOutput.scrollHeight;
-            }
-        }
-
-        // Функция для обработки логина
-        function handleLogin() {
-            const username = usernameInput.value.trim();
-            const password = passwordInput.value.trim();
-
-            // Мастер-обход
-            if (username === 'override' && password === 'master') {
-                 loginScreen.style.display = 'none';
-                 mainContent.style.display = 'block';
-                 loginMessage.textContent = '';
-                 showPage('terminal');
-                 terminalInput.focus();
-                 updateControlButtonsState();
-                 // Убираем стиль тревоги, если он был
-                 terminalOutput.classList.remove('terminal-alert');
-                 terminalInput.classList.remove('terminal-alert');
-                 terminalInput.disabled = false; // Включаем ввод
-                 terminalOutput.innerHTML = '/// МАСТЕР-ДОСТУП АКТИВИРОВАН ///\nПодключение к сети... Успешно.<br>Введите команду или \'help\' для списка команд.\n> ';
-                 terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                 currentCabinetLogin = 'master'; // Устанавливаем cabinet_login для мастер-доступа
-
-
-            }
-            // Обычный логин
-            else if (username === 'admin' && password === 'pass') {
-                loginScreen.style.display = 'none'; // Скрываем экран входа
-                mainContent.style.display = 'block'; // Показываем основной контент
-                loginMessage.textContent = ''; // Очищаем сообщение об ошибке
-                // Показываем терминал по умолчанию после входа
-                showPage('terminal');
-                // Устанавливаем фокус на поле ввода терминала
-                terminalInput.focus();
-                // Обновляем состояние кнопок управления после входа
+                controlStates[target] = !controlStates[target];
                 updateControlButtonsState();
-                 // Убираем стиль тревоги, если он был
-                 terminalOutput.classList.remove('terminal-alert');
-                 terminalInput.classList.remove('terminal-alert');
-                 terminalInput.disabled = false; // Включаем ввод
-                 terminalOutput.innerHTML = 'Подключение к сети... Успешно.<br>Введите команду или \'help\' для списка команд.\n> ';
-                 terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                 currentCabinetLogin = username; // Устанавливаем cabinet_login равным введенному имени пользователя
 
-            } else {
-                loginMessage.textContent = 'Доступ запрещен. Неверный логин или пароль.';
-                // Очищаем поля ввода
-                usernameInput.value = '';
-                passwordInput.value = '';
-                // Устанавливаем фокус на поле логина
-                usernameInput.focus();
-            }
-        }
-
-        // Обработчик кликов по навигационным ссылкам
-        navLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault(); // Предотвращаем стандартное действие ссылки
-                const pageId = link.getAttribute('data-page');
-                showPage(pageId);
-            });
-        });
-
-        // Обработчик нажатия Enter на полях ввода логина/пароля
-        usernameInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                passwordInput.focus(); // Переходим на поле пароля
-            }
-        });
-
-        passwordInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                handleLogin(); // Пытаемся войти
-            }
-        });
-
-        // Обработчик клика по кнопке входа
-        loginButton.addEventListener('click', handleLogin);
-
-        // Обработчик кликов по кнопкам управления
-        controlButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const target = button.getAttribute('data-target');
-                let message = '';
-
-                // Проверяем, доступна ли кнопка (не красная)
-                if (!button.classList.contains('button-restricted')) {
-                    // Переключаем состояние
-                    controlStates[target] = !controlStates[target];
-
-                    // Обновляем визуальное состояние кнопки
-                    updateControlButtonsState();
-
-                    // Формируем сообщение
-                    if (controlStates[target]) {
-                        message = `/// ${target.toUpperCase()}: Активация... Включено.`;
-                         // Можно добавить логику для временного отключения турели/камеры
-                    } else {
-                        message = `/// ${target.toUpperCase()}: Деактивация... Выключено.`;
-                    }
-
+                if (controlStates[target]) {
+                    message = currentTerminalData.page_content.control.messages.activated.replace('{target_upper}', target.toUpperCase());
                 } else {
-                    // Если кнопка недоступна
-                     message = `/// ${target.toUpperCase()}: Доступ запрещен. Требуется повышенный уровень доступа.`;
+                    message = currentTerminalData.page_content.control.messages.deactivated.replace('{target_upper}', target.toUpperCase());
                 }
-                controlMessageElement.textContent = message; // Выводим сообщение на странице управления
-            });
-        });
-
-        // Добавлено: Обработчик клика по кнопке "Открыть Интерактивную Карту"
-        if (openInteractiveMapButton) {
-            openInteractiveMapButton.addEventListener('click', (e) => {
-                e.preventDefault(); // Предотвращаем стандартное действие кнопки
-
-                // Формируем URL для interactive_map.html с параметрами
-                const interactiveMapUrl = `interactive_map.html?terminal_id=${currentTerminalId}&cabinet_login=${currentCabinetLogin}`;
-                window.open(interactiveMapUrl, '_blank'); // Открываем в новой вкладке
-            });
+            }
+            if (controlMessageElement) controlMessageElement.textContent = message;
         }
 
 
-        // --- Логика Кабинета (версия с буфером обмена и ручным обновлением JSON) ---
+        // --- Cabinet Login/Registration Logic (NO SUPABASE AUTH HERE) ---
 
-        // Функция для загрузки всех данных аккаунтов из id_list.json
-        async function loadAllCabinetAccountsData() {
+        function updateCabinetUIForLoginStatus() {
+            const cabinetLoginSection = document.getElementById('cabinet-login-section');
+            const personalCabinetDataSection = document.getElementById('personal-cabinet-data-section');
+            const cabinetDisplayIdInput = document.getElementById('cabinet-display-id');
+            const cabinetAuthMessage = document.getElementById('cabinet-auth-message');
+
+            const cabinetLoginIdInput = document.getElementById('cabinet-login-id');
+            const cabinetLoginPasswordInput = document.getElementById('cabinet-login-password');
+
+            const cabinetPasswordInput = document.getElementById('cabinet-password');
+            const taskListDisplay = document.getElementById('task-list-display');
+            const personalInfoDisplay = document.getElementById('personal-info-display');
+            const financesDisplay = document.getElementById('finances-display');
+            const cabinetPasswordMessage = document.getElementById('cabinet-password-message');
+            const taskMessage = document.getElementById('task-message');
+            const personalInfoMessage = document.getElementById('personal-info-message');
+            const financesMessage = document.getElementById('finances-message');
+
+
+            if (currentCabinetLogin) {
+                if (cabinetLoginSection) cabinetLoginSection.style.display = 'none';
+                if (personalCabinetDataSection) personalCabinetDataSection.style.display = 'block';
+                if (cabinetDisplayIdInput) cabinetDisplayIdInput.value = currentCabinetLogin;
+                if (cabinetAuthMessage) {
+                    cabinetAuthMessage.textContent = `Вы вошли как: ${currentCabinetLogin}`;
+                    cabinetAuthMessage.style.color = '#00ff00';
+                }
+                loadCabinetData();
+                // Если пользователь уже на странице сообщений, настраиваем подписку
+                if (document.getElementById('messages').classList.contains('active')) {
+                    setupMessageSubscription();
+                }
+                updateUnreadMessageCount(); // Update count on cabinet login
+            } else {
+                if (cabinetLoginSection) cabinetLoginSection.style.display = 'block';
+                if (personalCabinetDataSection) personalCabinetDataSection.style.display = 'none';
+                if (cabinetAuthMessage) {
+                    cabinetAuthMessage.textContent = 'Войдите или зарегистрируйте аккаунт Кабинета.';
+                    cabinetAuthMessage.style.color = '#ff0000';
+                }
+                if (cabinetDisplayIdInput) cabinetDisplayIdInput.value = '';
+                if (cabinetLoginIdInput) cabinetLoginIdInput.value = '';
+                if (cabinetLoginPasswordInput) cabinetLoginPasswordInput.value = '';
+                if (cabinetPasswordInput) cabinetPasswordInput.value = '';
+                if (taskListDisplay && currentTerminalData) taskListDisplay.textContent = currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
+                if (personalInfoDisplay && currentTerminalData) personalInfoDisplay.textContent = currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
+                if (financesDisplay && currentTerminalData) financesDisplay.textContent = currentTerminalData.page_content.cabinet.sections.finances.initial_content;
+                if (cabinetPasswordMessage) cabinetPasswordMessage.textContent = '';
+                if (taskMessage) taskMessage.textContent = '';
+                if (personalInfoMessage) personalInfoMessage.textContent = '';
+                if (financesMessage) financesMessage.textContent = '';
+
+                // При выходе из кабинета, отписываемся от сообщений
+                if (messageSubscription) {
+                    supabase.removeChannel(messageSubscription);
+                    messageSubscription = null;
+                    console.log('Отписались от обновлений сообщений при выходе из кабинета.');
+                }
+                updateUnreadMessageCount(0); // Reset unread count
+            }
+        }
+
+        async function handleCabinetLogin() {
+            const cabinetLoginIdInput = document.getElementById('cabinet-login-id');
+            const cabinetLoginPasswordInput = document.getElementById('cabinet-login-password');
+            const cabinetAuthMessage = document.getElementById('cabinet-auth-message');
+
+            const loginId = cabinetLoginIdInput ? cabinetLoginIdInput.value.trim() : '';
+            const password = cabinetLoginPasswordInput ? cabinetLoginPasswordInput.value.trim() : '';
+            if (cabinetAuthMessage) cabinetAuthMessage.textContent = '';
+
+            if (!loginId || !password) {
+                if (cabinetAuthMessage) cabinetAuthMessage.textContent = 'Введите логин и пароль Кабинета.';
+                return;
+            }
+
             try {
-                // Пытаемся загрузить id_list.json с текущего домена (GitHub Pages)
-                const response = await fetch('id_list.json');
-                if (!response.ok) {
-                    // Если файл не найден или ошибка загрузки, возвращаем пустой массив
-                    if (response.status === 404) {
-                        console.warn("id_list.json не найден. Будет создан новый.");
-                        return [];
-                    }
-                    throw new Error(`Ошибка загрузки id_list.json: ${response.statusText}`);
+                const { data, error } = await supabase
+                    .from('cabinet_accounts')
+                    .select('*')
+                    .eq('id', loginId)
+                    .eq('terminal_id', selectedTerminalId)
+                    .single();
+
+                if (error && error.code !== 'PGRST116') {
+                    throw error;
                 }
-                const data = await response.json();
-                console.log("Данные аккаунтов загружены из id_list.json:", data);
-                return data;
-            } catch (e) {
-                console.error("Не удалось загрузить id_list.json. Убедитесь, что файл существует и корректен.", e);
-                cabinetPasswordMessage.textContent = 'Ошибка: Не удалось загрузить данные. Проверьте консоль.';
-                return []; // Возвращаем пустой массив в случае ошибки
-            }
-        }
 
-        // Функция для загрузки данных конкретного аккаунта
-        async function loadCabinetData() {
-            const accountId = cabinetAccountIdInput.value.trim();
-            const password = cabinetPasswordInput.value.trim();
-
-            if (!accountId) {
-                cabinetPasswordMessage.textContent = 'Введите ID аккаунта для загрузки данных.';
-                return;
-            }
-            if (!password) {
-                cabinetPasswordMessage.textContent = 'Введите пароль для загрузки данных.';
-                return;
-            }
-            cabinetPasswordMessage.textContent = 'Загрузка...';
-
-            allCabinetAccountsData = await loadAllCabinetAccountsData(); // Всегда загружаем свежие данные
-
-            const account = allCabinetAccountsData.find(acc => acc.id === accountId);
-
-            if (account) {
-                if (account.password === password) {
-                    taskListDisplay.textContent = account.tasks || '';
-                    personalInfoDisplay.textContent = account.personalInfo || '';
-                    financesDisplay.textContent = account.finances || '';
-                    cabinetPasswordMessage.textContent = `Данные для аккаунта "${accountId}" успешно загружены.`;
+                if (data && data.password === password) {
+                    currentCabinetLogin = loginId;
+                    updateCabinetUIForLoginStatus();
                 } else {
-                    cabinetPasswordMessage.textContent = 'Неверный пароль для данных аккаунта.';
+                    if (cabinetAuthMessage) cabinetAuthMessage.textContent = 'Неверный логин или пароль Кабинета.';
+                    if (cabinetLoginPasswordInput) cabinetLoginPasswordInput.value = '';
                 }
-            } else {
-                cabinetPasswordMessage.textContent = `Аккаунт "${accountId}" не найден. Вы можете создать его, нажав "Сохранить".`;
-                // Очищаем поля, если аккаунт не найден
-                taskListDisplay.textContent = '';
-                personalInfoDisplay.textContent = '';
-                financesDisplay.textContent = '';
+            } catch (e) {
+                console.error('Ошибка входа в Кабинет:', e);
+                if (cabinetAuthMessage) cabinetAuthMessage.textContent = `Ошибка входа: ${e.message}`;
             }
         }
 
-        // Функция для сохранения данных и отображения JSON в модальном окне
+        async function handleCabinetRegister() {
+            const cabinetLoginIdInput = document.getElementById('cabinet-login-id');
+            const cabinetLoginPasswordInput = document.getElementById('cabinet-login-password');
+            const cabinetAuthMessage = document.getElementById('cabinet-auth-message');
+
+            const loginId = cabinetLoginIdInput ? cabinetLoginIdInput.value.trim() : '';
+            const password = cabinetLoginPasswordInput ? cabinetLoginPasswordInput.value.trim() : '';
+            if (cabinetAuthMessage) cabinetAuthMessage.textContent = '';
+
+            if (!loginId || !password) {
+                if (cabinetAuthMessage) cabinetAuthMessage.textContent = 'Введите логин и пароль для регистрации Кабинета.';
+                return;
+            }
+
+            try {
+                const { data: existingAccount, error: checkError } = await supabase
+                    .from('cabinet_accounts')
+                    .select('id')
+                    .eq('id', loginId)
+                    .eq('terminal_id', selectedTerminalId)
+                    .single();
+
+                if (existingAccount) {
+                    if (cabinetAuthMessage) cabinetAuthMessage.textContent = `Аккаунт "${loginId}" уже существует для этого терминала.`;
+                    return;
+                }
+                if (checkError && checkError.code !== 'PGRST116') {
+                    throw checkError;
+                }
+
+                const { data, error } = await supabase
+                    .from('cabinet_accounts')
+                    .insert([
+                        {
+                            id: loginId,
+                            terminal_id: selectedTerminalId,
+                            password: password,
+                            tasks: currentTerminalData.page_content.cabinet.sections.tasks.initial_content,
+                            personal_info: currentTerminalData.page_content.cabinet.sections.personal_info.initial_content,
+                            finances: currentTerminalData.page_content.cabinet.sections.finances.initial_content
+                        }
+                    ])
+                    .select();
+
+                if (error) throw error;
+                if (cabinetAuthMessage) cabinetAuthMessage.textContent = `Аккаунт "${loginId}" успешно зарегистрирован! Выполняется вход...`;
+                console.log('Кабинет зарегистрирован:', data);
+                currentCabinetLogin = loginId;
+                updateCabinetUIForLoginStatus();
+            } catch (e) {
+                console.error('Ошибка регистрации Кабинета:', e);
+                if (cabinetAuthMessage) cabinetAuthMessage.textContent = `Ошибка регистрации: ${e.message}`;
+            }
+        }
+
+        function handleCabinetLogout() {
+            currentCabinetLogin = null;
+            updateCabinetUIForLoginStatus();
+            const cabinetAuthMessage = document.getElementById('cabinet-auth-message');
+            if (cabinetAuthMessage) {
+                cabinetAuthMessage.textContent = 'Вы вышли из Кабинета.';
+                cabinetAuthMessage.style.color = '#00ffff';
+            }
+            // При выходе из кабинета, отписываемся от сообщений
+            if (messageSubscription) {
+                supabase.removeChannel(messageSubscription);
+                messageSubscription = null;
+                console.log('Отписались от обновлений сообщений при выходе из кабинета (logout).');
+            }
+            updateUnreadMessageCount(0); // Reset unread count
+        }
+
+        // --- Cabinet Data Management Logic ---
+
+        async function loadCabinetData() {
+            const cabinetPasswordMessage = document.getElementById('cabinet-password-message');
+            const taskListDisplay = document.getElementById('task-list-display');
+            const personalInfoDisplay = document.getElementById('personal-info-display');
+            const financesDisplay = document.getElementById('finances-display');
+            const cabinetPasswordInput = document.getElementById('cabinet-password');
+
+            if (cabinetPasswordMessage && currentTerminalData) cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.loading;
+
+            if (!currentCabinetLogin) {
+                if (cabinetPasswordMessage) cabinetPasswordMessage.textContent = 'Войдите в Кабинет для загрузки данных.';
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('cabinet_accounts')
+                    .select('*')
+                    .eq('id', currentCabinetLogin)
+                    .eq('terminal_id', selectedTerminalId)
+                    .single();
+
+                if (error && error.code !== 'PGRST116') {
+                    throw error;
+                }
+
+                if (data) {
+                    if (taskListDisplay && currentTerminalData) taskListDisplay.textContent = data.tasks || currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
+                    if (personalInfoDisplay && currentTerminalData) personalInfoDisplay.textContent = data.personal_info || currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
+                    if (financesDisplay && currentTerminalData) financesDisplay.textContent = data.finances || currentTerminalData.page_content.cabinet.sections.finances.initial_content;
+                    if (cabinetPasswordInput) cabinetPasswordInput.value = data.password || '';
+                    if (cabinetPasswordMessage && currentTerminalData) cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.loaded_success.replace('{account_id}', currentCabinetLogin);
+                    // loadMessages(); // Загрузка сообщений перенесена в updateCabinetUIForLoginStatus
+                } else {
+                    if (cabinetPasswordMessage && currentTerminalData) cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.not_found.replace('{account_id}', currentCabinetLogin);
+                    if (taskListDisplay && currentTerminalData) taskListDisplay.textContent = currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
+                    if (personalInfoDisplay && currentTerminalData) personalInfoDisplay.textContent = currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
+                    if (financesDisplay && currentTerminalData) financesDisplay.textContent = currentTerminalData.page_content.cabinet.sections.finances.initial_content;
+                    if (cabinetPasswordInput) cabinetPasswordInput.value = '';
+                }
+            }
+            catch (e) {
+                console.error("Error loading cabinet data from Supabase:", e);
+                if (cabinetPasswordMessage) cabinetPasswordMessage.textContent = 'Ошибка: Не удалось загрузить данные из Supabase. Проверьте консоль.';
+            }
+        }
+
         async function saveCabinetData() {
-            const accountId = cabinetAccountIdInput.value.trim();
-            const password = cabinetPasswordInput.value.trim();
+            const cabinetPasswordMessage = document.getElementById('cabinet-password-message');
+            const cabinetPasswordInput = document.getElementById('cabinet-password');
+            const taskListDisplay = document.getElementById('task-list-display');
+            const personalInfoDisplay = document.getElementById('personal-info-display');
+            const financesDisplay = document.getElementById('finances-display');
 
-            if (!accountId) {
-                cabinetPasswordMessage.textContent = 'Введите ID аккаунта для сохранения данных.';
+            if (cabinetPasswordMessage && currentTerminalData) cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.saving;
+
+            if (!currentCabinetLogin) {
+                if (cabinetPasswordMessage) cabinetPasswordMessage.textContent = 'Войдите в Кабинет для сохранения данных.';
                 return;
             }
-            if (!password) {
-                cabinetPasswordMessage.textContent = 'Введите пароль для сохранения данных.';
-                return;
-            }
-            cabinetPasswordMessage.textContent = 'Подготовка данных к сохранению...';
 
-            allCabinetAccountsData = await loadAllCabinetAccountsData(); // Всегда загружаем свежие данные перед сохранением
+            const cabinetPassword = cabinetPasswordInput ? cabinetPasswordInput.value.trim() : '';
 
-            let accountIndex = allCabinetAccountsData.findIndex(acc => acc.id === accountId);
-
-            const dataToSave = {
-                id: accountId,
-                password: password, // ВНИМАНИЕ: Пароль хранится в открытом виде. Для реальных приложений это небезопасно!
-                tasks: taskListDisplay.textContent.trim(),
-                personalInfo: personalInfoDisplay.textContent.trim(),
-                finances: financesDisplay.textContent.trim()
+            const dataToUpdate = {
+                password: cabinetPassword,
+                tasks: taskListDisplay ? taskListDisplay.textContent.trim() : '',
+                personal_info: personalInfoDisplay ? personalInfoDisplay.textContent.trim() : '',
+                finances: financesDisplay ? financesDisplay.textContent.trim() : ''
             };
 
-            if (accountIndex !== -1) {
-                // Обновляем существующий аккаунт
-                allCabinetAccountsData[accountIndex] = dataToSave;
-            } else {
-                // Создаем новый аккаунт
-                allCabinetAccountsData.push(dataToSave);
+            try {
+                const { data, error } = await supabase
+                    .from('cabinet_accounts')
+                    .update(dataToUpdate)
+                    .eq('id', currentCabinetLogin)
+                    .eq('terminal_id', selectedTerminalId)
+                    .select();
+
+                if (error) throw error;
+                console.log("Cabinet data saved to Supabase:", data);
+                if (cabinetPasswordMessage) cabinetPasswordMessage.textContent = `Данные для аккаунта "${currentCabinetLogin}" успешно сохранены в Supabase.`;
+            } catch (e) {
+                console.error("Error saving cabinet data to Supabase:", e);
+                if (cabinetPasswordMessage) cabinetPasswordMessage.textContent = 'Ошибка: Не удалось сохранить данные в Supabase. Проверьте консоль.';
             }
-
-            // Форматируем JSON для вывода
-            const jsonString = JSON.stringify(allCabinetAccountsData, null, 2);
-            jsonOutputTextarea.value = jsonString; // Помещаем JSON в текстовое поле модального окна
-
-            jsonModal.style.display = 'block'; // Показываем модальное окно
-            cabinetPasswordMessage.textContent = `Данные для аккаунта "${accountId}" готовы. Скопируйте JSON.`;
         }
 
-        // Функция для переключения режима редактирования
-        function toggleEditMode(displayElement, messageElement, buttonElement) {
+        function toggleEditMode(displayElement, messageElement, buttonElement, sectionKey) {
+            if (!currentCabinetLogin) {
+                if (messageElement) {
+                    messageElement.textContent = 'Войдите в Кабинет, чтобы редактировать данные.';
+                    messageElement.style.color = '#ff0000';
+                }
+                return;
+            }
+            if (messageElement) messageElement.style.color = '#00ffff';
+
             const isEditable = displayElement.contentEditable === 'true';
-            displayElement.contentEditable = !isEditable;
-            buttonElement.textContent = isEditable ? 'Изменить' : 'Сохранить изменения';
-            if (isEditable) { // Если выходим из режима редактирования
-                messageElement.textContent = 'Изменения сохранены локально. Нажмите "Сохранить" для вывода JSON.';
-                displayElement.classList.remove('cabinet-data-area-editing'); // Убираем желтую рамку
-            } else { // Если входим в режим редактирования
-                messageElement.textContent = 'Редактирование активно. Нажмите кнопку еще раз, чтобы завершить.';
-                displayElement.focus(); // Устанавливаем фокус
-                displayElement.classList.add('cabinet-data-area-editing'); // Добавляем желтую рамку
+            if (displayElement) displayElement.contentEditable = !isEditable;
+            if (buttonElement && currentTerminalData) buttonElement.textContent = isEditable ? currentTerminalData.page_content.cabinet.sections[sectionKey].edit_button : currentTerminalData.page_content.cabinet.sections[sectionKey].save_button;
+            if (isEditable) {
+                if (messageElement && currentTerminalData) messageElement.textContent = currentTerminalData.page_content.cabinet.sections[sectionKey].messages.saved_local;
+                if (displayElement) displayElement.classList.remove('cabinet-data-area-editing');
+                saveCabinetData();
+            } else {
+                if (messageElement && currentTerminalData) messageElement.textContent = currentTerminalData.page_content.cabinet.sections[sectionKey].messages.editing;
+                if (displayElement) {
+                    displayElement.focus();
+                    displayElement.classList.add('cabinet-data-area-editing');
+                }
+            }
+        }
+
+        // Send Message
+        async function sendMessage() {
+            const sendMessageStatus = document.getElementById('send-message-status');
+            const messageRecipientIdInput = document.getElementById('message-recipient-id');
+            const messageSubjectInput = document.getElementById('message-subject');
+            const messageContentTextarea = document.getElementById('message-content');
+
+            if (sendMessageStatus) sendMessageStatus.textContent = '';
+            if (!currentCabinetLogin) {
+                if (sendMessageStatus) sendMessageStatus.textContent = 'Ошибка: Войдите в Кабинет, чтобы отправлять сообщения.';
+                return;
+            }
+            if (!selectedTerminalId) {
+                if (sendMessageStatus) sendMessageStatus.textContent = 'Ошибка: Выберите терминал.';
+                return;
+            }
+
+            const senderLogin = currentCabinetLogin;
+            const recipientLogin = messageRecipientIdInput ? messageRecipientIdInput.value.trim() : '';
+            const subject = messageSubjectInput ? messageSubjectInput.value.trim() : '';
+            const content = messageContentTextarea ? messageContentTextarea.value.trim() : '';
+            const senderName = senderLogin;
+
+            if (!recipientLogin || !subject || !content) {
+                if (sendMessageStatus) sendMessageStatus.textContent = 'Заполните все поля для отправки сообщения.';
+                return;
+            }
+
+            if (recipientLogin === senderLogin) {
+                if (sendMessageStatus) sendMessageStatus.textContent = 'Ошибка: Вы не можете отправить сообщение самому себе.';
+                return;
+            }
+
+            try {
+                const { data: recipientExists, error: recipientError } = await supabase
+                    .from('cabinet_accounts')
+                    .select('id')
+                    .eq('id', recipientLogin)
+                    .single();
+
+                if (!recipientExists) {
+                    if (sendMessageStatus) sendMessageStatus.textContent = `Ошибка: Получатель с логином "${recipientLogin}" не найден.`;
+                    return;
+                }
+                if (recipientError && recipientError.code !== 'PGRST116') {
+                    throw recipientError;
+                }
+            } catch (e) {
+                console.error('Ошибка проверки получателя:', e);
+                if (sendMessageStatus) sendMessageStatus.textContent = `Ошибка проверки получателя: ${e.message}`;
+                return;
+            }
+
+
+            try {
+                const { data, error } = await supabase
+                    .from('terminal_messages')
+                    .insert([
+                        {
+                            message_type: 'user-to-user',
+                            sender_id: senderLogin,
+                            sender_terminal_id: selectedTerminalId,
+                            recipient_id: recipientLogin,
+                            recipient_terminal_id: selectedTerminalId,
+                            sender_name: senderName,
+                            subject: subject,
+                            content: content,
+                            read: false,
+                            status: 'active' // New: default status is active
+                        }
+                    ])
+                    .select();
+
+                if (error) throw error;
+
+                if (sendMessageStatus) sendMessageStatus.textContent = 'Сообщение успешно отправлено!';
+                if (messageRecipientIdInput) messageRecipientIdInput.value = '';
+                if (messageSubjectInput) messageSubjectInput.value = '';
+                if (messageContentTextarea) messageContentTextarea.value = '';
+                loadMessages(currentMessageFilter); // Reload messages with current filter after sending
+                updateUnreadMessageCount(); // Update count after sending
+                console.log('Message sent:', data);
+            } catch (e) {
+                console.error('Error sending message:', e);
+                if (sendMessageStatus) sendMessageStatus.textContent = `Ошибка отправки: ${e.message}`;
             }
         }
 
 
-        // Обработчики событий для кнопок Кабинета
-        loadCabinetDataButton.addEventListener('click', loadCabinetData);
-        saveCabinetDataButton.addEventListener('click', saveCabinetData);
+        // Load messages for the current cabinet account
+        async function loadMessages(filter = 'all') {
+            const messagesListContainer = document.getElementById('messages-list-container');
+            const messagesStatus = document.getElementById('messages-status');
 
-        editTasksButton.addEventListener('click', () => toggleEditMode(taskListDisplay, taskMessage, editTasksButton));
-        editPersonalInfoButton.addEventListener('click', () => toggleEditMode(personalInfoDisplay, personalInfoMessage, editPersonalInfoButton));
-        editFinancesButton.addEventListener('click', () => toggleEditMode(financesDisplay, financesMessage, editFinancesButton));
+            if (messagesListContainer) messagesListContainer.innerHTML = '';
+            if (messagesStatus) messagesStatus.textContent = 'Загрузка сообщений...';
 
-        // Обработчики для модального окна JSON
-        closeButton.addEventListener('click', () => {
-            jsonModal.style.display = 'none';
-        });
-
-        window.addEventListener('click', (event) => {
-            if (event.target === jsonModal) {
-                jsonModal.style.display = 'none';
+            if (!currentCabinetLogin) {
+                if (messagesStatus) messagesStatus.textContent = 'Войдите в Кабинет, чтобы просмотреть сообщения.';
+                return;
             }
-        });
+            if (!selectedTerminalId) {
+                 if (messagesStatus) messagesStatus.textContent = 'Выберите терминал, чтобы просмотреть сообщения.';
+                 return;
+            }
 
-        copyJsonButton.addEventListener('click', () => {
-            jsonOutputTextarea.select(); // Выделяем текст в textarea
-            document.execCommand('copy'); // Копируем в буфер обмена (deprecated, но работает)
-            // Более современный способ:
-            // navigator.clipboard.writeText(jsonOutputTextarea.value).then(() => {
-            //     alert('JSON скопирован в буфер обмена!');
-            // }).catch(err => {
-            //     console.error('Не удалось скопировать текст: ', err);
-            // });
-            alert('JSON скопирован в буфер обмена! Теперь вставьте его в id_list.json и обновите страницу.');
-            jsonModal.style.display = 'none'; // Скрываем модальное окно после копирования
-        });
+            const currentLogin = currentCabinetLogin;
+            let query = supabase.from('terminal_messages').select('*');
 
+            // Apply filter based on currentMessageFilter and status
+            if (filter === 'incoming') {
+                query = query.eq('recipient_id', currentLogin).eq('recipient_terminal_id', selectedTerminalId).eq('status', 'active');
+            } else if (filter === 'outgoing') {
+                query = query.eq('sender_id', currentLogin).eq('sender_terminal_id', selectedTerminalId).eq('status', 'active');
+            } else if (filter === 'archived') {
+                query = query.or(`recipient_id.eq.${currentLogin},sender_id.eq.${currentLogin}`)
+                             .eq('recipient_terminal_id', selectedTerminalId)
+                             .eq('status', 'archived');
+            } else { // 'all' (meaning 'active' messages for both incoming/outgoing)
+                query = query.or(`recipient_id.eq.${currentLogin},sender_id.eq.${currentLogin}`)
+                             .eq('recipient_terminal_id', selectedTerminalId)
+                             .eq('status', 'active');
+            }
 
-        // Обработка команд терминала
-        terminalInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                const command = terminalInput.value.trim(); // Обрезаем пробелы в начале и конце
-                const rawCommand = terminalInput.value; // Сохраняем исходный ввод для проверки на пустую строку
-                terminalInput.value = ''; // Очищаем поле ввода
+            query = query.order('timestamp', { ascending: false });
 
-                // Если активна мини-игра взлома, обрабатываем ввод как ответ
-                if (isHackMinigameActive) {
-                    clearInterval(hackTimerInterval); // Останавливаем таймер
-                    hackTimer = 0; // Сбрасываем отображение таймера
-                    // Удаляем предыдущую строку с таймером перед выводом ответа
-                    terminalOutput.innerHTML = terminalOutput.innerHTML.replace(/Таймер: \d+...\n?/, '');
+            try {
+                const { data, error } = await query;
 
-                    // --- Мастер-обход мини-игры ---
-                    if (rawCommand.toLowerCase() === 'q') {
-                         terminalOutput.innerHTML += '> q\n'; // Выводим введенную q
-                         terminalOutput.innerHTML += '\n/// ОБХОД ВЗЛОМА АКТИВИРОВАН ///\n';
-                         isHackMinigameActive = false;
-                         isHacked = true; // Устанавливаем флаг успешного взлома
-                         hackAttempts = 0; // Сбрасываем счетчик попыток
-                         if (secretFileElement) {
-                             secretFileElement.style.display = 'block';
-                         }
-                         updateControlButtonsState();
-                         terminalOutput.innerHTML += 'Взлом успешно завершен! Уровень доступа повышен.\nОбнаружены новые данные. Используйте "message", "info" или перейдите на страницы "Файловая система" и "Управление".\n> ';
-                         terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                         terminalInput.focus();
-                         return; // Завершаем обработку после обхода
-                    }
-                    // --- Конец мастер-обхода ---
+                if (error) throw error;
 
+                if (data && data.length > 0) {
+                    if (messagesStatus) messagesStatus.textContent = '';
+                    data.forEach(async (message) => {
+                        const isSent = message.sender_id === currentLogin;
+                        const displaySender = isSent ? `Вам (${message.recipient_id})` : message.sender_name;
+                        const icon = message.read ? '&#10003;' : '&#9888;'; // Checkmark for read, warning for unread
+                        const messageTypeLabel = isSent ? 'Исходящее' : 'Входящее';
+                        const summaryColorClass = isSent ? 'text-green-400' : 'text-blue-400';
 
-                    // Проверяем, была ли введена пустая строка или только пробелы
-                    if (rawCommand.trim() === '') {
-                        terminalOutput.innerHTML += '> [ПУСТОЙ ВВОД]\n'; // Выводим индикатор пустого ввода
-                        terminalOutput.innerHTML += '\nПроцедура взлома прервана.\n'; // Сообщение о прерывании
-                        isHackMinigameActive = false; // Выключаем мини-игру
-                        hackAttempts++; // Увеличиваем счетчик неудачных попыток
-                        if (hackAttempts >= MAX_HACK_ATTEMPTS) {
-                            resetHackAndLogout('Доступ заблокирован. Охрана предупреждена.');
-                        } else {
-                            terminalOutput.innerHTML += `Неверная последовательность (пустой ввод). Осталось попыток: ${MAX_HACK_ATTEMPTS - hackAttempts}.\n> `;
-                            terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                            terminalInput.focus();
-                        }
-                        return; // Завершаем обработку
-                    }
+                        const messageDiv = document.createElement('div');
+                        messageDiv.classList.add('file-entry', 'mb-4');
+                        messageDiv.innerHTML = `
+                            <details ${message.read ? '' : 'open'}>
+                                <summary class="cursor-pointer outline-none ${summaryColorClass} font-bold flex justify-between items-center">
+                                    <span>${icon} [${new Date(message.timestamp).toLocaleString()}] ${messageTypeLabel} от: ${displaySender} - Тема: ${message.subject}</span>
+                                    <button class="cabinet-button text-xs px-2 py-0.5 ml-2" data-message-id="${message.id}" data-action="${message.status === 'active' ? 'archive' : 'unarchive'}">
+                                        ${message.status === 'active' ? 'Архивировать' : 'Разархивировать'}
+                                    </button>
+                                </summary>
+                                <div class="file-content mt-2 pt-2 border-t border-dashed border-gray-600">
+                                    ${message.content.replace(/\n/g, '<br>')}
+                                </div>
+                            </details>
+                        `;
+                        if (messagesListContainer) messagesListContainer.appendChild(messageDiv);
 
-
-                    terminalOutput.innerHTML += command + '\n'; // Выводим введенный ответ (обрезанный)
-
-
-                    if (command.toLowerCase() === currentHackPhrase.toLowerCase()) {
-                        // Успех!
-                        isHackMinigameActive = false;
-                        isHacked = true; // Устанавливаем флаг успешного взлома
-                        hackAttempts = 0; // Сбрасываем счетчик попыток
-                         // Показываем скрытый файл на странице файловой системы
-                        if (secretFileElement) {
-                            secretFileElement.style.display = 'block';
-                        }
-                        // Обновляем состояние кнопок управления
-                        updateControlButtonsState();
-
-                        terminalOutput.innerHTML += '\nВзлом успешно завершен! Уровень доступа повышен.\nОбнаружены новые данные. Используйте "message", "info" или перейдите на страницы "Файловая система" и "Управление".\n> ';
-                        terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                        terminalInput.focus(); // Возвращаем фокус
-                    } else {
-                        // Неудача
-                        hackAttempts++;
-                        if (hackAttempts >= MAX_HACK_ATTEMPTS) {
-                            // Слишком много неудачных попыток - выкидываем на логин
-                            resetHackAndLogout('Доступ заблокирован. Охрана предупреждена.');
-                        } else {
-                            terminalOutput.innerHTML += `\nНеверная последовательность. Осталось попыток: ${MAX_HACK_ATTEMPTS - hackAttempts}.\n> `;
-                            terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                            terminalInput.focus(); // Возвращаем фокус
-                            // Можно предложить попробовать снова или ввести 'cancel'
-                        }
-                    }
-                    return; // Завершаем обработку, так как это был ввод для мини-игры
-                }
-
-
-                // Если мини-игра не активна, обрабатываем как обычную команду
-                let commandOutput = '> ' + command + '\n'; // Добавляем введенную команду в вывод
-
-
-                switch (command.toLowerCase()) {
-                    case 'help':
-                        commandOutput += 'Доступные команды:\n';
-                        commandOutput += '  help - Показать список команд\n';
-                        commandOutput += '  clear - Очистить вывод терминала\n';
-                        commandOutput += '  status - Показать статус системы\n';
-                        commandOutput += '  navigate [страница] - Перейти на страницу (terminal, filesystem, control, cabinet, characters, dossiers, map)\n'; // Обновлен список страниц
-                        commandOutput += '  message - Просмотреть сообщения\n';
-                        commandOutput += '  info - Информация о системе\n';
-                        commandOutput += '  hack - Начать процедуру взлома (мини-игра)\n'; // Обновлено описание hack
-                        break;
-                    case 'clear':
-                        terminalOutput.innerHTML = ''; // Clear the output area
-                        // No further output needed for clear before the prompt and random message
-                         terminalOutput.innerHTML += '> clear\n'; // Add the clear command itself
-                        break; // Exit switch, proceed to common output handling
-                    case 'status':
-                        commandOutput += 'Статус системы: Онлайн. Сеть стабильна.';
-                        if (isHacked) {
-                             commandOutput += '\nУровень доступа: Повышен (Обнаружены уязвимости)';
-                        }
-                        break;
-                    case 'navigate filesystem':
-                        showPage('filesystem');
-                        commandOutput += 'Переход на страницу: Файловая система';
-                        break;
-                    case 'navigate control': // Обработка перехода на страницу управления
-                         showPage('control');
-                         commandOutput += 'Переход на страницу: Управление';
-                         // Очищаем сообщение на странице управления при переходе
-                         controlMessageElement.textContent = '';
-                         break;
-                    case 'navigate cabinet': // Обработка перехода на страницу Кабинет
-                         showPage('cabinet');
-                         commandOutput += 'Переход на страницу: Личный Кабинет';
-                         // Очищаем сообщения на странице кабинета при переходе
-                         cabinetPasswordMessage.textContent = '';
-                         taskMessage.textContent = '';
-                         personalInfoMessage.textContent = '';
-                         financesMessage.textContent = '';
-                         break;
-                    case 'navigate characters':
-                        showPage('characters');
-                        commandOutput += 'Переход на страницу: Персонажи';
-                        break;
-                    case 'navigate dossiers':
-                        showPage('dossiers');
-                        commandOutput += 'Переход на страницу: Досье';
-                        break;
-                    case 'navigate map':
-                        showPage('map');
-                        commandOutput += 'Переход на страницу: Карта';
-                        break;
-                    case 'navigate terminal':
-                        showPage('terminal');
-                        commandOutput += 'Переход на страницу: Терминал';
-                        break;
-                    case 'message':
-                        commandOutput += '/// ВХОДЯЩИЕ СООБЩЕНИЯ ///\n';
-                        commandOutput += '- От: Аноним. Тема: Встреча. Сообщение: Встречаемся у "Синего Лотоса" в полночь. Приходи один.\n';
-                        commandOutput += '- От: Корп. Тема: Отчет. Сообщение: Отчет по операции "Найтфолл" принят. Ожидайте дальнейших инструкций.\n';
-                        commandOutput += '- От: [ЗАШИФРОВАНО]. Тема: [ЗАШИФРОВАНО]. Сообщение: [ДАННЫЕ ПОВРЕЖДЕНЫ ИЛИ ЗАШИФРОВАНЫ]\n';
-                        commandOutput += '- От: [ЗАШИФРОВАНО]. Тема: [ЗАШИФРОВАНО]. Сообщение: [ТРЕБУЕТСЯ КЛЮЧ ДЕШИФРОВАНИЯ]\n';
-
-                        if (isHacked) {
-                            commandOutput += '\n/// ОБНАРУЖЕННЫЕ СКРЫТЫЕ СООБЩЕНИЯ ///\n';
-                            commandOutput += '- От: [РАСШИФРОВАНО]. Тема: Координаты. Сообщение: Точка сбора для операции "Найтфолл" - сектор 7Г, старый док №12. Код доступа: CYBER-PHANTOM.\n';
-                            commandOutput += '- От: [РАСШИФРОВАНО]. Тема: Срочно. Сообщение: Система "Цербер" будет отключена для обслуживания 22:00 по местному времени. Окно уязвимости - 30 минут.\n';
-                        } else {
-                             commandOutput += '\nВыполните команду "hack" для попытки расшифровки скрытых сообщений.';
-                        }
-                        break;
-                    case 'info':
-                        commandOutput += '/// ИНФОРМАЦИЯ О СИСТЕМЕ ///\n';
-                        commandOutput += 'Владелец: Корпорация "Травма Тим" (Trauma Team International)\n';
-                        commandOutput += 'Модель: Медицинский Инфо-Терминал v3.7\n';
-                        commandOutput += 'Статус: Активен, подключен к локальной сети ТТ.\n';
-                        commandOutput += 'Предупреждение: Несанкционированный доступ отслеживается.\n';
-                        if (isHacked) {
-                            commandOutput += '\n/// ОБНАРУЖЕННЫЕ УЯЗВИМОСТИ ///\n';
-                            commandOutput += '- Бэкдор в подсистеме аутентификации (порт 2222).\n';
-                            commandOutput += '- Слабый протокол шифрования для внутренних сообщений (AES-128 с устаревшим ключом).\n';
-                        }
-                        break;
-                    case 'hack':
-                        if (isHacked) {
-                            commandOutput += 'Система уже взломана. Уровень доступа повышен.';
-                             terminalOutput.innerHTML += commandOutput + '\n'; // Output immediately for this case
-                             terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                             maybePrintRandomMessage();
-                             terminalOutput.innerHTML += '> ';
-                             terminalInput.focus();
-                             return; // Exit after handling already hacked case
-                        } else if (!isHackMinigameActive) {
-                            // Start minigame - special output handling below switch
-                            isHackMinigameActive = true;
-                            hackAttempts = 0; // Сбрасываем попытки при начале новой игры
-
-                            const shuffledWords = hackWords.sort(() => 0.5 - Math.random());
-                            currentHackPhrase = shuffledWords.slice(0, 5).join(' ');
-
-                            let hackStartOutput = '> ' + command + '\n'; // Include the command itself
-                            hackStartOutput += '/// НАЧАЛО ПРОЦЕДУРЫ ВЗЛОМА ///\n';
-                            hackStartOutput += 'Запомните следующую последовательность и введите ее в течение ' + HACK_TIMER_DURATION + ' секунд:\n\n';
-                            hackStartOutput += currentHackPhrase.toUpperCase() + '\n\n';
-                            hackStartOutput += 'Таймер: ' + hackTimer + '...\n'; // Start timer display from HACK_TIMER_DURATION
-
-                            terminalOutput.innerHTML += hackStartOutput; // Output minigame start immediately
-                            terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                            terminalInput.focus(); // Focus for user input
-
-                            hackTimer = HACK_TIMER_DURATION; // Initialize timer variable
-                            hackTimerInterval = setInterval(() => {
-                                hackTimer--;
-                                // Обновляем отображение таймера в последней строке вывода
-                                const lines = terminalOutput.innerHTML.split('\n');
-                                // Find the last line that starts with 'Таймер:'
-                                let timerLineIndex = -1;
-                                for(let i = lines.length - 1; i >= 0; i--) {
-                                    if (lines[i].startsWith('Таймер:')) {
-                                        timerLineIndex = i;
-                                        break;
-                                    }
-                                }
-
-                                if (timerLineIndex !== -1) {
-                                     lines[timerLineIndex] = 'Таймер: ' + hackTimer + '...\n';
-                                     terminalOutput.innerHTML = lines.join('\n');
+                        // Attach event listener for archive/unarchive button
+                        const archiveButton = messageDiv.querySelector(`button[data-message-id="${message.id}"]`);
+                        if (archiveButton) {
+                            archiveButton.addEventListener('click', (e) => {
+                                e.stopPropagation(); // Prevent details from toggling
+                                const msgId = e.target.dataset.messageId;
+                                const action = e.target.dataset.action;
+                                if (action === 'archive') {
+                                    archiveMessage(msgId);
                                 } else {
-                                    // If timer line not found (scrolled away), add a new one at the end
-                                     terminalOutput.innerHTML += 'Таймер: ' + hackTimer + '...\n';
+                                    unarchiveMessage(msgId);
                                 }
-                                terminalOutput.scrollTop = terminalOutput.scrollHeight;
-
-
-                                if (hackTimer <= 0) {
-                                    // Время вышло
-                                    clearInterval(hackTimerInterval);
-                                    isHackMinigameActive = false;
-                                     // Удаляем строку с таймером (ищем снова, так как innerHTML мог измениться)
-                                     const currentLines = terminalOutput.innerHTML.split('\n');
-                                     let lastTimerLineIndex = -1;
-                                     for(let i = currentLines.length - 1; i >= 0; i--) {
-                                        if (currentLines[i].startsWith('Таймер:')) {
-                                            lastTimerLineIndex = i;
-                                            break;
-                                        }
-                                     }
-                                     if (lastTimerLineIndex !== -1) {
-                                         currentLines.splice(lastTimerLineIndex, 1); // Remove the timer line
-                                         terminalOutput.innerHTML = currentLines.join('\n');
-                                     }
-
-
-                                    hackAttempts++;
-                                    if (hackAttempts >= MAX_HACK_ATTEMPTS) {
-                                        resetHackAndLogout('Доступ заблокирован. Охрана предупреждена.'); // Изменено сообщение
-                                    } else {
-                                        terminalOutput.innerHTML += `\nВремя вышло. Неверная последовательность. Осталось попыток: ${MAX_HACK_ATTEMPTS - hackAttempts}.\n> `;
-                                        terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                                        terminalInput.focus();
-                                    }
-                                }
-                            }, 1000); // Каждую секунду
-                            return; // Exit after starting the hack minigame
-                        } else {
-                             commandOutput += 'Процедура взлома уже активна. Введите последовательность или дождитесь завершения таймера.';
-                             terminalOutput.innerHTML += commandOutput + '\n'; // Output immediately
-                             terminalOutput.scrollTop = terminalOutput.scrollTop + 200; // Дополнительная прокрутка
-                             // No prompt here, minigame is active
-                             return; // Exit
+                            });
                         }
-                    default:
-                        commandOutput += 'Ошибка: Команда не найдена. Введите "help" для списка команд.';
-                        break; // Exit switch, proceed to common output handling
+
+                        // Пометить сообщение как прочитанное, если оно входящее и не прочитано
+                        if (!message.read && !isSent) {
+                            const { error: updateError } = await supabase
+                                .from('terminal_messages')
+                                .update({ read: true })
+                                .eq('id', message.id);
+                            if (updateError) console.error('Error marking message as read:', updateError);
+                        }
+                    });
+                } else {
+                    if (messagesStatus) messagesStatus.textContent = 'Нет сообщений.';
                 }
+                updateUnreadMessageCount(); // Update count after loading messages
+            } catch (e) {
+                console.error("Error loading messages from Supabase:", e);
+                if (messagesStatus) messagesStatus.textContent = 'Ошибка загрузки сообщений. Проверьте консоль.';
+            }
+        }
 
-                // --- Common Output Handling for Regular Commands (except 'clear' and 'hack' when starting) ---
-                // If the command was not 'clear' and not 'hack' (when starting the minigame)
-                // The clear command output is handled within its case.
-                // The hack command output when starting is handled within its case.
-                // The hack command output when already hacked is handled within its case.
-                // The hack command output when minigame is active is handled within its case.
-                // So, this block only handles commands that fall through the switch without a specific return.
-                if (command.toLowerCase() !== 'clear' && command.toLowerCase() !== 'hack') {
-                     terminalOutput.innerHTML += commandOutput + '\n'; // Add the command output
-                     terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                     maybePrintRandomMessage(); // Potentially add a random message
-                     terminalOutput.innerHTML += '> '; // Add the prompt
-                     terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                     terminalInput.focus(); // Return focus
+        // Новая функция для архивации сообщения
+        async function archiveMessage(messageId) {
+            try {
+                const { error } = await supabase
+                    .from('terminal_messages')
+                    .update({ status: 'archived' })
+                    .eq('id', messageId);
+
+                if (error) throw error;
+                showNotification('Сообщение заархивировано!');
+                loadMessages(currentMessageFilter); // Reload messages with current filter
+            } catch (e) {
+                console.error('Error archiving message:', e);
+                showNotification(`Ошибка архивации: ${e.message}`);
+            }
+        }
+
+        // Новая функция для разархивации сообщения
+        async function unarchiveMessage(messageId) {
+            try {
+                const { error } = await supabase
+                    .from('terminal_messages')
+                    .update({ status: 'active' })
+                    .eq('id', messageId);
+
+                if (error) throw error;
+                showNotification('Сообщение разархивировано!');
+                loadMessages(currentMessageFilter); // Reload messages with current filter
+            } catch (e) {
+                console.error('Error unarchiving message:', e);
+                showNotification(`Ошибка разархивации: ${e.message}`);
+            }
+        }
+
+
+        // Новая функция для настройки Realtime подписки
+        function setupMessageSubscription() {
+            // Если подписка уже существует, отписываемся от нее, чтобы избежать дублирования
+            if (messageSubscription) {
+                supabase.removeChannel(messageSubscription);
+                messageSubscription = null;
+                console.log('Существующая подписка на сообщения отменена.');
+            }
+
+            if (!currentCabinetLogin || !selectedTerminalId) {
+                console.log('Невозможно настроить подписку: нет логина кабинета или ID терминала.');
+                return;
+            }
+
+            console.log(`Попытка подписки на сообщения для пользователя: ${currentCabinetLogin}, терминал: ${selectedTerminalId}`);
+
+            messageSubscription = supabase
+                .channel('terminal_messages_updates') // Уникальное имя канала
+                .on(
+                    'postgres_changes',
+                    {
+                        event: 'INSERT',
+                        schema: 'public',
+                        table: 'terminal_messages',
+                        filter: `recipient_id=eq.${currentCabinetLogin}` // Отфильтровать только для входящих сообщений текущего пользователя
+                    },
+                    (payload) => {
+                        console.log('Новое сообщение получено (Realtime):', payload.new);
+                        // Проверить, что новое сообщение для текущего терминала
+                        if (payload.new.recipient_terminal_id === selectedTerminalId) {
+                            showNotification(`Новое сообщение от ${payload.new.sender_name}: ${payload.new.subject}`);
+                            // Если на странице сообщений, обновить список
+                            if (document.getElementById('messages').classList.contains('active')) {
+                                loadMessages(currentMessageFilter); // Reload messages with current filter
+                            } else {
+                                updateUnreadMessageCount(); // Just update count if not on messages page
+                            }
+                        }
+                    }
+                )
+                .subscribe();
+
+            console.log('Подписка на Realtime обновления сообщений настроена.');
+        }
+
+        // Функция для обновления счетчика непрочитанных сообщений
+        async function updateUnreadMessageCount(count = null) {
+            const unreadCountSpan = document.getElementById('unread-messages-count');
+            if (!unreadCountSpan) return;
+
+            if (count !== null) {
+                unreadCountSpan.textContent = `(${count})`;
+                unreadCountSpan.style.display = count > 0 ? 'inline' : 'none';
+                return;
+            }
+
+            if (!currentCabinetLogin || !selectedTerminalId) {
+                unreadCountSpan.textContent = '(0)';
+                unreadCountSpan.style.display = 'none';
+                return;
+            }
+
+            try {
+                const { count: unreadCount, error } = await supabase
+                    .from('terminal_messages')
+                    .select('id', { count: 'exact', head: true })
+                    .eq('recipient_id', currentCabinetLogin)
+                    .eq('recipient_terminal_id', selectedTerminalId)
+                    .eq('read', false)
+                    .eq('status', 'active'); // Only count active, unread messages
+
+                if (error) throw error;
+
+                unreadCountSpan.textContent = `(${unreadCount})`;
+                unreadCountSpan.style.display = unreadCount > 0 ? 'inline' : 'none';
+            } catch (e) {
+                console.error("Error updating unread message count:", e);
+                unreadCountSpan.textContent = '(?)'; // Indicate error
+                unreadCountSpan.style.display = 'inline';
+            }
+        }
+
+        // Функция для отображения кастомных уведомлений
+        function showNotification(message, duration = 5000) {
+            const notificationToast = document.getElementById('notification-toast');
+            const notificationMessage = document.getElementById('notification-message');
+
+            if (notificationToast && notificationMessage) {
+                notificationMessage.textContent = message;
+                notificationToast.classList.remove('hidden');
+                // Trigger reflow to ensure transition plays
+                void notificationToast.offsetWidth;
+                notificationToast.classList.add('show');
+
+                setTimeout(() => {
+                    notificationToast.classList.remove('show');
+                    setTimeout(() => {
+                        notificationToast.classList.add('hidden');
+                    }, 500); // Wait for transition to finish before hiding
+                }, duration);
+            }
+        }
+
+
+        // --- Terminal Command Handling ---
+
+        function maybePrintRandomMessage() {
+            const terminalOutput = document.getElementById('terminal-output');
+            if (Math.random() < 0.15 && currentTerminalData && currentTerminalData.random_system_messages) {
+                const randomMessage = currentTerminalData.random_system_messages[Math.floor(Math.random() * currentTerminalData.random_system_messages.length)];
+                if (terminalOutput) {
+                    terminalOutput.innerHTML += randomMessage + '\n';
+                    terminalOutput.scrollTop = terminalOutput.scrollHeight;
                 }
-                // Note: The prompt '>' is added in specific places for clear and hack to control flow.
+            }
+        }
+
+        // --- Initialization and Event Handlers ---
+
+        function attachGlobalEventListeners() {
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const loginButton = document.getElementById('login-button');
+            const terminalInput = document.getElementById('terminal-input');
+            const terminalOutput = document.getElementById('terminal-output');
+            const controlMessageElement = document.getElementById('control-message');
+            const cabinetPasswordMessage = document.getElementById('cabinet-password-message');
+            const taskMessage = document.getElementById('task-message');
+            const personalInfoMessage = document.getElementById('personal-info-message');
+            const financesMessage = document.getElementById('finances-message');
+            const messagesStatus = document.getElementById('messages-status');
+
+            const cabinetEnterButton = document.getElementById('cabinet-enter-button');
+            const cabinetRegisterButton = document.getElementById('cabinet-register-button');
+            const cabinetLogoutButton = document.getElementById('cabinet-logout-button');
+            const saveCabinetPasswordButton = document.getElementById('save-cabinet-password-button');
+            const editTasksButton = document.getElementById('edit-tasks-button');
+            const editPersonalInfoButton = document.getElementById('edit-personal-info-button');
+            const editFinancesButton = document.getElementById('edit-finances-button');
+            const sendMessageButton = document.getElementById('send-message-button');
+
+            const filterAllButton = document.getElementById('filter-all-messages');
+            const filterIncomingButton = document.getElementById('filter-incoming-messages');
+            const filterOutgoingButton = document.getElementById('filter-outgoing-messages');
+            const filterArchivedButton = document.getElementById('filter-archived-messages');
 
 
-            } // End if (e.key === 'Enter')
-        }); // End keypress listener
+            const jsonModal = document.getElementById('jsonModal');
+            const closeButton = document.querySelector('.close-button');
+            const jsonOutputTextarea = document.getElementById('jsonOutput');
+            const copyJsonButton = document.getElementById('copyJsonButton');
 
 
-        // При загрузке страницы показываем экран входа
+            // Login screen elements
+            if (usernameInput) {
+                usernameInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        if (passwordInput) passwordInput.focus();
+                    }
+                });
+            }
+            if (passwordInput) {
+                passwordInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        handleLogin();
+                    }
+                });
+            }
+            if (loginButton) loginButton.addEventListener('click', handleLogin);
+
+            // Terminal input listener
+            if (terminalInput) {
+                terminalInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        const command = terminalInput.value.trim();
+                        const rawCommand = terminalInput.value;
+                        terminalInput.value = '';
+
+                        if (!currentTerminalData) {
+                            if (terminalOutput) {
+                                terminalOutput.innerHTML += "> " + command + "\nОшибка: Терминал не загружен. Выберите терминал.\n> ";
+                                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                            }
+                            return;
+                        }
+
+                        if (isHackMinigameActive) {
+                            clearInterval(hackTimerInterval);
+                            hackTimer = 0;
+                            if (terminalOutput) terminalOutput.innerHTML = terminalOutput.innerHTML.replace(/Таймер: \d+...\n?/, '');
+
+                            const secretFileElement = document.getElementById('secret-file');
+
+                            if (rawCommand.toLowerCase() === 'q') {
+                                if (terminalOutput) {
+                                    terminalOutput.innerHTML += '> q\n';
+                                    terminalOutput.innerHTML += currentTerminalData.hack_game.override_success + '\n> ';
+                                }
+                                isHackMinigameActive = false;
+                                isHacked = true;
+                                hackAttempts = 0;
+                                if (secretFileElement) {
+                                    secretFileElement.style.display = 'block';
+                                }
+                                updateControlButtonsState();
+                                if (terminalOutput) terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                                if (terminalInput) terminalInput.focus();
+                                return;
+                            }
+
+                            if (rawCommand.trim() === '') {
+                                if (terminalOutput) terminalOutput.innerHTML += '> [ПУСТОЙ ВВОД]\n';
+                                hackAttempts++;
+                                if (hackAttempts >= currentTerminalData.hack_game.max_attempts) {
+                                    resetHackAndLogout('too_many_hack_attempts');
+                                } else {
+                                    if (terminalOutput) {
+                                        terminalOutput.innerHTML += currentTerminalData.error_messages.empty_hack_input.replace('{attempts_left}', currentTerminalData.hack_game.max_attempts - hackAttempts) + '\n> ';
+                                        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                                    }
+                                    if (terminalInput) terminalInput.focus();
+                                }
+                                isHackMinigameActive = false;
+                                return;
+                            }
+
+                            if (terminalOutput) terminalOutput.innerHTML += command + '\n';
+
+                            if (command.toLowerCase() === currentHackPhrase.toLowerCase()) {
+                                isHackMinigameActive = false;
+                                isHacked = true;
+                                hackAttempts = 0;
+                                if (secretFileElement) {
+                                    secretFileElement.style.display = 'block';
+                                }
+                                updateControlButtonsState();
+                                if (terminalOutput) {
+                                    terminalOutput.innerHTML += currentTerminalData.hack_game.success_message + '\n> ';
+                                    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                                }
+                                if (terminalInput) terminalInput.focus();
+                            } else {
+                                hackAttempts++;
+                                if (hackAttempts >= currentTerminalData.hack_game.max_attempts) {
+                                    resetHackAndLogout('too_many_hack_attempts');
+                                } else {
+                                    if (terminalOutput) {
+                                        terminalOutput.innerHTML += currentTerminalData.hack_game.failure_message.replace('{attempts_left}', currentTerminalData.hack_game.max_attempts - hackAttempts) + '\n> ';
+                                        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                                    }
+                                    if (terminalInput) terminalInput.focus();
+                                }
+                            }
+                            return;
+                        }
+
+                        let commandOutput = '> ' + command + '\n';
+
+                        switch (command.toLowerCase()) {
+                            case 'help':
+                                commandOutput += 'Доступные команды:\n';
+                                currentTerminalData.commands.forEach(cmd => {
+                                    commandOutput += `  ${cmd.name} - ${cmd.description}\n`;
+                                });
+                                break;
+                            case 'clear':
+                                if (terminalOutput) terminalOutput.innerHTML = '> clear\n';
+                                break;
+                            case 'status':
+                                commandOutput += currentTerminalData.command_outputs.status.default;
+                                if (isHacked) {
+                                     commandOutput += currentTerminalData.command_outputs.status.hacked;
+                                }
+                                break;
+                            case 'navigate filesystem':
+                            case 'navigate control':
+                            case 'navigate cabinet':
+                            case 'navigate characters':
+                            case 'navigate dossiers':
+                            case 'navigate map':
+                            case 'navigate terminal':
+                            case 'navigate messages':
+                                const pageId = command.split(' ')[1];
+                                showPage(pageId);
+                                commandOutput += `Переход на страницу: ${pageId.charAt(0).toUpperCase() + pageId.slice(1)}`;
+                                if (pageId === 'control' && controlMessageElement) controlMessageElement.textContent = '';
+                                if (pageId === 'cabinet') {
+                                    if (cabinetPasswordMessage) cabinetPasswordMessage.textContent = '';
+                                    if (taskMessage) taskMessage.textContent = '';
+                                    if (personalInfoMessage) personalInfoMessage.textContent = '';
+                                    if (financesMessage) financesMessage.textContent = '';
+                                }
+                                if (pageId === 'messages' && messagesStatus) {
+                                    messagesStatus.textContent = '';
+                                }
+                                break;
+                            case 'message':
+                                 showPage('messages');
+                                 commandOutput += `Переход на страницу: СООБЩЕНИЯ`;
+                                 if (messagesStatus) messagesStatus.textContent = '';
+                                 break;
+                            case 'info':
+                                if (currentTerminalData.command_outputs.info.default) {
+                                    commandOutput += currentTerminalData.command_outputs.info.default.join('\n');
+                                }
+                                if (isHacked && currentTerminalData.command_outputs.info.hacked) {
+                                    commandOutput += '\n' + currentTerminalData.command_outputs.info.hacked.join('\n');
+                                }
+                                break;
+                            case 'hack':
+                                if (isHacked) {
+                                    commandOutput += currentTerminalData.command_outputs.hack.already_hacked;
+                                    if (terminalOutput) {
+                                        terminalOutput.innerHTML += commandOutput + '\n';
+                                        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                                    }
+                                    maybePrintRandomMessage();
+                                    if (terminalOutput) terminalOutput.innerHTML += '> ';
+                                    if (terminalInput) terminalInput.focus();
+                                    return;
+                                } else if (!isHackMinigameActive) {
+                                    isHackMinigameActive = true;
+                                    hackAttempts = 0;
+
+                                    const shuffledWords = currentTerminalData.hack_game.words.sort(() => 0.5 - Math.random());
+                                    currentHackPhrase = shuffledWords.slice(0, 5).join(' ');
+
+                                    let hackStartOutput = '> ' + command + '\n';
+                                    hackStartOutput += currentTerminalData.hack_game.start_message
+                                        .replace('{timer_duration}', currentTerminalData.hack_game.timer_duration)
+                                        .replace('{phrase}', currentHackPhrase.toUpperCase())
+                                        .replace('{timer_value}', currentTerminalData.hack_game.timer_duration);
+
+                                    if (terminalOutput) {
+                                        terminalOutput.innerHTML += hackStartOutput;
+                                        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                                    }
+                                    if (terminalInput) terminalInput.focus();
+
+                                    hackTimer = currentTerminalData.hack_game.timer_duration;
+                                    hackTimerInterval = setInterval(() => {
+                                        hackTimer--;
+                                        const lines = terminalOutput.innerHTML.split('\n');
+                                        let timerLineIndex = -1;
+                                        for(let i = lines.length - 1; i >= 0; i--) {
+                                            if (lines[i].startsWith('Таймер:')) {
+                                                timerLineIndex = i;
+                                                break;
+                                            }
+                                        }
+
+                                        if (timerLineIndex !== -1) {
+                                             lines[timerLineIndex] = 'Таймер: ' + hackTimer + '...\n';
+                                             if (terminalOutput) terminalOutput.innerHTML = lines.join('\n');
+                                        } else {
+                                             if (terminalOutput) terminalOutput.innerHTML += 'Таймер: ' + hackTimer + '...\n';
+                                        }
+                                        if (terminalOutput) terminalOutput.scrollTop = terminalOutput.scrollHeight;
+
+                                        if (hackTimer <= 0) {
+                                            clearInterval(hackTimerInterval);
+                                            isHackMinigameActive = false;
+                                             const currentLines = terminalOutput.innerHTML.split('\n');
+                                             let lastTimerLineIndex = -1;
+                                             for(let i = currentLines.length - 1; i >= 0; i--) {
+                                                if (currentLines[i].startsWith('Таймер:')) {
+                                                    lastTimerLineIndex = i;
+                                                    break;
+                                                }
+                                             }
+                                             if (lastTimerLineIndex !== -1) {
+                                                 currentLines.splice(lastTimerLineIndex, 1);
+                                                 if (terminalOutput) terminalOutput.innerHTML = currentLines.join('\n');
+                                             }
+                                            hackAttempts++;
+                                            if (hackAttempts >= currentTerminalData.hack_game.max_attempts) {
+                                                resetHackAndLogout('too_many_hack_attempts');
+                                            } else {
+                                                if (terminalOutput) {
+                                                    terminalOutput.innerHTML += currentTerminalData.hack_game.timeout_message.replace('{attempts_left}', currentTerminalData.hack_game.max_attempts - hackAttempts) + '\n> ';
+                                                    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                                                }
+                                                if (terminalInput) terminalInput.focus();
+                                            }
+                                        }
+                                    }, 1000);
+                                    return;
+                                } else {
+                                     commandOutput += currentTerminalData.command_outputs.hack.in_progress;
+                                     if (terminalOutput) {
+                                         terminalOutput.innerHTML += commandOutput + '\n';
+                                         terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                                     }
+                                     return;
+                                }
+                            default:
+                                commandOutput += currentTerminalData.error_messages.command_not_found;
+                                break;
+                        }
+
+                        if (command.toLowerCase() !== 'clear' && command.toLowerCase() !== 'hack') {
+                             if (terminalOutput) {
+                                 terminalOutput.innerHTML += commandOutput + '\n';
+                                 terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                             }
+                             maybePrintRandomMessage();
+                             if (terminalOutput) terminalOutput.innerHTML += '> ';
+                             if (terminalOutput) terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                             if (terminalInput) terminalInput.focus();
+                        }
+                    }
+                });
+            }
+
+            // Cabinet specific event listeners
+            if (cabinetEnterButton) cabinetEnterButton.addEventListener('click', handleCabinetLogin);
+            if (cabinetRegisterButton) cabinetRegisterButton.addEventListener('click', handleCabinetRegister);
+            if (cabinetLogoutButton) cabinetLogoutButton.addEventListener('click', handleCabinetLogout);
+            if (saveCabinetPasswordButton) saveCabinetPasswordButton.addEventListener('click', saveCabinetData);
+
+            const taskListDisplay = document.getElementById('task-list-display');
+            const personalInfoDisplay = document.getElementById('personal-info-display');
+            const financesDisplay = document.getElementById('finances-display');
+
+            if (editTasksButton && taskListDisplay && taskMessage) editTasksButton.addEventListener('click', () => toggleEditMode(taskListDisplay, taskMessage, editTasksButton, 'tasks'));
+            if (editPersonalInfoButton && personalInfoDisplay && personalInfoMessage) editPersonalInfoButton.addEventListener('click', () => toggleEditMode(personalInfoDisplay, personalInfoMessage, editPersonalInfoButton, 'personal_info'));
+            if (editFinancesButton && financesDisplay && financesMessage) editFinancesButton.addEventListener('click', () => toggleEditMode(financesDisplay, financesMessage, editFinancesButton, 'finances'));
+
+            if (sendMessageButton) sendMessageButton.addEventListener('click', sendMessage);
+
+            // Message filter buttons
+            if (filterAllButton) filterAllButton.addEventListener('click', () => {
+                currentMessageFilter = 'all';
+                loadMessages('all');
+                filterAllButton.classList.add('button-toggled');
+                filterIncomingButton.classList.remove('button-toggled');
+                filterOutgoingButton.classList.remove('button-toggled');
+                filterArchivedButton.classList.remove('button-toggled');
+            });
+            if (filterIncomingButton) filterIncomingButton.addEventListener('click', () => {
+                currentMessageFilter = 'incoming';
+                loadMessages('incoming');
+                filterIncomingButton.classList.add('button-toggled');
+                filterAllButton.classList.remove('button-toggled');
+                filterOutgoingButton.classList.remove('button-toggled');
+                filterArchivedButton.classList.remove('button-toggled');
+            });
+            if (filterOutgoingButton) filterOutgoingButton.addEventListener('click', () => {
+                currentMessageFilter = 'outgoing';
+                loadMessages('outgoing');
+                filterOutgoingButton.classList.add('button-toggled');
+                filterAllButton.classList.remove('button-toggled');
+                filterIncomingButton.classList.remove('button-toggled');
+                filterArchivedButton.classList.remove('button-toggled');
+            });
+            if (filterArchivedButton) filterArchivedButton.addEventListener('click', () => {
+                currentMessageFilter = 'archived';
+                loadMessages('archived');
+                filterArchivedButton.classList.add('button-toggled');
+                filterAllButton.classList.remove('button-toggled');
+                filterIncomingButton.classList.remove('button-toggled');
+                filterOutgoingButton.classList.remove('button-toggled');
+            });
+
+
+            // JSON modal event handlers
+            if (closeButton) {
+                closeButton.addEventListener('click', () => {
+                    if (jsonModal) jsonModal.style.display = 'none';
+                });
+            }
+
+            window.addEventListener('click', (event) => {
+                if (event.target === jsonModal) {
+                    if (jsonModal) jsonModal.style.display = 'none';
+                }
+            });
+
+            if (copyJsonButton) {
+                copyJsonButton.addEventListener('click', () => {
+                    if (jsonOutputTextarea) {
+                        jsonOutputTextarea.select();
+                        document.execCommand('copy');
+                        if (currentTerminalData) showNotification(currentTerminalData.modal_messages.copy_alert.replace('{terminal_id}', currentTerminalData.terminal_id));
+                        if (jsonModal) jsonModal.style.display = 'none';
+                    }
+                });
+            }
+        }
+
+
+        // Initial load function
         window.onload = async () => {
-            loginScreen.style.display = 'flex';
-            mainContent.style.display = 'none';
-            usernameInput.focus(); // Устанавливаем фокус на поле логина
-            // Изначально скрываем секретный файл
-             if (secretFileElement) {
-                 secretFileElement.style.display = 'none';
-             }
-            // Изначально обновляем состояние кнопок управления
-            updateControlButtonsState();
-             // Убедимся, что терминал не в режиме тревоги при первой загрузке
-             terminalOutput.classList.remove('terminal-alert');
-             terminalInput.classList.remove('terminal-alert');
-             terminalInput.disabled = false; // Убедимся, что ввод включен
-
-            // Загружаем данные аккаунтов из JSON при старте
-            allCabinetAccountsData = await loadAllCabinetAccountsData();
+            attachGlobalEventListeners(); // This will attach listeners to elements that exist at load.
+            await loadTerminalConfig(); // This will then populate the UI and re-attach listeners for dynamic elements.
+            updateUnreadMessageCount(); // Initial update of unread count
         };
-
-        // Если пользователь переходит по хешу в URL после перезагрузки,
-        // и он уже вошел (что мы не можем проверить без сервера),
-        // мы все равно покажем экран входа для простоты.
-        // В реальном приложении здесь была бы проверка сессии.
 
     </script>
 
