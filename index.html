@@ -810,14 +810,13 @@
             // Remove image related elements, add button
             const openInteractiveMapButton = document.getElementById('open-interactive-map-button');
             if (openInteractiveMapButton) {
-                openInteractiveMapButton.onclick = () => {
-                    if (selectedTerminalId) {
-                        const mapUrl = `${data.page_content.map.external_map_url_base}?terminal_id=${selectedTerminalId}&cabinet_login=${currentCabinetLogin || 'anonymous'}`;
-                        window.open(mapUrl, '_blank');
-                    } else {
-                        showNotification('Выберите терминал, чтобы открыть карту.');
-                    }
-                };
+            openInteractiveMapButton.addEventListener('click', (e) => {
+                e.preventDefault(); // Предотвращаем стандартное действие кнопки
+
+                // Формируем URL для interactive_map.html с параметрами
+                const interactiveMapUrl = `interactive_map.html?terminal_id=${currentTerminalId}&cabinet_login=${currentCabinetLogin}`;
+                window.open(interactiveMapUrl, '_blank'); // Открываем в новой вкладке
+            });
             }
 
             const mapDescriptionHeading = document.getElementById('map-description-heading');
