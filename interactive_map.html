@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Интерактивная Карта Города (Canvas)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background-color: #0f0f0f;
+            color: #00ff00;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+            width: 100%;
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .page-content {
+            background-color: #1a1a1a;
+            border: 1px solid #00ff00;
+            padding: 1.5rem;
+            border-radius: 8px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        h1, h2 {
+            color: #ff00ff;
+            text-shadow: 0 0 5px #ff00ff;
+            margin-bottom: 1rem;
+        }
+        #map-canvas-container {
+            border: 2px solid #00ffff;
+            margin-top: 1.5rem;
+            background-color: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            padding-bottom: 100%;
+            position: relative;
+        }
+        #canvas-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #mapCanvas {
+            display: block;
+            background-color: #000;
+            cursor: grab;
+        }
+        #mapCanvas.grabbing {
+            cursor: grabbing;
+        }
+
+        .location-entry {
+            background-color: #0d0d0d;
+            border: 1px solid #00ff00;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+        .location-entry:hover {
+            background-color: #1a1a1a;
+            border-color: #00ffff;
+            color: #00ffff;
+        }
+        .location-entry strong {
+            color: #ffff00;
+        }
+        .location-entry small {
+            color: #00ff00;
+        }
+        .location-entry.selected {
+            background-color: #004444;
+            border-color: #00ffff;
+            color: #00ffff;
+        }
+
+        #notification-toast {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            background-color: #8B008B;
+            color: #00ff00;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.7);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(100%);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+            max-width: 90%;
+            text-align: center;
+        }
+        #notification-toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (min-width: 768px) {
+            #notification-toast {
+                bottom: 2rem;
+                right: 2rem;
+                max-width: 300px;
+            }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.8);
+            padding-top: 60px;
+        }
+        .modal-content {
+            background-color: #1a1a1a;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #00ff00;
+            width: 80%;
+            box-shadow: 0 0 15px #00ff00;
+            position: relative;
+        }
+        .close-button {
+            color: #aaaaaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .json-textarea {
+            width: 100%;
+            height: 300px;
+            background-color: #000;
+            border: 1px solid #00ffff;
+            color: #00ff00;
+            padding: 10px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.9rem;
+            resize: vertical;
+        }
+        .copy-json-button {
+            background-color: #00ffff;
+            color: #0f0f0f;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Roboto Mono', monospace;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+        }
+        .copy-json-button:hover {
+            background-color: #00cccc;
+        }
+
+        #locationDetailsModal .modal-content {
+            max-width: 500px;
+            text-align: center;
+        }
+        #locationDetailsModal h3 {
+            color: #ffff00;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 5px #ffff00;
+        }
+        #locationDetailsModal p {
+            color: #00ffff;
+            font-size: 1.1rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+
+        .marker-panel {
+            background-color: #1a1a1a;
+            border: 1px solid #00ff00;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+        .marker-panel input[type="text"],
+        .marker-panel textarea,
+        .marker-panel select {
+            background-color: #0d0d0d;
+            border: 1px solid #00ffff;
+            color: #00ff00;
+            padding: 0.5rem;
+            border-radius: 4px;
+            width: 100%;
+            margin-bottom: 0.75rem;
+            font-family: 'Roboto Mono', monospace;
+        }
+        .marker-panel button {
+            background-color: #00ffff;
+            color: #0f0f0f;
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Roboto Mono', monospace;
+            transition: background-color 0.3s ease;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .marker-panel button:hover {
+            background-color: #00cccc;
+        }
+        .marker-panel button.danger {
+            background-color: #ff0000;
+        }
+        .marker-panel button.danger:hover {
+            background-color: #cc0000;
+        }
+        .marker-panel button.active-mode {
+            background-color: #ff00ff;
+            color: #fff;
+        }
+        .marker-panel button.active-mode:hover {
+            background-color: #cc00cc;
+        }
+        .marker-list-container {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #00ff00;
+            border-radius: 4px;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="main-content" class="container mt-8">
+        <header class="mb-8 border-b border-green-500 pb-4">
+            <h1 class="text-3xl font-bold text-center">ИНТЕРАКТИВНАЯ КАРТА</h1>
+        </header>
+
+        <section id="map" class="page-section active">
+            <div class="page-content">
+                <h2 class="text-2xl" id="map-section-title">/// КАРТА ГОРОДА ///</h2>
+                <p id="map-intro-text">Исследуйте ключевые районы и точки интереса Найт-Сити.</p>
+
+                <div id="map-canvas-container">
+                    <div id="canvas-wrapper">
+                        <canvas id="mapCanvas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="marker-panel">
+            <h2 class="text-2xl text-yellow-400 mb-4">/// УПРАВЛЕНИЕ МАРКЕРАМИ ///</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="markerName" class="block text-sm text-green-300 mb-1">Название:</label>
+                    <input type="text" id="markerName" placeholder="Название локации">
+                </div>
+                <div>
+                    <label for="markerDescription" class="block text-sm text-green-300 mb-1">Описание:</label>
+                    <textarea id="markerDescription" rows="3" placeholder="Подробное описание"></textarea>
+                </div>
+                <div>
+                    <label for="markerX" class="block text-sm text-green-300 mb-1">Координата X:</label>
+                    <input type="text" id="markerX" placeholder="X-координата (пиксели)">
+                </div>
+                <div>
+                    <label for="markerY" class="block text-sm text-green-300 mb-1">Координата Y:</label>
+                    <input type="text" id="markerY" placeholder="Y-координата (пиксели)">
+                </div>
+            </div>
+
+            <div class="mt-4 flex flex-wrap gap-2">
+                <button id="addMarkerModeButton">Режим добавления маркера</button>
+                <button id="addMarkerButton">Добавить маркер</button>
+                <button id="updateMarkerButton">Редактировать выбранный</button>
+                <button id="deleteMarkerButton" class="danger">Удалить выбранный</button>
+                <button id="toggleMarkersVisibilityButton">Скрыть маркеры</button>
+                <button id="exportMapDataButton">Экспорт данных</button>
+                <button id="clearFormButton">Очистить форму</button>
+            </div>
+
+            <div class="mt-4">
+                <label for="selectMarker" class="block text-sm text-green-300 mb-1">Выбрать маркер для редактирования/удаления:</label>
+                <div class="marker-list-container">
+                    <ul id="markerList" class="list-none p-0 m-0">
+                        </ul>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <div id="jsonModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2 class="text-2xl text-center text-purple-400 mb-4" id="modal-title"></h2>
+            <p class="text-yellow-400 mb-2" id="modal-instructions"></p>
+            <textarea id="jsonOutput" class="json-textarea" readonly></textarea>
+            <button id="copyJsonButton" class="copy-json-button"></button>
+        </div>
+    </div>
+
+    <div id="locationDetailsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeLocationDetailsModal">&times;</span>
+            <h3 id="locationDetailName"></h3>
+            <p id="locationDetailDescription"></p>
+            <p class="text-xs text-gray-400 mt-2" id="locationDetailCreator"></p>
+        </div>
+    </div>
+
+    <div id="notification-toast" class="fixed bottom-4 right-4 bg-purple-800 text-white p-4 rounded-lg shadow-lg hidden z-50 transition-all duration-300 ease-in-out transform translate-y-full opacity-0 md:bottom-8 md:right-8">
+        <p id="notification-message" class="text-sm"></p>
+    </div>
+
+    <script>
+        // --- Supabase Client Initialization ---
+        const SUPABASE_URL = 'https://vnfswyztlwgkhkkmhhhs.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZuZnN3eXp0bHdna2hra21oaGhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc4Mjg0MzYsImV4cCI6MjA2MzQwNDQzNn0.jvs2X_61LZaZxcmDoSK9ZRnHo-S2wblifiV4Vogdkyo';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // --- URL Parameters ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const terminalId = urlParams.get('terminal_id');
+        const cabinetLogin = urlParams.get('cabinet_login'); // This will be the 'created_by' for new markers
+
+        // Function to display a toast notification
+        function showNotification(message, duration = 3000) {
+            const toast = document.getElementById('notification-toast');
+            const toastMessage = document.getElementById('notification-message');
+            toastMessage.textContent = message;
+            toast.classList.remove('hidden');
+            void toast.offsetWidth; // Force reflow to trigger animation
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.classList.add('hidden');
+                }, 500); // Wait for transition to finish before hiding
+            }, duration);
+        }
+
+        // Function to open the original JSON modal (now used for export)
+        function openJsonModal(title, instructions, jsonData) {
+            const modal = document.getElementById('jsonModal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalInstructions = document.getElementById('modal-instructions');
+            const jsonOutput = document.getElementById('jsonOutput');
+            const copyButton = document.getElementById('copyJsonButton');
+
+            modalTitle.textContent = title;
+            modalInstructions.textContent = instructions;
+            jsonOutput.value = JSON.stringify(jsonData, null, 2); // Pretty print JSON
+            copyButton.textContent = 'Скопировать JSON';
+
+            modal.style.display = 'block';
+
+            // Event handler for the copy button
+            copyButton.onclick = () => {
+                jsonOutput.select();
+                document.execCommand('copy');
+                showNotification('JSON скопирован в буфер обмена!');
+            };
+        }
+
+        // Function to close the original JSON modal
+        function closeJsonModal() {
+            document.getElementById('jsonModal').style.display = 'none';
+        }
+
+        // New function to open Location Details Modal
+        function openLocationDetailsModal(location) {
+            const modal = document.getElementById('locationDetailsModal');
+            document.getElementById('locationDetailName').textContent = location.name;
+            document.getElementById('locationDetailDescription').textContent = location.description;
+            document.getElementById('locationDetailCreator').textContent = `Создан: ${location.created_by || 'Аноним'}`;
+            modal.style.display = 'block';
+        }
+
+        // New function to close Location Details Modal
+        function closeLocationDetailsModal() {
+            document.getElementById('locationDetailsModal').style.display = 'none';
+        }
+
+        // Close original JSON modal on 'x' click
+        document.querySelector('#jsonModal .close-button').onclick = closeJsonModal;
+
+        // Close Location Details modal on 'x' click
+        document.getElementById('closeLocationDetailsModal').onclick = closeLocationDetailsModal;
+
+        // Close any modal on outside click
+        window.onclick = function(event) {
+            const jsonModal = document.getElementById('jsonModal');
+            const locationDetailsModal = document.getElementById('locationDetailsModal');
+            if (event.target == jsonModal) {
+                closeJsonModal();
+            }
+            if (event.target == locationDetailsModal) {
+                closeLocationDetailsModal();
+            }
+        };
+
+        // --- Map Data (now dynamically loaded from Supabase) ---
+        let mapConfig = { // Default config, will be overwritten by Supabase
+            "title": "ИНТЕРАКТИВНАЯ КАРТА",
+            "intro": "Загрузка данных карты...",
+            "map_image_info": {
+                "url": "https://placehold.co/3840x2160/1a1a1a/00ff00?text=MAP+LOADING", // Placeholder
+                "bounds": {"top_y": 0, "left_x": 0, "bottom_y": 2160, "right_x": 3840}
+            }
+        };
+        let mapLocations = []; // This will hold markers from Supabase
+
+        // --- Canvas Map Variables ---
+        let canvas, ctx;
+        let canvasWrapper;
+        let mapImage = new Image();
+        let scale = 1.0;
+        let offsetX = 0;
+        let offsetY = 0;
+        let isDragging = false;
+        let lastX, lastY;
+        let selectedLocationId = null;
+        let addMarkerMode = false;
+        let markersVisible = true;
+
+        // DOM elements for marker management
+        const markerNameInput = document.getElementById('markerName');
+        const markerDescriptionInput = document.getElementById('markerDescription');
+        const markerXInput = document.getElementById('markerX');
+        const markerYInput = document.getElementById('markerY');
+        const addMarkerButton = document.getElementById('addMarkerButton');
+        const updateMarkerButton = document.getElementById('updateMarkerButton');
+        const deleteMarkerButton = document.getElementById('deleteMarkerButton');
+        const exportMapDataButton = document.getElementById('exportMapDataButton');
+        const clearFormButton = document.getElementById('clearFormButton');
+        const addMarkerModeButton = document.getElementById('addMarkerModeButton');
+        const toggleMarkersVisibilityButton = document.getElementById('toggleMarkersVisibilityButton');
+        const markerListUl = document.getElementById('markerList');
+
+        // Function to convert image coordinates (x, y pixels on original image) to canvas pixel coordinates
+        function imageCoordToPixel(imgX, imgY) {
+            const pixelX = imgX * scale + offsetX;
+            const pixelY = imgY * scale + offsetY;
+            return { x: pixelX, y: pixelY };
+        }
+
+        // Function to convert canvas pixel coordinates to image coordinates
+        function pixelToImageCoord(pixelX, pixelY) {
+            const imgX = (pixelX - offsetX) / scale;
+            const imgY = (pixelY - offsetY) / scale;
+            return { x: imgX, y: imgY };
+        }
+
+        // Function to draw the map and markers
+        function drawMap() {
+            if (!ctx || !canvas) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (mapImage.complete && mapImage.naturalWidth > 0) {
+                ctx.save();
+                ctx.translate(offsetX, offsetY);
+                ctx.scale(scale, scale);
+                ctx.drawImage(mapImage, 0, 0, mapImage.naturalWidth, mapImage.naturalHeight);
+                ctx.restore();
+            } else {
+                ctx.fillStyle = '#1a1a1a';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#00ff00';
+                ctx.font = '20px "Roboto Mono", monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('Загрузка карты...', canvas.width / 2, canvas.height / 2);
+            }
+
+            if (markersVisible) {
+                mapLocations.forEach(location => {
+                    const { x, y } = imageCoordToPixel(location.x_coord, location.y_coord);
+
+                    ctx.beginPath();
+                    ctx.arc(x, y, 15, 0, Math.PI * 2);
+                    ctx.fillStyle = (selectedLocationId === location.id) ? '#00ffff' : '#ff00ff';
+                    ctx.shadowColor = (selectedLocationId === location.id) ? '#00ffff' : '#ff00ff';
+                    ctx.shadowBlur = 10;
+                    ctx.fill();
+                    ctx.strokeStyle = '#00ff00';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineWidth = 3;
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+                    ctx.font = 'bold 16px "Roboto Mono", monospace';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'top';
+                    ctx.strokeText(location.name, x, y + 20);
+                    ctx.fillText(location.name, x, y + 20);
+                    ctx.shadowBlur = 0;
+                });
+            }
+        }
+
+        // Resize canvas to fit its wrapper while maintaining image aspect ratio
+        function resizeCanvas() {
+            if (!canvas || !canvasWrapper) return;
+
+            const wrapperWidth = canvasWrapper.clientWidth;
+            const wrapperHeight = canvasWrapper.clientHeight;
+
+            const squareSize = Math.min(wrapperWidth, wrapperHeight);
+
+            canvas.width = squareSize;
+            canvas.height = squareSize;
+            canvas.style.width = `${squareSize}px`;
+            canvas.style.height = `${squareSize}px`;
+
+            if (mapImage.complete && mapImage.naturalWidth > 0) {
+                scale = Math.min(canvas.width / mapImage.naturalWidth, canvas.height / mapImage.naturalHeight);
+
+                offsetX = (canvas.width - mapImage.naturalWidth * scale) / 2;
+                offsetY = (canvas.height - mapImage.naturalHeight * scale) / 2;
+            } else {
+                scale = 1.0;
+                offsetX = 0;
+                offsetY = 0;
+            }
+            drawMap();
+        }
+
+        // Pan functionality
+        function handleMouseDown(e) {
+            isDragging = true;
+            lastX = e.clientX;
+            lastY = e.clientY;
+            canvas.classList.add('grabbing');
+        }
+
+        function handleMouseMove(e) {
+            if (!isDragging) return;
+            const dx = e.clientX - lastX;
+            const dy = e.clientY - lastY;
+            offsetX += dx;
+            offsetY += dy;
+            lastX = e.clientX;
+            lastY = e.clientY;
+            drawMap();
+        }
+
+        function handleMouseUp() {
+            isDragging = false;
+            canvas.classList.remove('grabbing');
+        }
+
+        function handleMouseLeave() {
+            isDragging = false;
+            canvas.classList.remove('grabbing');
+        }
+
+        // Zoom functionality (using mouse wheel)
+        function handleWheel(e) {
+            e.preventDefault();
+            const zoomFactor = 1.1;
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            const worldX = (mouseX - offsetX) / scale;
+            const worldY = (mouseY - offsetY) / scale;
+
+            let newScale;
+            if (e.deltaY < 0) {
+                newScale = scale * zoomFactor;
+            } else {
+                newScale = scale / zoomFactor;
+            }
+
+            newScale = Math.max(0.1, Math.min(5.0, newScale));
+
+            offsetX = mouseX - worldX * newScale;
+            offsetY = mouseY - worldY * newScale;
+            scale = newScale;
+
+            drawMap();
+        }
+
+        // Click on canvas functionality (for marker placement or info)
+        function handleClick(e) {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            if (addMarkerMode) {
+                const { x, y } = pixelToImageCoord(mouseX, mouseY);
+                markerXInput.value = Math.round(x);
+                markerYInput.value = Math.round(y);
+                toggleAddMarkerMode();
+                showNotification(`Координаты ${Math.round(x)}, ${Math.round(y)} добавлены в форму.`);
+            } else {
+                let markerClicked = false;
+                mapLocations.forEach(location => {
+                    const { x, y } = imageCoordToPixel(location.x_coord, location.y_coord);
+                    const distance = Math.sqrt(Math.pow(mouseX - x, 2) + Math.pow(mouseY - y, 2));
+
+                    if (distance < 15) {
+                        showNotification(`Вы кликнули на: ${location.name}`);
+                        openLocationDetailsModal(location);
+                        markerClicked = true;
+                    }
+                });
+                if (!markerClicked) {
+                    showNotification('Клик по карте. Используйте "Режим добавления маркера" для добавления новой точки.');
+                }
+            }
+        }
+
+        // Function to focus map on a specific location (from list click)
+        function focusMapOnLocation(x_coord, y_coord, name) {
+            scale = 1.5;
+            offsetX = (canvas.width / 2) - (x_coord * scale);
+            offsetY = (canvas.height / 2) - (y_coord * scale);
+
+            drawMap();
+            showNotification(`Карта сфокусирована на: ${name}`);
+        }
+
+        // --- Marker Management Functions ---
+
+        // Populate the marker list (UI)
+        function populateMarkerList() {
+            markerListUl.innerHTML = '';
+            mapLocations.forEach(location => {
+                const li = document.createElement('li');
+                li.classList.add('location-entry');
+                if (selectedLocationId === location.id) {
+                    li.classList.add('selected');
+                }
+                li.dataset.id = location.id;
+                li.innerHTML = `<strong>${location.name}</strong><br><small>X: ${Math.round(location.x_coord)}, Y: ${Math.round(location.y_coord)}</small><br><small>Создан: ${location.created_by || 'Аноним'}</small>`;
+                li.addEventListener('click', () => selectLocation(location.id));
+                markerListUl.appendChild(li);
+            });
+        }
+
+        // Select a location for editing/deletion
+        function selectLocation(id) {
+            selectedLocationId = id;
+            const selectedLoc = mapLocations.find(loc => loc.id === id);
+            if (selectedLoc) {
+                markerNameInput.value = selectedLoc.name;
+                markerDescriptionInput.value = selectedLoc.description;
+                markerXInput.value = Math.round(selectedLoc.x_coord);
+                markerYInput.value = Math.round(selectedLoc.y_coord);
+                focusMapOnLocation(selectedLoc.x_coord, selectedLoc.y_coord, selectedLoc.name);
+            }
+            populateMarkerList(); // Re-populate to highlight selected
+            drawMap(); // Re-draw to highlight selected marker on canvas
+        }
+
+        // Clear the marker form
+        function clearForm() {
+            markerNameInput.value = '';
+            markerDescriptionInput.value = '';
+            markerXInput.value = '';
+            markerYInput.value = '';
+            selectedLocationId = null;
+            populateMarkerList();
+            drawMap();
+            showNotification('Форма очищена.');
+        }
+
+        // Toggle add marker mode
+        function toggleAddMarkerMode() {
+            addMarkerMode = !addMarkerMode;
+            if (addMarkerMode) {
+                addMarkerModeButton.classList.add('active-mode');
+                canvas.style.cursor = 'crosshair';
+                showNotification('Режим добавления маркера: АКТИВЕН. Нажмите на карту, чтобы выбрать координаты.');
+            } else {
+                addMarkerModeButton.classList.remove('active-mode');
+                canvas.style.cursor = 'grab';
+                showNotification('Режим добавления маркера: ВЫКЛЮЧЕН.');
+            }
+        }
+
+        // Toggle markers visibility
+        function toggleMarkersVisibility() {
+            markersVisible = !markersVisible;
+            if (markersVisible) {
+                toggleMarkersVisibilityButton.textContent = 'Скрыть маркеры';
+                showNotification('Маркеры теперь видны.');
+            } else {
+                toggleMarkersVisibilityButton.textContent = 'Показать маркеры';
+                showNotification('Маркеры теперь скрыты.');
+            }
+            drawMap();
+        }
+
+        // --- Supabase CRUD Operations for Markers ---
+
+        // Load markers from Supabase
+        async function loadMarkers() {
+            try {
+                const { data, error } = await supabase
+                    .from('map_markers')
+                    .select('*')
+                    .eq('terminal_id', terminalId); // Filter by current terminal ID
+
+                if (error) throw error;
+                mapLocations = data || [];
+                console.log("Markers loaded from Supabase:", mapLocations);
+                populateMarkerList();
+                drawMap();
+                showNotification('Маркеры загружены.');
+            } catch (e) {
+                console.error("Error loading markers:", e);
+                showNotification(`Ошибка загрузки маркеров: ${e.message}`);
+            }
+        }
+
+        // Add a new marker to Supabase
+        async function addMarker() {
+            const name = markerNameInput.value.trim();
+            const description = markerDescriptionInput.value.trim();
+            const x_coord = parseFloat(markerXInput.value);
+            const y_coord = parseFloat(markerYInput.value);
+
+            if (!name || !description || isNaN(x_coord) || isNaN(y_coord)) {
+                showNotification('Пожалуйста, заполните все поля и убедитесь, что координаты являются числами.');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('map_markers')
+                    .insert([
+                        {
+                            terminal_id: terminalId,
+                            name,
+                            description,
+                            x_coord,
+                            y_coord,
+                            created_by: cabinetLogin || 'anonymous' // Use cabinetLogin if available
+                        }
+                    ])
+                    .select();
+
+                if (error) throw error;
+                showNotification('Маркер успешно добавлен!');
+                clearForm();
+                // No need to call loadMarkers(), realtime subscription will handle it
+            } catch (e) {
+                console.error("Error adding marker:", e);
+                showNotification(`Ошибка добавления маркера: ${e.message}`);
+            }
+        }
+
+        // Update an existing marker in Supabase
+        async function updateMarker() {
+            if (!selectedLocationId) {
+                showNotification('Пожалуйста, выберите маркер для редактирования.');
+                return;
+            }
+
+            const name = markerNameInput.value.trim();
+            const description = markerDescriptionInput.value.trim();
+            const x_coord = parseFloat(markerXInput.value);
+            const y_coord = parseFloat(markerYInput.value);
+
+            if (!name || !description || isNaN(x_coord) || isNaN(y_coord)) {
+                showNotification('Пожалуйста, заполните все поля и убедитесь, что координаты являются числами.');
+                return;
+            }
+
+            const currentMarker = mapLocations.find(loc => loc.id === selectedLocationId);
+            if (currentMarker && currentMarker.created_by !== (cabinetLogin || 'anonymous')) {
+                showNotification('Вы можете редактировать только свои маркеры.');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('map_markers')
+                    .update({ name, description, x_coord, y_coord })
+                    .eq('id', selectedLocationId)
+                    .select();
+
+                if (error) throw error;
+                showNotification('Маркер успешно обновлен!');
+                clearForm();
+                // No need to call loadMarkers(), realtime subscription will handle it
+            } catch (e) {
+                console.error("Error updating marker:", e);
+                showNotification(`Ошибка обновления маркера: ${e.message}`);
+            }
+        }
+
+        // Delete a marker from Supabase
+        async function deleteMarker() {
+            if (!selectedLocationId) {
+                showNotification('Пожалуйста, выберите маркер для удаления.');
+                return;
+            }
+
+            const currentMarker = mapLocations.find(loc => loc.id === selectedLocationId);
+            if (currentMarker && currentMarker.created_by !== (cabinetLogin || 'anonymous')) {
+                showNotification('Вы можете удалять только свои маркеры.');
+                return;
+            }
+
+            try {
+                const { error } = await supabase
+                    .from('map_markers')
+                    .delete()
+                    .eq('id', selectedLocationId);
+
+                if (error) throw error;
+                showNotification('Маркер успешно удален!');
+                clearForm();
+                // No need to call loadMarkers(), realtime subscription will handle it
+            } catch (e) {
+                console.error("Error deleting marker:", e);
+                showNotification(`Ошибка удаления маркера: ${e.message}`);
+            }
+        }
+
+        // Export map data (including dynamic markers)
+        function exportMapData() {
+            const exportableData = {
+                ...mapConfig,
+                locations: mapLocations // Include all dynamic markers
+            };
+            openJsonModal(
+                "Данные Интерактивной Карты",
+                "Это текущие данные вашей интерактивной карты, включая все добавленные маркеры. Вы можете сохранить их или поделиться.",
+                exportableData
+            );
+        }
+
+        // --- Realtime Subscription for Markers ---
+        function setupMarkerSubscription() {
+            supabase
+                .channel('map_markers_changes') // Unique channel name
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*', // Listen for INSERT, UPDATE, DELETE
+                        schema: 'public',
+                        table: 'map_markers',
+                        filter: `terminal_id=eq.${terminalId}` // Only listen for changes relevant to this terminal
+                    },
+                    (payload) => {
+                        console.log('Realtime change in map_markers:', payload);
+                        // Reload all markers to ensure UI is consistent with DB
+                        loadMarkers();
+                        if (payload.eventType === 'INSERT') {
+                            showNotification(`Новый маркер добавлен: ${payload.new.name}`);
+                        } else if (payload.eventType === 'UPDATE') {
+                            showNotification(`Маркер обновлен: ${payload.new.name}`);
+                        } else if (payload.eventType === 'DELETE') {
+                            showNotification(`Маркер удален: ${payload.old.name}`);
+                        }
+                    }
+                )
+                .subscribe();
+            console.log('Realtime subscription for map markers set up.');
+        }
+
+        // --- Initialization ---
+        window.onload = async () => {
+            canvas = document.getElementById('mapCanvas');
+            ctx = canvas.getContext('2d');
+            canvasWrapper = document.getElementById('canvas-wrapper');
+
+            // Set up event listeners for map interaction
+            canvas.addEventListener('mousedown', handleMouseDown);
+            canvas.addEventListener('mousemove', handleMouseMove);
+            canvas.addEventListener('mouseup', handleMouseUp);
+            canvas.addEventListener('mouseleave', handleMouseLeave);
+            canvas.addEventListener('wheel', handleWheel);
+            canvas.addEventListener('click', handleClick);
+
+            // Set up event listeners for marker management buttons
+            addMarkerModeButton.addEventListener('click', toggleAddMarkerMode);
+            addMarkerButton.addEventListener('click', addMarker);
+            updateMarkerButton.addEventListener('click', updateMarker);
+            deleteMarkerButton.addEventListener('click', deleteMarker);
+            exportMapDataButton.addEventListener('click', exportMapData);
+            clearFormButton.addEventListener('click', clearForm);
+            toggleMarkersVisibilityButton.addEventListener('click', toggleMarkersVisibility);
+
+            // Load map configuration from Supabase (assuming a 'terminal_details' table exists)
+            if (terminalId) {
+                try {
+                    const { data, error } = await supabase
+                        .from('terminal_details')
+                        .select('config')
+                        .eq('id', terminalId)
+                        .single();
+
+                    if (error) throw error;
+                    if (data && data.config && data.config.page_content && data.config.page_content.map) {
+                        mapConfig = data.config.page_content.map;
+                        document.getElementById('map-section-title').textContent = mapConfig.title;
+                        document.getElementById('map-intro-text').textContent = mapConfig.intro;
+
+                        // Load map image
+                        mapImage.onload = () => {
+                            resizeCanvas(); // Resize and draw once image is loaded
+                        };
+                        mapImage.onerror = () => {
+                            console.error("Failed to load map image from URL:", mapConfig.map_image_info.url);
+                            showNotification("Ошибка загрузки фонового изображения карты.");
+                            drawMap(); // Draw fallback
+                        };
+                        mapImage.src = mapConfig.map_image_info.url;
+                    } else {
+                        showNotification("Ошибка: Конфигурация карты для этого терминала не найдена.");
+                        drawMap(); // Draw fallback
+                    }
+                } catch (e) {
+                    console.error("Error fetching map config from Supabase:", e);
+                    showNotification(`Ошибка загрузки конфигурации карты: ${e.message}`);
+                    drawMap(); // Draw fallback
+                }
+            } else {
+                showNotification("Ошибка: ID терминала не указан в URL.");
+                drawMap(); // Draw fallback
+            }
+
+            // Load initial markers and set up realtime subscription
+            await loadMarkers();
+            setupMarkerSubscription();
+
+            // Initial resize and draw
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+        };
+    </script>
+</body>
+</html>
