@@ -14,23 +14,27 @@
             margin: 0;
             padding: 0;
         }
+        /* Изменено: body теперь использует min-h-screen и позволяет содержимому течь */
         body {
             font-family: 'Roboto Mono', monospace;
             background-color: #0f0f0f;
             color: #00ff00;
             display: flex;
-            justify-content: center;
-            align-items: center;
+            justify-content: flex-start; /* Изменено с center */
+            align-items: stretch; /* Изменено с center */
+            min-height: 100vh; /* Гарантирует, что body занимает всю высоту viewport */
             box-sizing: border-box;
         }
+        /* Изменено: container теперь flex-col и занимает всю доступную высоту */
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 1rem;
             width: 100%;
-            min-height: 100%;
+            min-height: 100vh; /* Гарантирует, что контейнер занимает всю высоту viewport */
             display: flex;
             flex-direction: column;
+            box-sizing: border-box; /* Важно для padding */
         }
         .page-content {
             background-color: #1a1a1a;
@@ -772,8 +776,12 @@
             const x_coord = parseFloat(markerXInput.value);
             const y_coord = parseFloat(markerYInput.value);
 
+            console.log('--- Attempting to Add Marker ---');
+            console.log('Inputs:', { name, description, x_coord, y_coord, terminalId, cabinetLogin }); // Log inputs
+
             if (!name || !description || isNaN(x_coord) || isNaN(y_coord)) {
                 showNotification('Пожалуйста, заполните все поля и убедитесь, что координаты являются числами.');
+                console.log('Validation failed: Missing or invalid inputs.'); // Log validation failure
                 return;
             }
 
@@ -792,12 +800,19 @@
                     ])
                     .select();
 
-                if (error) throw error;
+                console.log('Supabase Insert Response Data:', data); // Log Supabase response data
+                console.log('Supabase Insert Response Error:', error); // Log Supabase response error
+
+                if (error) {
+                    console.error("Supabase Error during marker insert:", error); // Log detailed error
+                    throw error; // Re-throw to be caught by the catch block
+                }
+
                 showNotification('Маркер успешно добавлен!');
                 clearForm();
                 // No need to call loadMarkers(), realtime subscription will handle it
             } catch (e) {
-                console.error("Error adding marker:", e);
+                console.error("Error adding marker:", e); // This will catch any thrown error
                 showNotification(`Ошибка добавления маркера: ${e.message}`);
             }
         }
@@ -952,7 +967,7 @@
 
                     if (error) { // Отдельная обработка ошибок Supabase
                         console.error("Supabase query error:", error);
-                        showNotification(`Ошибка Supabase: ${error.message}`);
+                        showNotification(`Ошибка Supabase: ${e.message}`); // Исправлено: e на error.message
                         drawMap(); // Показать заглушку, если есть ошибка запроса
                     }
 
