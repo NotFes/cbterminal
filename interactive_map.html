@@ -364,7 +364,8 @@
 
         // --- URL Parameters ---
         const urlParams = new URLSearchParams(window.location.search);
-        const terminalId = urlParams.get('terminal_id');
+        const terminalId = new URLSearchParams(window.location.search).get('terminal_id');
+console.log('Detected terminalId from URL:', terminalId); // Эту строку добавляем
         const cabinetLogin = urlParams.get('cabinet_login'); // This will be the 'created_by' for new markers
 
         // Function to display a toast notification
