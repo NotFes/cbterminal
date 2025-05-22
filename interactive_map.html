@@ -58,7 +58,7 @@
             justify-content: center;
             align-items: center;
             width: 100%;
-            padding-bottom: 100%;
+            padding-bottom: 100%; /* Makes it square and responsive */
             position: relative;
         }
         #canvas-wrapper {
@@ -364,8 +364,8 @@
 
         // --- URL Parameters ---
         const urlParams = new URLSearchParams(window.location.search);
-        const terminalId = new URLSearchParams(window.location.search).get('terminal_id');
-console.log('Detected terminalId from URL:', terminalId); // Эту строку добавляем
+        const terminalId = urlParams.get('terminal_id'); // Используем urlParams для получения
+        console.log('Detected terminalId from URL:', terminalId);
         const cabinetLogin = urlParams.get('cabinet_login'); // This will be the 'created_by' for new markers
 
         // Function to display a toast notification
@@ -915,6 +915,7 @@ console.log('Detected terminalId from URL:', terminalId); // Эту строку
 
         // --- Initialization ---
         window.onload = async () => {
+            // Инициализация canvas и context здесь, до использования
             canvas = document.getElementById('mapCanvas');
             ctx = canvas.getContext('2d');
             canvasWrapper = document.getElementById('canvas-wrapper');
@@ -937,48 +938,65 @@ console.log('Detected terminalId from URL:', terminalId); // Эту строку
             toggleMarkersVisibilityButton.addEventListener('click', toggleMarkersVisibility);
 
             // Load map configuration from Supabase (assuming a 'terminal_details' table exists)
-            try {
-        const { data, error } = await supabase
-            .from('terminal_details')
-            .select('config')
-            .eq('id', terminalId)
-            .maybeSingle(); // Убедитесь, что здесь .maybeSingle()
+            if (terminalId) {
+                try {
+                    const { data, error } = await supabase
+                        .from('terminal_details')
+                        .select('config')
+                        .eq('id', terminalId)
+                        .maybeSingle(); // Используем .maybeSingle() для более мягкой обработки отсутствия данных
 
-        console.log('--- Supabase Data Fetch ---');
-        console.log('1. Raw data from Supabase:', data); // <--- ЭТОТ ЛОГ
-        console.log('2. Error from Supabase:', error); // <--- И ЭТОТ ЛОГ
+                    console.log('--- Supabase Data Fetch ---');
+                    console.log('1. Raw data from Supabase:', data);
+                    console.log('2. Error from Supabase:', error);
 
-        if (data && data.config) {
-            // ПРОВЕРЬТЕ ПУТЬ ВНИМАТЕЛЬНО! ДОЛЖЕН СОВПАДАТЬ С ВАШИМ JSON
-            mapConfig = data.config.page_content.map;
-            console.log('3. data.config.page_content.map (assigned mapConfig):', mapConfig); // <--- И ЭТОТ ЛОГ
-            console.log('4. mapConfig.map_image_info:', mapConfig.map_image_info); // <--- И ЭТОТ ЛОГ
+                    if (error) { // Отдельная обработка ошибок Supabase
+                        console.error("Supabase query error:", error);
+                        showNotification(`Ошибка Supabase: ${error.message}`);
+                        drawMap(); // Показать заглушку, если есть ошибка запроса
+                    }
+
+                    if (data && data.config) {
+                        // ПРОВЕРЬТЕ ПУТЬ ВНИМАТЕЛЬНО! ДОЛЖЕН СОВПАДАТЬ С ВАШИМ JSON
                         mapConfig = data.config.page_content.map;
+
+                        console.log('3. data.config.page_content.map (assigned mapConfig):', mapConfig);
+                        console.log('4. mapConfig.map_image_info:', mapConfig.map_image_info);
+
                         document.getElementById('map-section-title').textContent = mapConfig.title;
                         document.getElementById('map-intro-text').textContent = mapConfig.intro;
 
                         // Load map image
                         mapImage.onload = () => {
-                            resizeCanvas(); // Resize and draw once image is loaded
+                            resizeCanvas();
                         };
                         mapImage.onerror = () => {
                             console.error("Failed to load map image from URL:", mapConfig.map_image_info.url);
                             showNotification("Ошибка загрузки фонового изображения карты.");
-                            drawMap(); // Draw fallback
+                            drawMap();
                         };
-                        mapImage.src = mapConfig.map_image_info.url;
+                        // Только здесь устанавливаем src, когда уверены, что map_image_info существует
+                        if (mapConfig.map_image_info && mapConfig.map_image_info.url) {
+                            mapImage.src = mapConfig.map_image_info.url;
+                        } else {
+                            console.error("Map image URL is missing in config:", mapConfig);
+                            showNotification("Ошибка: URL изображения карты отсутствует в конфигурации.");
+                            drawMap();
+                        }
+
                     } else {
-                        showNotification("Ошибка: Конфигурация карты для этого терминала не найдена.");
-                        drawMap(); // Draw fallback
+                        console.log('Data or config is missing from Supabase response. Data:', data);
+                        showNotification("Ошибка: Конфигурация карты для этого терминала не найдена или неполна.");
+                        drawMap();
                     }
                 } catch (e) {
-                    console.error("Error fetching map config from Supabase:", e);
+                    console.error("Ошибка при получении конфигурации карты из Supabase:", e);
                     showNotification(`Ошибка загрузки конфигурации карты: ${e.message}`);
-                    drawMap(); // Draw fallback
+                    drawMap();
                 }
             } else {
                 showNotification("Ошибка: ID терминала не указан в URL.");
-                drawMap(); // Draw fallback
+                drawMap();
             }
 
             // Load initial markers and set up realtime subscription
