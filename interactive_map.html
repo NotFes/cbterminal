@@ -937,16 +937,22 @@ console.log('Detected terminalId from URL:', terminalId); // Эту строку
             toggleMarkersVisibilityButton.addEventListener('click', toggleMarkersVisibility);
 
             // Load map configuration from Supabase (assuming a 'terminal_details' table exists)
-            if (terminalId) {
-                try {
-                    const { data, error } = await supabase
-                        .from('terminal_details')
-                        .select('config')
-                        .eq('id', terminalId)
-                        .single();
+            try {
+        const { data, error } = await supabase
+            .from('terminal_details')
+            .select('config')
+            .eq('id', terminalId)
+            .maybeSingle(); // Убедитесь, что здесь .maybeSingle()
 
-                    if (error) throw error;
-                    if (data && data.config && data.config.page_content && data.config.page_content.map) {
+        console.log('--- Supabase Data Fetch ---');
+        console.log('1. Raw data from Supabase:', data); // <--- ЭТОТ ЛОГ
+        console.log('2. Error from Supabase:', error); // <--- И ЭТОТ ЛОГ
+
+        if (data && data.config) {
+            // ПРОВЕРЬТЕ ПУТЬ ВНИМАТЕЛЬНО! ДОЛЖЕН СОВПАДАТЬ С ВАШИМ JSON
+            mapConfig = data.config.page_content.map;
+            console.log('3. data.config.page_content.map (assigned mapConfig):', mapConfig); // <--- И ЭТОТ ЛОГ
+            console.log('4. mapConfig.map_image_info:', mapConfig.map_image_info); // <--- И ЭТОТ ЛОГ
                         mapConfig = data.config.page_content.map;
                         document.getElementById('map-section-title').textContent = mapConfig.title;
                         document.getElementById('map-intro-text').textContent = mapConfig.intro;
