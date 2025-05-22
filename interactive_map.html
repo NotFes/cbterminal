@@ -971,15 +971,16 @@
                             resizeCanvas();
                         };
                         mapImage.onerror = () => {
-                            console.error("Failed to load map image from URL:", mapConfig.map_image_info.url);
+                            // ИЗМЕНЕНО: теперь используем mapConfig.image_src, если map_image_info.url отсутствует
+                            console.error("Failed to load map image from URL:", mapConfig.image_src || "URL not found");
                             showNotification("Ошибка загрузки фонового изображения карты.");
                             drawMap();
                         };
-                        // Только здесь устанавливаем src, когда уверены, что map_image_info существует
-                        if (mapConfig.map_image_info && mapConfig.map_image_info.url) {
-                            mapImage.src = mapConfig.map_image_info.url;
+                        // ИЗМЕНЕНО: теперь используем mapConfig.image_src напрямую
+                        if (mapConfig.image_src) {
+                            mapImage.src = mapConfig.image_src;
                         } else {
-                            console.error("Map image URL is missing in config:", mapConfig);
+                            console.error("Map image URL is missing in config (expected 'image_src'):", mapConfig);
                             showNotification("Ошибка: URL изображения карты отсутствует в конфигурации.");
                             drawMap();
                         }
