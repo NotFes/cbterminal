@@ -475,11 +475,11 @@
         let addMarkerMode = false;
         let markersVisible = true;
 
-        // Touch variables for pinch-to-zoom
+        // Touch variables for pinch-to-zoom and tap detection
         let initialPinchDistance = null;
         let lastScale = 1.0;
-        let lastTouchX = null;
-        let lastTouchY = null;
+        let touchStartX, touchStartY; // Initial touch coordinates for tap detection
+        let movedDuringTouch = false; // Flag to track if a significant move occurred during touch
 
         // DOM elements for marker management
         const markerNameInput = document.getElementById('markerName');
@@ -609,6 +609,8 @@
 
         function handleStart(e) {
             e.preventDefault(); // Prevent default browser actions (scrolling, zooming)
+            movedDuringTouch = false; // Reset moved flag for new interaction
+
             if (e.touches && e.touches.length === 2) {
                 // Pinch-to-zoom start
                 initialPinchDistance = getPinchDistance(e);
@@ -619,6 +621,8 @@
                 isDragging = true;
                 lastX = coords.x;
                 lastY = coords.y;
+                touchStartX = coords.x; // Save initial touch position for tap detection
+                touchStartY = coords.y;
                 canvas.classList.add('grabbing');
             } else if (e.button === 0) { // Left mouse button
                 // Mouse pan start
@@ -631,6 +635,8 @@
 
         function handleMove(e) {
             e.preventDefault(); // Prevent default browser actions (scrolling, zooming)
+            const rect = canvas.getBoundingClientRect();
+
             if (e.touches && e.touches.length === 2) {
                 // Pinch-to-zoom move
                 const currentPinchDistance = getPinchDistance(e);
@@ -646,8 +652,8 @@
                 // Get center of pinch gesture
                 const touch1 = e.touches[0];
                 const touch2 = e.touches[1];
-                const centerX = ((touch1.clientX + touch2.clientX) / 2) - canvas.getBoundingClientRect().left;
-                const centerY = ((touch1.clientY + touch2.clientY) / 2) - canvas.getBoundingClientRect().top;
+                const centerX = ((touch1.clientX + touch2.clientX) / 2) - rect.left;
+                const centerY = ((touch1.clientY + touch2.clientY) / 2) - rect.top;
 
                 // Calculate world coordinates of the pinch center
                 const worldX = (centerX - offsetX) / scale;
@@ -659,6 +665,7 @@
                 offsetX = centerX - worldX * scale;
                 offsetY = centerY - worldY * scale;
 
+                movedDuringTouch = true; // Mark as moved for two-finger gesture
                 drawMap();
             } else if (isDragging && ((e.touches && e.touches.length === 1) || !e.touches)) {
                 // Pan move (mouse or single touch)
@@ -671,47 +678,33 @@
                 offsetY += dy;
                 lastX = currentX;
                 lastY = currentY;
+
+                // Check if enough movement occurred to consider it a drag
+                const moveThreshold = 5; // pixels
+                if (Math.abs(currentX - touchStartX) > moveThreshold || Math.abs(currentY - touchStartY) > moveThreshold) {
+                    movedDuringTouch = true;
+                }
                 drawMap();
             }
         }
 
         function handleEnd(e) {
-            isDragging = false;
-            initialPinchDistance = null;
-            lastScale = scale; // Save current scale for next pinch
-            canvas.classList.remove('grabbing');
-
-            // Handle single tap for marker actions
-            if (e.type === 'touchend' && e.changedTouches.length === 1) {
-                // A small delay to differentiate tap from pan/zoom
-                const tapThreshold = 10; // pixels
-                const timeThreshold = 200; // ms
-                const touch = e.changedTouches[0];
-                const startX = lastX; // Assuming lastX/Y were set on touchstart
-                const startY = lastY;
-
-                // If the touch didn't move much and was quick, treat as a click
-                if (Math.abs(touch.clientX - startX) < tapThreshold &&
-                    Math.abs(touch.clientY - startY) < tapThreshold &&
-                    (Date.now() - touchStartTime) < timeThreshold) {
-                    handleClick(e); // Re-use handleClick for tap
-                }
+            // If it was a multi-touch gesture, reset pinch variables
+            if (e.touches && e.touches.length === 0 && initialPinchDistance !== null) {
+                initialPinchDistance = null;
+                lastScale = scale;
             }
-        }
 
-        let touchStartTime = 0; // To track tap duration
+            // Only call handleClick if no significant movement occurred (i.e., it was a tap)
+            if (e.type === 'touchend' && e.changedTouches.length === 1 && !movedDuringTouch) {
+                handleClick(e); // Re-use handleClick for tap
+            } else if (e.type === 'mouseup' && !movedDuringTouch) { // For mouse clicks
+                 handleClick(e);
+            }
 
-        function handleTouchStart(e) {
-            touchStartTime = Date.now();
-            handleStart(e);
-        }
-
-        function handleTouchMove(e) {
-            handleMove(e);
-        }
-
-        function handleTouchEnd(e) {
-            handleEnd(e);
+            isDragging = false;
+            canvas.classList.remove('grabbing');
+            movedDuringTouch = false; // Reset for next interaction
         }
 
         function getPinchDistance(e) {
@@ -752,12 +745,12 @@
 
         // Click on canvas functionality (for marker placement or info)
         function handleClick(e) {
-            // Prevent click if it was part of a drag/pan gesture
-            if (isDragging) return;
-
+            // This function is now only called if no significant drag occurred.
             const rect = canvas.getBoundingClientRect();
-            const clientX = e.clientX || e.touches[0].clientX;
-            const clientY = e.clientY || e.touches[0].clientY;
+            const clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : null);
+            const clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : null);
+
+            if (clientX === null || clientY === null) return; // Exit if no valid coordinates
 
             const mouseX = clientX - rect.left;
             const mouseY = clientY - rect.top;
@@ -1064,12 +1057,12 @@
             canvas.addEventListener('mouseup', handleEnd);
             canvas.addEventListener('mouseleave', handleEnd); // Treat mouse leaving as mouse up
             canvas.addEventListener('wheel', handleWheel);
-            canvas.addEventListener('click', handleClick); // For general clicks/marker info
+            // Removed direct click listener, now handled via handleEnd for better tap/drag distinction
 
             // Touch events
-            canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
-            canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
-            canvas.addEventListener('touchend', handleTouchEnd);
+            canvas.addEventListener('touchstart', handleStart, { passive: false });
+            canvas.addEventListener('touchmove', handleMove, { passive: false });
+            canvas.addEventListener('touchend', handleEnd);
             canvas.addEventListener('touchcancel', handleEnd); // Handle touch interruptions
 
             // Set up event listeners for marker management buttons
