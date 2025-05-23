@@ -594,12 +594,20 @@
 
         function getEventCoords(e) {
             const rect = canvas.getBoundingClientRect();
-            if (e.touches && e.touches.length > 0) {
+            // For touch events, prefer changedTouches as they represent the touches that ended
+            if (e.changedTouches && e.changedTouches.length > 0) {
+                return {
+                    x: e.changedTouches[0].clientX - rect.left,
+                    y: e.changedTouches[0].clientY - rect.top
+                };
+            } else if (e.touches && e.touches.length > 0) {
+                // For touchstart/touchmove, use touches
                 return {
                     x: e.touches[0].clientX - rect.left,
                     y: e.touches[0].clientY - rect.top
                 };
             } else {
+                // For mouse events
                 return {
                     x: e.clientX - rect.left,
                     y: e.clientY - rect.top
@@ -696,6 +704,7 @@
             }
 
             // Only call handleClick if no significant movement occurred (i.e., it was a tap)
+            // For touchend, e.changedTouches contains the touch that was lifted
             if (e.type === 'touchend' && e.changedTouches.length === 1 && !movedDuringTouch) {
                 handleClick(e); // Re-use handleClick for tap
             } else if (e.type === 'mouseup' && !movedDuringTouch) { // For mouse clicks
@@ -747,10 +756,15 @@
         function handleClick(e) {
             // This function is now only called if no significant drag occurred.
             const rect = canvas.getBoundingClientRect();
-            const clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : null);
-            const clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : null);
+            // Prioritize changedTouches for touchend events, otherwise use touches[0] or clientX/Y
+            const clientX = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : e.clientX);
+            const clientY = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientY : (e.touches && e.touches[0] ? e.touches[0].clientY : e.clientY);
 
-            if (clientX === null || clientY === null) return; // Exit if no valid coordinates
+
+            if (clientX === null || clientY === null || clientX === undefined || clientY === undefined) {
+                console.warn("handleClick called with invalid clientX/Y:", e);
+                return; // Exit if no valid coordinates
+            }
 
             const mouseX = clientX - rect.left;
             const mouseY = clientY - rect.top;
