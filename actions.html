@@ -342,10 +342,10 @@
                 // Save player cash to cabinet_accounts
                 // Based on provided schema, 'id' is PK and 'terminal_id' is NOT NULL.
                 // Assuming 'id' in cabinet_accounts is our userId and 'terminal_id' can also be userId for this context.
-                // Also assuming 'finances' column is used for balance, as per provided schema.
+                // Also assuming 'balance' column is used for balance, as per provided schema.
                 const { error: balanceError } = await supabaseClient
                     .from('cabinet_accounts')
-                    .upsert({ id: userId, terminal_id: userId, finances: playerCash.toFixed(2) }, { onConflict: 'id' });
+                    .upsert({ id: userId, terminal_id: userId, balance: playerCash.toFixed(2) }, { onConflict: 'id' });
 
                 if (balanceError) {
                     console.error("Error saving balance to Supabase:", balanceError);
@@ -396,23 +396,23 @@
                 // Load player cash
                 // Based on provided schema, 'id' is PK and 'terminal_id' is NOT NULL.
                 // Assuming 'id' in cabinet_accounts is our userId.
-                // Also assuming 'finances' column is used for balance, as per provided schema.
+                // Also assuming 'balance' column is used for balance, as per provided schema.
                 const { data: balanceData, error: balanceError } = await supabaseClient
                     .from('cabinet_accounts')
-                    .select('finances') // Select 'finances' column
+                    .select('balance') // Select 'balance' column
                     .eq('id', userId) // Query by 'id'
                     .single();
 
                 if (balanceError && balanceError.code !== 'PGRST116') { // PGRST116 means "no rows found"
                     console.error("Error loading balance from Supabase:", balanceError);
                 } else if (balanceData) {
-                    playerCash = parseFloat(balanceData.finances); // Parse from 'finances'
+                    playerCash = parseFloat(balanceData.balance); // Parse from 'balance'
                     console.log("Player cash loaded:", playerCash);
                 } else {
                     // If no balance found, create initial balance
                     const { error: insertError } = await supabaseClient
                         .from('cabinet_accounts')
-                        .insert({ id: userId, terminal_id: userId, finances: 10000.00 }); // Insert with 'id', 'terminal_id', and 'finances'
+                        .insert({ id: userId, terminal_id: userId, balance: 10000.00 }); // Insert with 'id', 'terminal_id', and 'balance'
                     if (insertError) {
                         console.error("Error inserting initial balance:", insertError);
                     }
