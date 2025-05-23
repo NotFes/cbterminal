@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Интерактивная Карта Города (Canvas)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -13,28 +13,28 @@
             height: 100%;
             margin: 0;
             padding: 0;
+            /* Prevent iOS Safari overscroll bounce */
+            overscroll-behavior: none;
         }
-        /* Изменено: body теперь использует min-h-screen и позволяет содержимому течь */
         body {
             font-family: 'Roboto Mono', monospace;
             background-color: #0f0f0f;
             color: #00ff00;
             display: flex;
-            justify-content: flex-start; /* Изменено с center */
-            align-items: stretch; /* Изменено с center */
-            min-height: 100vh; /* Гарантирует, что body занимает всю высоту viewport */
+            justify-content: flex-start;
+            align-items: stretch;
+            min-height: 100vh;
             box-sizing: border-box;
         }
-        /* Изменено: container теперь flex-col и занимает всю доступную высоту */
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 1rem;
             width: 100%;
-            min-height: 100vh; /* Гарантирует, что контейнер занимает всю высоту viewport */
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            box-sizing: border-box; /* Важно для padding */
+            box-sizing: border-box;
         }
         .page-content {
             background-color: #1a1a1a;
@@ -81,6 +81,8 @@
             display: block;
             background-color: #000;
             cursor: grab;
+            /* Prevent default touch actions like scrolling/zooming */
+            touch-action: none;
         }
         #mapCanvas.grabbing {
             cursor: grabbing;
@@ -468,10 +470,16 @@
         let offsetX = 0;
         let offsetY = 0;
         let isDragging = false;
-        let lastX, lastY;
+        let lastX, lastY; // For mouse and single touch pan
         let selectedLocationId = null;
         let addMarkerMode = false;
         let markersVisible = true;
+
+        // Touch variables for pinch-to-zoom
+        let initialPinchDistance = null;
+        let lastScale = 1.0;
+        let lastTouchX = null;
+        let lastTouchY = null;
 
         // DOM elements for marker management
         const markerNameInput = document.getElementById('markerName');
@@ -559,6 +567,7 @@
             const wrapperWidth = canvasWrapper.clientWidth;
             const wrapperHeight = canvasWrapper.clientHeight;
 
+            // Ensure the canvas is always square and fills the available space
             const squareSize = Math.min(wrapperWidth, wrapperHeight);
 
             canvas.width = squareSize;
@@ -567,8 +576,10 @@
             canvas.style.height = `${squareSize}px`;
 
             if (mapImage.complete && mapImage.naturalWidth > 0) {
+                // Calculate initial scale to fit the entire map image within the canvas
                 scale = Math.min(canvas.width / mapImage.naturalWidth, canvas.height / mapImage.naturalHeight);
 
+                // Center the image
                 offsetX = (canvas.width - mapImage.naturalWidth * scale) / 2;
                 offsetY = (canvas.height - mapImage.naturalHeight * scale) / 2;
             } else {
@@ -579,33 +590,137 @@
             drawMap();
         }
 
-        // Pan functionality
-        function handleMouseDown(e) {
-            isDragging = true;
-            lastX = e.clientX;
-            lastY = e.clientY;
-            canvas.classList.add('grabbing');
+        // --- Mouse and Touch Event Handlers ---
+
+        function getEventCoords(e) {
+            const rect = canvas.getBoundingClientRect();
+            if (e.touches && e.touches.length > 0) {
+                return {
+                    x: e.touches[0].clientX - rect.left,
+                    y: e.touches[0].clientY - rect.top
+                };
+            } else {
+                return {
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top
+                };
+            }
         }
 
-        function handleMouseMove(e) {
-            if (!isDragging) return;
-            const dx = e.clientX - lastX;
-            const dy = e.clientY - lastY;
-            offsetX += dx;
-            offsetY += dy;
-            lastX = e.clientX;
-            lastY = e.clientY;
-            drawMap();
+        function handleStart(e) {
+            e.preventDefault(); // Prevent default browser actions (scrolling, zooming)
+            if (e.touches && e.touches.length === 2) {
+                // Pinch-to-zoom start
+                initialPinchDistance = getPinchDistance(e);
+                lastScale = scale;
+            } else if (e.touches && e.touches.length === 1) {
+                // Single touch pan start
+                const coords = getEventCoords(e);
+                isDragging = true;
+                lastX = coords.x;
+                lastY = coords.y;
+                canvas.classList.add('grabbing');
+            } else if (e.button === 0) { // Left mouse button
+                // Mouse pan start
+                isDragging = true;
+                lastX = e.clientX;
+                lastY = e.clientY;
+                canvas.classList.add('grabbing');
+            }
         }
 
-        function handleMouseUp() {
+        function handleMove(e) {
+            e.preventDefault(); // Prevent default browser actions (scrolling, zooming)
+            if (e.touches && e.touches.length === 2) {
+                // Pinch-to-zoom move
+                const currentPinchDistance = getPinchDistance(e);
+                if (initialPinchDistance === null) {
+                    initialPinchDistance = currentPinchDistance;
+                    lastScale = scale;
+                    return;
+                }
+
+                const pinchRatio = currentPinchDistance / initialPinchDistance;
+                const newScale = lastScale * pinchRatio;
+
+                // Get center of pinch gesture
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const centerX = ((touch1.clientX + touch2.clientX) / 2) - canvas.getBoundingClientRect().left;
+                const centerY = ((touch1.clientY + touch2.clientY) / 2) - canvas.getBoundingClientRect().top;
+
+                // Calculate world coordinates of the pinch center
+                const worldX = (centerX - offsetX) / scale;
+                const worldY = (centerY - offsetY) / scale;
+
+                scale = Math.max(0.1, Math.min(5.0, newScale)); // Clamp scale
+
+                // Adjust offset to keep the pinch center fixed
+                offsetX = centerX - worldX * scale;
+                offsetY = centerY - worldY * scale;
+
+                drawMap();
+            } else if (isDragging && ((e.touches && e.touches.length === 1) || !e.touches)) {
+                // Pan move (mouse or single touch)
+                const currentX = e.touches ? e.touches[0].clientX : e.clientX;
+                const currentY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                const dx = currentX - lastX;
+                const dy = currentY - lastY;
+                offsetX += dx;
+                offsetY += dy;
+                lastX = currentX;
+                lastY = currentY;
+                drawMap();
+            }
+        }
+
+        function handleEnd(e) {
             isDragging = false;
+            initialPinchDistance = null;
+            lastScale = scale; // Save current scale for next pinch
             canvas.classList.remove('grabbing');
+
+            // Handle single tap for marker actions
+            if (e.type === 'touchend' && e.changedTouches.length === 1) {
+                // A small delay to differentiate tap from pan/zoom
+                const tapThreshold = 10; // pixels
+                const timeThreshold = 200; // ms
+                const touch = e.changedTouches[0];
+                const startX = lastX; // Assuming lastX/Y were set on touchstart
+                const startY = lastY;
+
+                // If the touch didn't move much and was quick, treat as a click
+                if (Math.abs(touch.clientX - startX) < tapThreshold &&
+                    Math.abs(touch.clientY - startY) < tapThreshold &&
+                    (Date.now() - touchStartTime) < timeThreshold) {
+                    handleClick(e); // Re-use handleClick for tap
+                }
+            }
         }
 
-        function handleMouseLeave() {
-            isDragging = false;
-            canvas.classList.remove('grabbing');
+        let touchStartTime = 0; // To track tap duration
+
+        function handleTouchStart(e) {
+            touchStartTime = Date.now();
+            handleStart(e);
+        }
+
+        function handleTouchMove(e) {
+            handleMove(e);
+        }
+
+        function handleTouchEnd(e) {
+            handleEnd(e);
+        }
+
+        function getPinchDistance(e) {
+            const touch1 = e.touches[0];
+            const touch2 = e.touches[1];
+            return Math.sqrt(
+                Math.pow(touch2.clientX - touch1.clientX, 2) +
+                Math.pow(touch2.clientY - touch1.clientY, 2)
+            );
         }
 
         // Zoom functionality (using mouse wheel)
@@ -620,13 +735,13 @@
             const worldY = (mouseY - offsetY) / scale;
 
             let newScale;
-            if (e.deltaY < 0) {
+            if (e.deltaY < 0) { // Zoom in
                 newScale = scale * zoomFactor;
-            } else {
+            } else { // Zoom out
                 newScale = scale / zoomFactor;
             }
 
-            newScale = Math.max(0.1, Math.min(5.0, newScale));
+            newScale = Math.max(0.1, Math.min(5.0, newScale)); // Clamp scale
 
             offsetX = mouseX - worldX * newScale;
             offsetY = mouseY - worldY * newScale;
@@ -637,9 +752,15 @@
 
         // Click on canvas functionality (for marker placement or info)
         function handleClick(e) {
+            // Prevent click if it was part of a drag/pan gesture
+            if (isDragging) return;
+
             const rect = canvas.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
+            const clientX = e.clientX || e.touches[0].clientX;
+            const clientY = e.clientY || e.touches[0].clientY;
+
+            const mouseX = clientX - rect.left;
+            const mouseY = clientY - rect.top;
 
             if (addMarkerMode) {
                 const { x, y } = pixelToImageCoord(mouseX, mouseY);
@@ -653,7 +774,7 @@
                     const { x, y } = imageCoordToPixel(location.x_coord, location.y_coord);
                     const distance = Math.sqrt(Math.pow(mouseX - x, 2) + Math.pow(mouseY - y, 2));
 
-                    if (distance < 15) {
+                    if (distance < 15) { // Check if click is within marker radius
                         showNotification(`Вы кликнули на: ${location.name}`);
                         openLocationDetailsModal(location);
                         markerClicked = true;
@@ -667,7 +788,8 @@
 
         // Function to focus map on a specific location (from list click)
         function focusMapOnLocation(x_coord, y_coord, name) {
-            scale = 1.5;
+            scale = 1.5; // Zoom in a bit
+            // Center the location on the canvas
             offsetX = (canvas.width / 2) - (x_coord * scale);
             offsetY = (canvas.height / 2) - (y_coord * scale);
 
@@ -936,12 +1058,19 @@
             canvasWrapper = document.getElementById('canvas-wrapper');
 
             // Set up event listeners for map interaction
-            canvas.addEventListener('mousedown', handleMouseDown);
-            canvas.addEventListener('mousemove', handleMouseMove);
-            canvas.addEventListener('mouseup', handleMouseUp);
-            canvas.addEventListener('mouseleave', handleMouseLeave);
+            // Mouse events
+            canvas.addEventListener('mousedown', handleStart);
+            canvas.addEventListener('mousemove', handleMove);
+            canvas.addEventListener('mouseup', handleEnd);
+            canvas.addEventListener('mouseleave', handleEnd); // Treat mouse leaving as mouse up
             canvas.addEventListener('wheel', handleWheel);
-            canvas.addEventListener('click', handleClick);
+            canvas.addEventListener('click', handleClick); // For general clicks/marker info
+
+            // Touch events
+            canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+            canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+            canvas.addEventListener('touchend', handleTouchEnd);
+            canvas.addEventListener('touchcancel', handleEnd); // Handle touch interruptions
 
             // Set up event listeners for marker management buttons
             addMarkerModeButton.addEventListener('click', toggleAddMarkerMode);
@@ -967,7 +1096,7 @@
 
                     if (error) { // Отдельная обработка ошибок Supabase
                         console.error("Supabase query error:", error);
-                        showNotification(`Ошибка Supabase: ${e.message}`); // Исправлено: e на error.message
+                        showNotification(`Ошибка Supabase: ${error.message}`); // Исправлено: e на error.message
                         drawMap(); // Показать заглушку, если есть ошибка запроса
                     }
 
