@@ -45,16 +45,16 @@
             width: 100%;
         }
 
-        /* Стиль для неонового текста */
+        /* Стиль для неонового текста - обновлен для более мягкого оттенка */
         .neon-text {
-            color: #0ff; /* Ярко-голубой неон */
-            text-shadow: 0 0 5px #0ff, 0 0 10px #0ff, 0 0 20px #0ff, 0 0 40px #0ff; /* Эффект свечения */
+            color: #00e6e6; /* Более мягкий сине-зеленый неон */
+            text-shadow: 0 0 4px #00e6e6, 0 0 8px #00e6e6, 0 0 15px #00e6e6, 0 0 30px #00e6e6; /* Эффект свечения */
         }
 
         /* Стиль для неоновой рамки */
         .neon-border {
-            border-color: #0ff; /* Ярко-голубой неон */
-            box-shadow: 0 0 5px #0ff, 0 0 10px #0ff; /* Эффект свечения для границ */
+            border-color: #00e6e6; /* Более мягкий сине-зеленый неон */
+            box-shadow: 0 0 5px #00e6e6, 0 0 10px #00e6e6; /* Эффект свечения для границ */
         }
 
         /* Стиль для киберпанк-полей ввода */
@@ -70,33 +70,33 @@
 
         .input-cyber:focus {
             outline: none;
-            border-color: #0ff; /* Неоновая рамка при фокусе */
-            box-shadow: 0 0 8px #0ff; /* Неоновое свечение при фокусе */
+            border-color: #00e6e6; /* Неоновая рамка при фокусе */
+            box-shadow: 0 0 8px #00e6e6; /* Неоновое свечение при фокусе */
             background-color: #2a2a2a; /* Чуть светлее при фокусе для визуальной обратной связи */
         }
 
         /* Стиль для киберпанк-кнопок */
         .button-cyber {
-            background-color: #0ff; /* Неоновый фон кнопки */
+            background-color: #00e6e6; /* Неоновый фон кнопки */
             color: #0a0a0a; /* Темный текст на кнопке для контраста */
             font-weight: bold;
             padding: 12px 24px;
             border-radius: 8px;
             transition: all 0.3s ease; /* Плавный переход для интерактивных элементов */
-            box-shadow: 0 0 10px #0ff; /* Неоновое свечение кнопки */
+            box-shadow: 0 0 10px #00e6e6; /* Неоновое свечение кнопки */
             font-family: 'Inter', sans-serif; /* Используем Inter для кнопок */
         }
 
         .button-cyber:hover {
-            background-color: #0cc; /* Чуть темнее при наведении */
-            box-shadow: 0 0 15px #0ff; /* Более интенсивное свечение при наведении */
+            background-color: #00cccc; /* Чуть темнее при наведении */
+            box-shadow: 0 0 15px #00e6e6; /* Более интенсивное свечение при наведении */
             transform: translateY(-2px); /* Небольшой эффект поднятия для интерактивности */
         }
 
         /* Анимация для заголовка, имитирующая мерцание старого экрана */
         @keyframes flicker {
             0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
-                text-shadow: 0 0 5px #0ff, 0 0 10px #0ff, 0 0 20px #0ff, 0 0 40px #0ff;
+                text-shadow: 0 0 4px #00e6e6, 0 0 8px #00e6e6, 0 0 15px #00e6e6, 0 0 30px #00e6e6;
             }
             20%, 24%, 55% {
                 text-shadow: none; /* Кратковременное исчезновение тени для эффекта мерцания */
@@ -107,32 +107,33 @@
             animation: flicker 4s infinite alternate; /* Применение анимации мерцания */
         }
 
-        /* Стили для контейнера фото профиля */
+        /* Стили для контейнера фото профиля - обновлен для квадратной формы */
         .photo-container {
             position: relative;
             width: 200px;
             height: 200px;
-            border-radius: 50%; /* Круглая форма */
+            border-radius: 12px; /* Скругленные углы для квадратной формы */
             overflow: hidden; /* Обрезка содержимого по форме */
-            border: 3px solid #0ff; /* Неоновая рамка */
-            box-shadow: 0 0 15px #0ff; /* Неоновое свечение вокруг фото */
+            border: 3px solid #00e6e6; /* Неоновая рамка */
+            box-shadow: 0 0 15px #00e6e6, 0 0 25px rgba(0, 230, 230, 0.5); /* Неоновое свечение вокруг фото */
             display: flex;
             justify-content: center;
             align-items: center;
             background-color: #1a1a1a; /* Темный фон для контейнера */
+            transition: all 0.3s ease;
         }
 
         .photo-container img {
             width: 100%;
             height: 100%;
             object-fit: cover; /* Заполнение контейнера изображением */
-            border-radius: 50%; /* Круглая форма для изображения */
+            border-radius: 10px; /* Немного меньше, чем у контейнера, для эффекта рамки */
         }
 
         /* Дополнительные стили для декоративных эффектов */
         .gradient-line {
             height: 2px;
-            background: linear-gradient(to right, #0ff, #f0f, #0ff); /* Градиентная линия для разделения секций */
+            background: linear-gradient(to right, #00e6e6, #f0f, #00e6e6); /* Градиентная линия для разделения секций */
             width: 100%;
             margin: 20px 0;
         }
@@ -548,10 +549,9 @@
 
     <div id="main-content" class="container mt-8" style="display: none;">
         <header class="text-center mb-8">
-            <h1 class="text-4xl md:text-5xl font-bold mb-2 flicker-animation" id="main-terminal-header-dashboard">
-                Добро пожаловать, <span class="neon-text">Агент Х-7</span>!
-            </h1>
-            <p class="text-gray-400 text-lg">Ваш личный терминал в киберпространстве.</p>
+            <h1 class="text-4xl md:text-5xl font-bold mb-2 flicker-animation uppercase" id="main-terminal-name-display"></h1>
+            <h2 class="text-2xl font-bold mb-2">Добро пожаловать, <span class="neon-text" id="logged-in-user-display">Гость</span>!</h2>
+            <h3 class="text-lg text-gray-400">Ваш личный терминал в киберпространстве.</h3>
             <nav class="mt-4 text-center" id="main-nav-links">
                 </nav>
         </header>
@@ -606,7 +606,7 @@
 
                 <div id="personal-cabinet-data-section" style="display: none;" class="flex flex-col md:flex-row gap-8 md:gap-12 items-center md:items-start">
                     <div class="flex-shrink-0 photo-container">
-                        <img src="https://placehold.co/200x200/0a0a0a/0ff?text=Аватар" alt="Аватар пользователя" class="rounded-full">
+                        <img src="https://placehold.co/200x200/0a0a0a/0ff?text=Аватар" alt="Аватар пользователя" id="user-avatar">
                     </div>
 
                     <div class="flex-grow w-full">
@@ -624,6 +624,12 @@
                             </div>
 
                             <div class="md:col-span-2">
+                                <label for="avatar-url" class="block text-gray-400 text-sm font-medium mb-2">Ссылка на Аватар:</label>
+                                <input type="text" id="avatar-url" readonly class="input-cyber w-full">
+                                <div id="avatar-message" class="cabinet-message"></div>
+                            </div>
+
+                            <div class="md:col-span-2">
                                 <label for="tasks" class="block text-gray-400 text-sm font-medium mb-2">Активные Задачи:</label>
                                 <textarea id="tasks" rows="3" readonly class="input-cyber w-full resize-none"></textarea>
                                 <div id="task-message" class="cabinet-message"></div>
@@ -636,8 +642,8 @@
                             </div>
 
                             <div class="md:col-span-2">
-                                <label for="finances" class="block text-gray-400 text-sm font-medium mb-2">Финансовые Активы:</label>
-                                <input type="text" id="finances" readonly class="input-cyber w-full">
+                                <label for="balance" class="block text-gray-400 text-sm font-medium mb-2">Активы:</label>
+                                <textarea id="balance" rows="3" readonly class="input-cyber w-full resize-none"></textarea>
                                 <div id="finances-message" class="cabinet-message"></div>
                             </div>
                         </div>
@@ -689,7 +695,7 @@
                 <h2 class="text-2xl" id="map-section-title"></h2>
                 <p id="map-intro-text"></p>
                 <a href="#" target="_blank" id="map-image-link">
-                    <img src="" alt="" class="map-image" id="map-image">
+                    <img src="https://placehold.co/800x600/0a0a0a/0ff?text=Карта+Недоступна" alt="Карта" class="map-image" id="map-image">
                 </a>
                 <p class="mt-4" id="map-description-heading"></p>
                 <div id="map-locations-container">
@@ -769,17 +775,19 @@
         let messageSubscription = null;
         let currentMessageFilter = 'all'; // 'all', 'incoming', 'outgoing', 'archived'
         let isProfileEditing = false; // New state for profile editing
+        let loggedInTerminalUser = 'Гость'; // New global variable for terminal user display
 
         // --- UI Population Functions ---
 
         function populateUI(data) {
             // Update main header for dashboard style
-            const mainTerminalHeaderDashboard = document.getElementById('main-terminal-header-dashboard');
-            if (mainTerminalHeaderDashboard) {
-                // Assuming data.terminal_title might contain the "Агент Х-7" part or similar
-                // For now, keep the hardcoded "Агент Х-7" as it's part of the dashboard's aesthetic
-                // If data.terminal_title is meant to replace it, adjust this line:
-                // mainTerminalHeaderDashboard.innerHTML = `Добро пожаловать, <span class="neon-text">${data.terminal_title}</span>!`;
+            const mainTerminalNameDisplay = document.getElementById('main-terminal-name-display');
+            if (mainTerminalNameDisplay) {
+                mainTerminalNameDisplay.textContent = data.terminal_title; // Display terminal name in H1
+            }
+            const loggedInUserDisplay = document.getElementById('logged-in-user-display');
+            if (loggedInUserDisplay) {
+                loggedInUserDisplay.textContent = loggedInTerminalUser; // Set initial text to 'Гость'
             }
 
             const loginTerminalTitle = document.getElementById('login-terminal-title');
@@ -887,10 +895,6 @@
             const cabinetIntroText = document.getElementById('cabinet-intro-text');
             if (cabinetIntroText) cabinetIntroText.textContent = data.page_content.cabinet.intro;
 
-            // These labels are now part of the dashboard layout, so their text content is static in HTML
-            // const cabinetPasswordLabel = document.getElementById('cabinet-password-label');
-            // if (cabinetPasswordLabel) cabinetPasswordLabel.textContent = data.page_content.cabinet.sections.password.label;
-
             const cabinetPasswordInput = document.getElementById('cabinet-password');
             if (cabinetPasswordInput) cabinetPasswordInput.placeholder = data.page_content.cabinet.sections.password.placeholder;
 
@@ -901,9 +905,9 @@
             const personalInfoDisplay = document.getElementById('personal-info');
             if (personalInfoDisplay) personalInfoDisplay.value = data.page_content.cabinet.sections.personal_info.initial_content;
 
-            const financesDisplay = document.getElementById('finances');
-            if (financesDisplay) financesDisplay.value = data.page_content.cabinet.sections.finances.initial_content;
-
+            // Updated for 'balance' textarea
+            const balanceDisplay = document.getElementById('balance');
+            if (balanceDisplay) balanceDisplay.value = data.page_content.cabinet.sections.finances.initial_content; // Still using 'finances' key for initial content
 
             const charactersSectionTitle = document.getElementById('characters-section-title');
             if (charactersSectionTitle) charactersSectionTitle.textContent = data.page_content.characters.title;
@@ -947,7 +951,7 @@
             if (mapIntroText) mapIntroText.textContent = data.page_content.map.intro;
 
             const mapImageLink = document.getElementById('map-image-link');
-            if (mapImageLink) mapImageLink.href = data.page_content.map.image_link;
+            if (mapImageLink) mapImageLink.href = data.page_content.map.image_link; // This will be updated later with dynamic params
 
             const mapImage = document.getElementById('map-image');
             if (mapImage) {
@@ -1115,7 +1119,7 @@
             const cabinetPasswordMessage = document.getElementById('cabinet-password-message');
             const taskMessage = document.getElementById('task-message');
             const personalInfoMessage = document.getElementById('personal-info-message');
-            const financesMessage = document.getElementById('finances-message');
+            const financesMessage = document.getElementById('finances-message'); // This is for the old finances field, might be unused
             const messagesStatus = document.getElementById('messages-status');
 
             pageSections.forEach(section => {
@@ -1138,6 +1142,15 @@
                 if (pageId === 'cabinet') {
                     updateCabinetUIForLoginStatus();
                 }
+                // Update map link with current cabinet and terminal ID
+                if (pageId === 'map') {
+                    const mapImageLink = document.getElementById('map-image-link');
+                    if (mapImageLink) {
+                        const baseUrl = 'https://notfes.github.io/cbterminal/interactive_map.html'; // Base URL for the map
+                        const cabinetLoginParam = currentCabinetLogin ? currentCabinetLogin : 'anonymous'; // Use 'anonymous' if not logged in
+                        mapImageLink.href = `${baseUrl}?terminal_id=${selectedTerminalId || 'unknown'}&cabinet_login=${cabinetLoginParam}`;
+                    }
+                }
             } else {
                 showPage('terminal');
                 if (terminalOutput && currentTerminalData) {
@@ -1155,6 +1168,8 @@
             const loginMessage = document.getElementById('login-message');
             const terminalInput = document.getElementById('terminal-input');
             const terminalOutput = document.getElementById('terminal-output');
+            const loggedInUserDisplay = document.getElementById('logged-in-user-display');
+
 
             const username = usernameInput ? usernameInput.value.trim() : '';
             const password = passwordInput ? passwordInput.value.trim() : '';
@@ -1178,6 +1193,8 @@
                     terminalOutput.innerHTML = currentTerminalData.login_messages.master_access + '\n> ';
                     terminalOutput.scrollTop = terminalOutput.scrollHeight;
                 }
+                loggedInTerminalUser = username; // Set logged-in user for display
+                if (loggedInUserDisplay) loggedInUserDisplay.textContent = loggedInTerminalUser;
                 updateUnreadMessageCount();
             } else if (username === currentTerminalData.login_credentials.username && password === currentTerminalData.login_credentials.password) {
                 if (loginScreen) loginScreen.style.display = 'none';
@@ -1193,6 +1210,8 @@
                     terminalOutput.innerHTML = currentTerminalData.login_messages.welcome + '\n> ';
                     terminalOutput.scrollTop = terminalOutput.scrollHeight;
                 }
+                loggedInTerminalUser = username; // Set logged-in user for display
+                if (loggedInUserDisplay) loggedInUserDisplay.textContent = loggedInTerminalUser;
                 updateUnreadMessageCount();
             } else {
                 if (loginMessage) loginMessage.textContent = currentTerminalData.login_credentials.access_denied;
@@ -1218,6 +1237,8 @@
             const passwordInput = document.getElementById('password');
             const terminalOutput = document.getElementById('terminal-output');
             const terminalInput = document.getElementById('terminal-input');
+            const loggedInUserDisplay = document.getElementById('logged-in-user-display');
+
 
             if (mainContent) mainContent.style.display = 'none';
             if (loginScreen) loginScreen.style.display = 'flex';
@@ -1249,6 +1270,8 @@
                 messageSubscription = null;
                 console.log('Отписались от обновлений сообщений при выходе.');
             }
+            loggedInTerminalUser = 'Гость'; // Reset logged-in user display
+            if (loggedInUserDisplay) loggedInUserDisplay.textContent = loggedInTerminalUser;
             updateUnreadMessageCount(0);
         }
 
@@ -1320,9 +1343,11 @@
             // Dashboard fields
             const userIdInput = document.getElementById('user-id');
             const terminalIdDisplayInput = document.getElementById('terminal-id-display');
+            const avatarUrlInput = document.getElementById('avatar-url'); // New avatar input
+            const userAvatar = document.getElementById('user-avatar'); // User avatar image
             const tasksTextarea = document.getElementById('tasks');
             const personalInfoTextarea = document.getElementById('personal-info');
-            const financesInput = document.getElementById('finances');
+            const balanceTextarea = document.getElementById('balance'); // Changed to balance
             const editProfileButton = document.getElementById('edit-profile-button');
 
             if (currentCabinetLogin) {
@@ -1339,9 +1364,10 @@
                 }
                 updateUnreadMessageCount();
                 // Set dashboard fields to readonly initially
+                if (avatarUrlInput) avatarUrlInput.readOnly = true; // New
                 if (tasksTextarea) tasksTextarea.readOnly = true;
                 if (personalInfoTextarea) personalInfoTextarea.readOnly = true;
-                if (financesInput) financesInput.readOnly = true;
+                if (balanceTextarea) balanceTextarea.readOnly = true; // Changed to balance
                 if (editProfileButton) editProfileButton.textContent = 'Редактировать Профиль';
                 isProfileEditing = false;
             } else {
@@ -1358,14 +1384,17 @@
                 // Reset dashboard fields
                 if (userIdInput) userIdInput.value = 'CYBR-734-ALPHA'; // Reset to default placeholder
                 if (terminalIdDisplayInput) terminalIdDisplayInput.value = 'NEON-GRID-007'; // Reset to default placeholder
+                if (userAvatar) userAvatar.src = 'https://placehold.co/200x200/0a0a0a/0ff?text=Аватар'; // Reset avatar
+                if (avatarUrlInput) avatarUrlInput.value = ''; // Reset avatar input
                 if (tasksTextarea && currentTerminalData) tasksTextarea.value = currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
                 if (personalInfoTextarea && currentTerminalData) personalInfoTextarea.value = currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
-                if (financesInput && currentTerminalData) financesInput.value = currentTerminalData.page_content.cabinet.sections.finances.initial_content;
+                if (balanceTextarea && currentTerminalData) balanceTextarea.value = currentTerminalData.page_content.cabinet.sections.finances.initial_content; // Changed to balance
 
                 // Reset editing state and button text
+                if (avatarUrlInput) avatarUrlInput.readOnly = true; // New
                 if (tasksTextarea) tasksTextarea.readOnly = true;
                 if (personalInfoTextarea) personalInfoTextarea.readOnly = true;
-                if (financesInput) financesInput.readOnly = true;
+                if (balanceTextarea) balanceTextarea.readOnly = true; // Changed to balance
                 if (editProfileButton) editProfileButton.textContent = 'Редактировать Профиль';
                 isProfileEditing = false;
 
@@ -1456,7 +1485,9 @@
                             password: password,
                             tasks: currentTerminalData.page_content.cabinet.sections.tasks.initial_content,
                             personal_info: currentTerminalData.page_content.cabinet.sections.personal_info.initial_content,
-                            finances: currentTerminalData.page_content.cabinet.sections.finances.initial_content
+                            // Use 'balance' for the new field
+                            balance: currentTerminalData.page_content.cabinet.sections.finances.initial_content,
+                            avatar: 'https://placehold.co/200x200/0a0a0a/0ff?text=Аватар' // Default avatar
                         }
                     ])
                     .select();
@@ -1494,10 +1525,12 @@
             const cabinetPasswordMessage = document.getElementById('cabinet-password-message');
             const tasksTextarea = document.getElementById('tasks');
             const personalInfoTextarea = document.getElementById('personal-info');
-            const financesInput = document.getElementById('finances');
+            const balanceTextarea = document.getElementById('balance'); // Changed to balance
             const cabinetPasswordInput = document.getElementById('cabinet-password');
             const userIdInput = document.getElementById('user-id');
             const terminalIdDisplayInput = document.getElementById('terminal-id-display');
+            const avatarUrlInput = document.getElementById('avatar-url'); // New avatar input
+            const userAvatar = document.getElementById('user-avatar'); // User avatar image
 
             if (cabinetPasswordMessage && currentTerminalData) cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.loading;
 
@@ -1521,18 +1554,22 @@
                 if (data) {
                     if (userIdInput) userIdInput.value = data.id || 'N/A';
                     if (terminalIdDisplayInput) terminalIdDisplayInput.value = data.terminal_id || 'N/A';
+                    if (userAvatar) userAvatar.src = data.avatar || 'https://placehold.co/200x200/0a0a0a/0ff?text=Аватар'; // Set avatar src
+                    if (avatarUrlInput) avatarUrlInput.value = data.avatar || ''; // Set avatar input value
                     if (tasksTextarea) tasksTextarea.value = data.tasks || currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
                     if (personalInfoTextarea) personalInfoTextarea.value = data.personal_info || currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
-                    if (financesInput) financesInput.value = data.finances || currentTerminalData.page_content.cabinet.sections.finances.initial_content;
+                    if (balanceTextarea) balanceTextarea.value = data.balance || currentTerminalData.page_content.cabinet.sections.finances.initial_content; // Changed to balance
                     if (cabinetPasswordInput) cabinetPasswordInput.value = data.password || '';
                     if (cabinetPasswordMessage && currentTerminalData) cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.loaded_success.replace('{account_id}', currentCabinetLogin);
                 } else {
                     if (cabinetPasswordMessage && currentTerminalData) cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.not_found.replace('{account_id}', currentCabinetLogin);
                     if (userIdInput) userIdInput.value = 'CYBR-734-ALPHA';
                     if (terminalIdDisplayInput) terminalIdDisplayInput.value = 'NEON-GRID-007';
+                    if (userAvatar) userAvatar.src = 'https://placehold.co/200x200/0a0a0a/0ff?text=Аватар'; // Reset avatar
+                    if (avatarUrlInput) avatarUrlInput.value = ''; // Reset avatar input
                     if (tasksTextarea && currentTerminalData) tasksTextarea.value = currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
                     if (personalInfoTextarea && currentTerminalData) personalInfoTextarea.value = currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
-                    if (financesInput && currentTerminalData) financesInput.value = currentTerminalData.page_content.cabinet.sections.finances.initial_content;
+                    if (balanceTextarea && currentTerminalData) balanceTextarea.value = currentTerminalData.page_content.cabinet.sections.finances.initial_content; // Changed to balance
                     if (cabinetPasswordInput) cabinetPasswordInput.value = '';
                 }
             }
@@ -1547,7 +1584,8 @@
             const cabinetPasswordInput = document.getElementById('cabinet-password');
             const tasksTextarea = document.getElementById('tasks');
             const personalInfoTextarea = document.getElementById('personal-info');
-            const financesInput = document.getElementById('finances');
+            const balanceTextarea = document.getElementById('balance'); // Changed to balance
+            const avatarUrlInput = document.getElementById('avatar-url'); // New avatar input
 
             if (cabinetPasswordMessage && currentTerminalData) cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.saving;
 
@@ -1562,7 +1600,9 @@
                 password: cabinetPassword,
                 tasks: tasksTextarea ? tasksTextarea.value.trim() : '',
                 personal_info: personalInfoTextarea ? personalInfoTextarea.value.trim() : '',
-                finances: financesInput ? financesInput.value.trim() : ''
+                // Use 'balance' for the new field
+                balance: balanceTextarea ? balanceTextarea.value.trim() : '',
+                avatar: avatarUrlInput ? avatarUrlInput.value.trim() : 'https://placehold.co/200x200/0a0a0a/0ff?text=Аватар' // Save avatar URL
             };
 
             try {
@@ -1576,6 +1616,9 @@
                 if (error) throw error;
                 console.log("Cabinet data saved to Supabase:", data);
                 if (cabinetPasswordMessage) cabinetPasswordMessage.textContent = `Данные для аккаунта "${currentCabinetLogin}" успешно сохранены в Supabase.`;
+                // Update avatar display immediately after saving
+                const userAvatar = document.getElementById('user-avatar');
+                if (userAvatar) userAvatar.src = dataToUpdate.avatar;
             } catch (e) {
                 console.error("Error saving cabinet data to Supabase:", e);
                 if (cabinetPasswordMessage) cabinetPasswordMessage.textContent = 'Ошибка: Не удалось сохранить данные в Supabase. Проверьте консоль.';
@@ -1586,12 +1629,14 @@
         function toggleProfileEditMode() {
             const tasksTextarea = document.getElementById('tasks');
             const personalInfoTextarea = document.getElementById('personal-info');
-            const financesInput = document.getElementById('finances');
+            const balanceTextarea = document.getElementById('balance'); // Changed to balance
+            const avatarUrlInput = document.getElementById('avatar-url'); // New avatar input
             const editProfileButton = document.getElementById('edit-profile-button');
 
             const taskMessage = document.getElementById('task-message');
             const personalInfoMessage = document.getElementById('personal-info-message');
-            const financesMessage = document.getElementById('finances-message');
+            const financesMessage = document.getElementById('finances-message'); // Still using finances message for balance
+            const avatarMessage = document.getElementById('avatar-message'); // New avatar message
 
             if (!currentCabinetLogin) {
                 showNotification('Войдите в Кабинет, чтобы редактировать данные профиля.', 3000);
@@ -1600,9 +1645,10 @@
 
             isProfileEditing = !isProfileEditing;
 
+            if (avatarUrlInput) avatarUrlInput.readOnly = !isProfileEditing; // New
             if (tasksTextarea) tasksTextarea.readOnly = !isProfileEditing;
             if (personalInfoTextarea) personalInfoTextarea.readOnly = !isProfileEditing;
-            if (financesInput) financesInput.readOnly = !isProfileEditing;
+            if (balanceTextarea) balanceTextarea.readOnly = !isProfileEditing; // Changed to balance
 
             if (editProfileButton && currentTerminalData) {
                 editProfileButton.textContent = isProfileEditing ? 'Сохранить Профиль' : 'Редактировать Профиль';
@@ -1610,11 +1656,12 @@
 
             if (isProfileEditing) {
                 showNotification('Режим редактирования профиля включен.', 2000);
-                if (tasksTextarea) tasksTextarea.focus();
+                if (avatarUrlInput) avatarUrlInput.focus(); // Focus on avatar input first
                 // Clear previous messages
                 if (taskMessage) taskMessage.textContent = '';
                 if (personalInfoMessage) personalInfoMessage.textContent = '';
                 if (financesMessage) financesMessage.textContent = '';
+                if (avatarMessage) avatarMessage.textContent = ''; // New
             } else {
                 showNotification('Сохранение изменений профиля...', 2000);
                 saveCabinetData(); // Save changes when exiting edit mode
@@ -1970,7 +2017,7 @@
             const cabinetRegisterButton = document.getElementById('cabinet-register-button');
             const cabinetLogoutButton = document.getElementById('cabinet-logout-button');
             const saveCabinetPasswordButton = document.getElementById('save-cabinet-password-button');
-            const editProfileButton = document.getElementById('edit-profile-button'); // New button
+            const editProfileButton = document.getElementById('edit-profile-button');
 
             const sendMessageButton = document.getElementById('send-message-button');
 
@@ -2251,7 +2298,7 @@
             if (cabinetRegisterButton) cabinetRegisterButton.addEventListener('click', handleCabinetRegister);
             if (cabinetLogoutButton) cabinetLogoutButton.addEventListener('click', handleCabinetLogout);
             if (saveCabinetPasswordButton) saveCabinetPasswordButton.addEventListener('click', saveCabinetData);
-            if (editProfileButton) editProfileButton.addEventListener('click', toggleProfileEditMode); // New event listener
+            if (editProfileButton) editProfileButton.addEventListener('click', toggleProfileEditMode);
 
             if (sendMessageButton) sendMessageButton.addEventListener('click', sendMessage);
 
@@ -2322,7 +2369,6 @@
             await loadTerminalConfig();
             updateUnreadMessageCount();
         };
-
     </script>
 
 </body>
