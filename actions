@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Киберпанк Симулятор Биржи</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Orbitron:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a0a;
+            color: #00ff00; /* Neon green text */
+            overflow-x: hidden;
+        }
+
+        .cyber-panel {
+            background-color: #1a1a1a;
+            border: 1px solid #00ff00;
+            box-shadow: 0 0 10px #00ff00;
+            border-radius: 8px;
+        }
+
+        .cyber-button {
+            background-color: #00ff00;
+            color: #0a0a0a;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 16px;
+            font-weight: bold;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 0 5px #00ff00;
+        }
+
+        .cyber-button:hover {
+            background-color: #00cc00;
+            box-shadow: 0 0 15px #00ff00;
+            transform: translateY(-2px);
+        }
+
+        .cyber-input {
+            background-color: #0a0a0a;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            border-radius: 5px;
+            padding: 8px;
+            box-shadow: inset 0 0 5px #00ff00;
+        }
+
+        .chart-canvas {
+            background-color: #0d0d0d;
+            border: 1px solid #00ff00;
+            box-shadow: 0 0 8px #00ff00;
+            border-radius: 8px;
+        }
+
+        .positive {
+            color: #00ff00; /* Green for positive changes */
+        }
+
+        .negative {
+            color: #ff0000; /* Red for negative changes */
+        }
+
+        .neutral {
+            color: #cccccc; /* Grey for no change */
+        }
+
+        /* Custom scrollbar for cyberpunk feel */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #00ff00;
+            border-radius: 10px;
+            box-shadow: 0 0 5px #00ff00;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00cc00;
+        }
+
+        .tab-button {
+            background-color: #333;
+            color: #00ff00;
+            padding: 10px 15px;
+            border-radius: 5px 5px 0 0;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .tab-button.active {
+            background-color: #1a1a1a;
+            border-bottom: 1px solid #1a1a1a;
+            box-shadow: none;
+        }
+
+        .tab-button:hover:not(.active) {
+            background-color: #2a2a2a;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="p-4 flex flex-col items-center min-h-screen">
+
+    <div class="container max-w-6xl w-full grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <div class="lg:col-span-1 cyber-panel p-6">
+            <h2 class="text-2xl font-bold mb-4 text-center text-white font-orbitron">Рынок Киберпанка</h2>
+            <div id="stock-list" class="space-y-4 max-h-96 overflow-y-auto">
+                </div>
+        </div>
+
+        <div class="lg:col-span-2 flex flex-col gap-6">
+            <div class="cyber-panel p-6 flex-grow">
+                <h2 id="selected-stock-name" class="text-2xl font-bold mb-4 text-center text-white font-orbitron">Выберите Акцию</h2>
+                <canvas id="stock-chart" class="chart-canvas w-full h-64 md:h-80"></canvas>
+
+                <div class="flex mt-4 mb-2">
+                    <button id="spot-tab-button" class="tab-button active">Спот</button>
+                    <button id="futures-tab-button" class="tab-button">Фьючерсы</button>
+                    <button id="limit-tab-button" class="tab-button">Отложенные ордера</button>
+                </div>
+
+                <div id="spot-trading-content" class="tab-content active">
+                    <div class="flex flex-col md:flex-row gap-4 mt-4 items-center">
+                        <div class="flex-grow">
+                            <label for="spot-quantity" class="block text-sm font-medium text-gray-300 mb-1">Количество:</label>
+                            <input type="number" id="spot-quantity" value="1" min="1" class="cyber-input w-full md:w-32">
+                        </div>
+                        <button id="buy-spot-button" class="cyber-button w-full md:w-auto">Купить Спот</button>
+                        <button id="sell-spot-button" class="cyber-button w-full md:w-auto">Продать Спот</button>
+                    </div>
+                </div>
+
+                <div id="futures-trading-content" class="tab-content">
+                    <div class="flex flex-col md:flex-row gap-4 mt-4 items-center">
+                        <div class="flex-grow">
+                            <label for="futures-quantity" class="block text-sm font-medium text-gray-300 mb-1">Количество:</label>
+                            <input type="number" id="futures-quantity" value="1" min="1" class="cyber-input w-full md:w-32">
+                        </div>
+                        <div class="flex-grow">
+                            <label for="leverage" class="block text-sm font-medium text-gray-300 mb-1">Плечо (5x):</label>
+                            <input type="text" id="leverage" value="5x" disabled class="cyber-input w-full md:w-20 opacity-50">
+                        </div>
+                        <button id="buy-futures-button" class="cyber-button w-full md:w-auto bg-blue-600 hover:bg-blue-700">Лонг Фьючерс</button>
+                        <button id="sell-futures-button" class="cyber-button w-full md:w-auto bg-red-600 hover:bg-red-700">Шорт Фьючерс</button>
+                    </div>
+                    <div id="futures-portfolio-list" class="space-y-2 mt-4 text-sm">
+                        <h4 class="text-lg font-bold text-white mt-4">Открытые Фьючерсные Позиции:</h4>
+                        <p class="text-center text-gray-500">Нет открытых фьючерсных позиций.</p>
+                    </div>
+                </div>
+
+                <div id="limit-trading-content" class="tab-content">
+                    <div class="flex flex-col md:flex-row gap-4 mt-4 items-center">
+                        <div class="flex-grow">
+                            <label for="limit-quantity" class="block text-sm font-medium text-gray-300 mb-1">Количество:</label>
+                            <input type="number" id="limit-quantity" value="1" min="1" class="cyber-input w-full md:w-32">
+                        </div>
+                        <div class="flex-grow">
+                            <label for="limit-price" class="block text-sm font-medium text-gray-300 mb-1">Целевая цена:</label>
+                            <input type="number" id="limit-price" value="" min="0.01" step="0.01" class="cyber-input w-full md:w-32">
+                        </div>
+                        <select id="limit-type" class="cyber-input w-full md:w-32">
+                            <option value="buy">Купить</option>
+                            <option value="sell">Продать</option>
+                        </select>
+                        <button id="place-limit-order-button" class="cyber-button w-full md:w-auto">Разместить ордер</button>
+                    </div>
+                    <div id="pending-orders-list" class="space-y-2 mt-4 text-sm">
+                        <h4 class="text-lg font-bold text-white mt-4">Активные Отложенные Ордера:</h4>
+                        <p class="text-center text-gray-500">Нет активных отложенных ордеров.</p>
+                    </div>
+                </div>
+
+                <p id="message-box" class="mt-4 text-center text-sm positive"></p>
+            </div>
+        </div>
+
+        <div class="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="cyber-panel p-6">
+                <h2 class="text-2xl font-bold mb-4 text-center text-white font-orbitron">Ваш Портфель</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="p-4 bg-gray-900 border border-gray-700 rounded-lg shadow-inner">
+                        <p class="text-gray-400 text-sm">Наличные:</p>
+                        <p id="player-cash" class="text-xl font-bold text-white">$10,000.00</p>
+                    </div>
+                    <div class="p-4 bg-gray-900 border border-gray-700 rounded-lg shadow-inner">
+                        <p class="text-gray-400 text-sm">Общая прибыль/убыток:</p>
+                        <p id="total-profit-loss" class="text-xl font-bold text-white">$0.00 (0.00%)</p>
+                    </div>
+                </div>
+                <div id="portfolio-list" class="space-y-4 max-h-96 overflow-y-auto">
+                    <p class="text-center text-gray-500">Ваш портфель пуст.</p>
+                </div>
+            </div>
+
+            <div class="cyber-panel p-6">
+                <h2 class="text-2xl font-bold mb-4 text-center text-white font-orbitron">Экономические Новости</h2>
+                <div id="news-feed" class="space-y-2 text-sm max-h-96 overflow-y-auto">
+                    <p class="text-gray-400">Загрузка новостей...</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script type="module">
+        // Supabase configuration
+        const SUPABASE_URL = 'https://vnfswyztlwgkhkkmhhhs.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZuZnN3eXp0bHdna2hra21oaGhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc4Mjg0MzYsImV4cCI6MjA2MzQwNDQzNn0.jvs2X_61LZaZxcmDoSK9ZRnHo-S2wblifiV4Vogdkyo';
+
+        // Initialize Supabase client
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Global variables for Firebase authentication compatibility (though using Supabase for data)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Firebase imports (still needed for authentication context)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // Initialize Firebase Auth (for userId)
+        let firebaseApp;
+        let auth;
+        let userId;
+        let isAuthReady = false; // Flag to ensure auth is ready before data operations
+
+        // Game state
+        const TRANSACTION_COMMISSION = 0.00004; // 0.004%
+        const LEVERAGE = 5; // Futures leverage
+        const LIQUIDATION_THRESHOLD_PERCENT = 0.7; // 70% of initial margin
+
+        let playerCash = 10000;
+        let playerPortfolio = []; // { symbol: 'ARSK', shares: 10, purchasePrice: 150.00 }
+        let futuresPositions = []; // { symbol: 'ARSK', type: 'long'/'short', shares: 10, entryPrice: 150.00, margin: 300.00 }
+        let pendingOrders = []; // { id: 'uuid', symbol: 'ARSK', type: 'buy'/'sell', targetPrice: 160.00, quantity: 5, orderType: 'limit', reservedShares: 0 }
+
+        // Initial stock data (used if global_market_data is empty)
+        const initialStocks = [
+            { name: 'Arasaka', symbol: 'ARSK', currentPrice: 150.00, history: [], initialPrice: 150.00, trend: 0 },
+            { name: 'Militech', symbol: 'MLTC', currentPrice: 90.00, history: [], initialPrice: 90.00, trend: 0 },
+            { name: 'Kang Tao', symbol: 'KGT', currentPrice: 210.00, history: [], initialPrice: 210.00, trend: 0 },
+            { name: 'Biotechnica', symbol: 'BTCH', currentPrice: 75.00, history: [], initialPrice: 75.00, trend: 0 },
+            { name: 'Trauma Team', symbol: 'TRMA', currentPrice: 300.00, history: [], initialPrice: 300.00, trend: 0 }
+        ];
+        let stocks = []; // This will be populated from global_market_data
+        const MAX_HISTORY_POINTS = 50; // Number of points to keep in history for charts
+        let selectedStock = null;
+
+        // DOM elements
+        const stockListDiv = document.getElementById('stock-list');
+        const selectedStockNameElem = document.getElementById('selected-stock-name');
+        const stockChartCanvas = document.getElementById('stock-chart');
+        const playerCashElem = document.getElementById('player-cash');
+        const totalProfitLossElem = document.getElementById('total-profit-loss');
+        const portfolioListDiv = document.getElementById('portfolio-list');
+        const messageBox = document.getElementById('message-box');
+        const newsFeedDiv = document.getElementById('news-feed');
+        const ctx = stockChartCanvas.getContext('2d');
+
+        // Trading interface elements
+        const spotTabButton = document.getElementById('spot-tab-button');
+        const futuresTabButton = document.getElementById('futures-tab-button');
+        const limitTabButton = document.getElementById('limit-tab-button');
+
+        const spotTradingContent = document.getElementById('spot-trading-content');
+        const futuresTradingContent = document.getElementById('futures-trading-content');
+        const limitTradingContent = document.getElementById('limit-trading-content');
+
+        const spotQuantityInput = document.getElementById('spot-quantity');
+        const buySpotButton = document.getElementById('buy-spot-button');
+        const sellSpotButton = document.getElementById('sell-spot-button');
+
+        const futuresQuantityInput = document.getElementById('futures-quantity');
+        const buyFuturesButton = document.getElementById('buy-futures-button');
+        const sellFuturesButton = document.getElementById('sell-futures-button');
+        const futuresPortfolioListDiv = document.getElementById('futures-portfolio-list');
+
+        const limitQuantityInput = document.getElementById('limit-quantity');
+        const limitPriceInput = document.getElementById('limit-price');
+        const limitTypeSelect = document.getElementById('limit-type');
+        const placeLimitOrderButton = document.getElementById('place-limit-order-button');
+        const pendingOrdersListDiv = document.getElementById('pending-orders-list');
+
+        // --- Firebase (Auth) Initialization ---
+        const initializeAuth = async () => {
+            try {
+                firebaseApp = initializeApp(JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}'));
+                auth = getAuth(firebaseApp);
+
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        console.log("Firebase Auth initialized. User ID:", userId);
+                    } else {
+                        userId = crypto.randomUUID(); // Fallback for anonymous user
+                        console.log("Firebase Auth initialized. Anonymous User ID:", userId);
+                    }
+                    isAuthReady = true;
+                    loadGameState(); // Load game state once auth is ready
+                });
+            } catch (error) {
+                console.error("Error initializing Firebase Auth:", error);
+                userId = crypto.randomUUID(); // Ensure userId is set even on error
+                isAuthReady = true;
+                loadGameState(); // Attempt to load state even if auth failed
+            }
+        };
+
+        // --- Supabase Operations ---
+        const saveGameState = async () => {
+            if (!isAuthReady || !userId) {
+                console.warn("Auth not ready or User ID not available. Cannot save game state.");
+                return;
+            }
+            try {
+                // Save player cash to cabinet_accounts
+                // Based on provided schema, 'id' is PK and 'terminal_id' is NOT NULL.
+                // Assuming 'id' in cabinet_accounts is our userId and 'terminal_id' can also be userId for this context.
+                // Also assuming 'finances' column is used for balance, as per provided schema.
+                const { error: balanceError } = await supabaseClient
+                    .from('cabinet_accounts')
+                    .upsert({ id: userId, terminal_id: userId, finances: playerCash.toFixed(2) }, { onConflict: 'id' });
+
+                if (balanceError) {
+                    console.error("Error saving balance to Supabase:", balanceError);
+                    return;
+                }
+
+                // Save other player-specific game data to game_states
+                const playerGameData = {
+                    playerPortfolio: playerPortfolio,
+                    futuresPositions: futuresPositions,
+                    pendingOrders: pendingOrders
+                };
+
+                // Use 'user_id' as the primary key for game_states, as per error message and your tables info
+                const { error: playerGameDataError } = await supabaseClient
+                    .from('game_states')
+                    .upsert({ user_id: userId, game_data: playerGameData }, { onConflict: 'user_id' });
+
+                if (playerGameDataError) {
+                    console.error("Error saving player game data to Supabase:", playerGameDataError);
+                    return;
+                }
+
+                // Save global stock data to global_market_data
+                // Note: In a real-world scenario, this update should ideally be handled by a single server process
+                // to avoid race conditions if multiple clients try to update simultaneously.
+                // For this simulator, last write wins.
+                const { error: globalMarketDataError } = await supabaseClient
+                    .from('global_market_data')
+                    .upsert({ id: 'market_data', stocks_data: stocks, last_news: newsFeedDiv.firstChild ? newsFeedDiv.firstChild.textContent : 'No news' }, { onConflict: 'id' });
+
+                if (globalMarketDataError) {
+                    console.error("Error saving global market data to Supabase:", globalMarketDataError);
+                    return;
+                }
+                // console.log("Game state saved to Supabase.");
+            } catch (e) {
+                console.error("Error in saveGameState:", e);
+            }
+        };
+
+        const loadGameState = async () => {
+            if (!isAuthReady || !userId) {
+                console.warn("Auth not ready or User ID not available. Cannot load game state.");
+                return;
+            }
+            try {
+                // Load player cash
+                // Based on provided schema, 'id' is PK and 'terminal_id' is NOT NULL.
+                // Assuming 'id' in cabinet_accounts is our userId.
+                // Also assuming 'finances' column is used for balance, as per provided schema.
+                const { data: balanceData, error: balanceError } = await supabaseClient
+                    .from('cabinet_accounts')
+                    .select('finances') // Select 'finances' column
+                    .eq('id', userId) // Query by 'id'
+                    .single();
+
+                if (balanceError && balanceError.code !== 'PGRST116') { // PGRST116 means "no rows found"
+                    console.error("Error loading balance from Supabase:", balanceError);
+                } else if (balanceData) {
+                    playerCash = parseFloat(balanceData.finances); // Parse from 'finances'
+                    console.log("Player cash loaded:", playerCash);
+                } else {
+                    // If no balance found, create initial balance
+                    const { error: insertError } = await supabaseClient
+                        .from('cabinet_accounts')
+                        .insert({ id: userId, terminal_id: userId, finances: 10000.00 }); // Insert with 'id', 'terminal_id', and 'finances'
+                    if (insertError) {
+                        console.error("Error inserting initial balance:", insertError);
+                    }
+                    playerCash = 10000;
+                    console.log("Initial player cash set:", playerCash);
+                }
+
+                // Load player-specific game data
+                // Use 'user_id' as the primary key for game_states, as per error message and your tables info
+                const { data: playerGameDataRow, error: playerGameDataError } = await supabaseClient
+                    .from('game_states')
+                    .select('game_data')
+                    .eq('user_id', userId) // Query by 'user_id'
+                    .single();
+
+                if (playerGameDataError && playerGameDataError.code !== 'PGRST116') {
+                    console.error("Error loading player game data from Supabase:", playerGameDataError);
+                } else if (playerGameDataRow && playerGameDataRow.game_data) {
+                    const loadedData = playerGameDataRow.game_data;
+                    playerPortfolio = loadedData.playerPortfolio || [];
+                    futuresPositions = loadedData.futuresPositions || [];
+                    pendingOrders = loadedData.pendingOrders || [];
+                    console.log("Player-specific game state loaded from Supabase:", { playerPortfolio, futuresPositions, pendingOrders });
+                } else {
+                    console.log("No player-specific game state found. Starting new player data.");
+                }
+
+                // Load global market data
+                const { data: globalMarketDataRow, error: globalMarketDataError } = await supabaseClient
+                    .from('global_market_data')
+                    .select('stocks_data, last_news')
+                    .eq('id', 'market_data')
+                    .single();
+
+                if (globalMarketDataError && globalMarketDataError.code !== 'PGRST116') {
+                    console.error("Error loading global market data from Supabase:", globalMarketDataError);
+                    // Fallback to initialStocks if there's a loading error
+                    stocks = JSON.parse(JSON.stringify(initialStocks));
+                    console.log("Fallback to initialStocks due to global market data loading error:", stocks);
+                } else if (globalMarketDataRow && globalMarketDataRow.stocks_data && globalMarketDataRow.stocks_data.length > 0) {
+                    stocks = globalMarketDataRow.stocks_data;
+                    // Re-initialize history arrays as they are not persisted in full
+                    stocks.forEach(stock => {
+                        stock.history = []; // Clear history on load to start fresh for simulation
+                        // Ensure trend is initialized if not present (e.g., from older saves)
+                        if (typeof stock.trend === 'undefined') stock.trend = 0;
+                    });
+                    if (globalMarketDataRow.last_news) {
+                        newsFeedDiv.innerHTML = `<p class="text-gray-300 neutral">${globalMarketDataRow.last_news}</p>`;
+                    }
+                    console.log("Global market data loaded from Supabase:", stocks);
+                } else {
+                    console.log("No global market data found or it's empty. Initializing default stocks and saving.");
+                    stocks = JSON.parse(JSON.stringify(initialStocks)); // Deep copy initial stocks
+                    // Save initial global market data
+                    const { error: upsertError } = await supabaseClient
+                        .from('global_market_data')
+                        .upsert({ id: 'market_data', stocks_data: stocks, last_news: 'Рынок инициализирован.' }, { onConflict: 'id' });
+                    if (upsertError) {
+                        console.error("Error upserting initial global market data:", upsertError);
+                    }
+                    console.log("Initialized and saved default stocks:", stocks);
+                }
+
+                // Initialize selectedStock after stocks are loaded
+                if (stocks.length > 0 && !selectedStock) {
+                    selectedStock = stocks[0]; // Set default selected stock
+                    selectedStockNameElem.textContent = `${selectedStock.name} (${selectedStock.symbol})`;
+                    console.log("Selected initial stock:", selectedStock);
+                }
+
+                updateUI();
+                startSimulationLoop();
+                startNewsGeneration();
+            } catch (e) {
+                console.error("Error in loadGameState:", e);
+                // Fallback to default state if loading fails
+                playerCash = 10000;
+                playerPortfolio = [];
+                futuresPositions = [];
+                pendingOrders = [];
+                stocks = JSON.parse(JSON.stringify(initialStocks)); // Reset stocks to initial
+                stocks.forEach(s => { s.history = []; s.trend = 0; }); // Ensure history and trend are reset
+                if (stocks.length > 0) {
+                    selectedStock = stocks[0];
+                    selectedStockNameElem.textContent = `${selectedStock.name} (${selectedStock.symbol})`;
+                }
+                updateUI();
+                startSimulationLoop();
+                startNewsGeneration();
+            }
+        };
+
+        // --- Game Logic ---
+
+        // Function to simulate stock price movement
+        function updateStockPrices() {
+            stocks.forEach(stock => {
+                let change = (Math.random() - 0.5) * stock.currentPrice * 0.02; // Base random change (up to 2% of current price)
+
+                // Introduce trends (slow drift)
+                if (Math.random() < 0.1) { // 10% chance to introduce a trend bias
+                    stock.trend = (Math.random() - 0.5) * 0.01; // Small trend bias
+                }
+                change += stock.trend * stock.currentPrice; // Apply existing trend
+
+                // Volatility spikes (occasional larger changes)
+                if (Math.random() < 0.05) { // 5% chance for a volatility spike
+                    change *= (Math.random() * 3 + 1); // Multiply change by 1 to 4
+                }
+
+                // Pattern disruption: Occasionally reverse direction or make a significant jump/drop
+                if (Math.random() < 0.02) { // 2% chance to disrupt pattern
+                    change *= -1; // Reverse direction
+                    change *= (Math.random() * 5 + 2); // Make it a larger change
+                }
+
+                let newPrice = stock.currentPrice + change;
+
+                // Ensure price doesn't go below a reasonable minimum (e.g., 0.10)
+                if (newPrice < 0.10) {
+                    newPrice = 0.10 + Math.random() * 0.5; // Bounce back slightly above minimum
+                }
+
+                stock.currentPrice = parseFloat(newPrice.toFixed(2));
+                stock.history.push(stock.currentPrice);
+                if (stock.history.length > MAX_HISTORY_POINTS) {
+                    stock.history.shift(); // Remove oldest point
+                }
+            });
+
+            checkFuturesLiquidation();
+            checkPendingOrders();
+            saveGameState(); // Save state after price updates
+            updateUI();
+        }
+
+        // Function to draw the chart for the selected stock
+        function drawChart() {
+            if (!selectedStock) {
+                ctx.clearRect(0, 0, stockChartCanvas.width, stockChartCanvas.height);
+                return;
+            }
+
+            // Ensure selectedStock is up-to-date with global stocks data
+            const currentSelectedStock = stocks.find(s => s.symbol === selectedStock.symbol);
+            if (!currentSelectedStock) {
+                ctx.clearRect(0, 0, stockChartCanvas.width, stockChartCanvas.height);
+                return;
+            }
+            const history = currentSelectedStock.history; // Use history from the global stock object
+
+            if (history.length < 2) {
+                ctx.clearRect(0, 0, stockChartCanvas.width, stockChartCanvas.height);
+                return;
+            }
+
+            // Adjust canvas resolution for better quality on high-DPI screens
+            const dpr = window.devicePixelRatio || 1;
+            const rect = stockChartCanvas.getBoundingClientRect();
+            stockChartCanvas.width = rect.width * dpr;
+            stockChartCanvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+
+            ctx.clearRect(0, 0, rect.width, rect.height);
+
+            // Chart styling
+            ctx.strokeStyle = '#00ff00'; // Neon green line
+            ctx.lineWidth = 2;
+            ctx.shadowColor = '#00ff00';
+            ctx.shadowBlur = 10;
+
+            // Find min/max values for scaling
+            const minPrice = Math.min(...history);
+            const maxPrice = Math.max(...history);
+            const priceRange = maxPrice - minPrice;
+
+            // Padding
+            const padding = 20;
+            const chartWidth = rect.width - (2 * padding);
+            const chartHeight = rect.height - (2 * padding);
+
+            ctx.beginPath();
+            for (let i = 0; i < history.length; i++) {
+                const x = padding + (i / (MAX_HISTORY_POINTS - 1)) * chartWidth;
+                const y = padding + chartHeight - ((history[i] - minPrice) / priceRange) * chartHeight;
+
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.stroke();
+
+            // Draw current price point
+            if (history.length > 0) {
+                const lastPrice = history[history.length - 1];
+                const x = padding + ((history.length - 1) / (MAX_HISTORY_POINTS - 1)) * chartWidth;
+                const y = padding + chartHeight - ((lastPrice - minPrice) / priceRange) * chartHeight;
+
+                ctx.fillStyle = '#ff00ff'; // Magenta for current price dot
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0; // Reset shadow for text
+
+                ctx.font = '14px "Inter", sans-serif';
+                ctx.fillStyle = '#ffffff';
+                ctx.textAlign = 'right';
+                ctx.fillText(`$${lastPrice.toFixed(2)}`, x + 50, y - 10);
+            }
+        }
+
+        // --- UI Update Functions ---
+
+        function updateUI() {
+            console.log("Rendering stock list. Current stocks:", stocks); // Added console log
+            renderStockList();
+            renderPortfolio();
+            renderFuturesPortfolio();
+            renderPendingOrders();
+            drawChart();
+            playerCashElem.textContent = `$${playerCash.toFixed(2)}`;
+            updateTotalProfitLoss();
+        }
+
+        function renderStockList() {
+            stockListDiv.innerHTML = '';
+            if (stocks.length === 0) {
+                stockListDiv.innerHTML = '<p class="text-center text-gray-500">Загрузка акций...</p>';
+                return;
+            }
+            stocks.forEach(stock => {
+                const prevPrice = stock.history.length > 1 ? stock.history[stock.history.length - 2] : stock.initialPrice;
+                const priceChange = stock.currentPrice - prevPrice;
+                const percentageChange = (priceChange / prevPrice) * 100;
+
+                let changeClass = 'neutral';
+                if (priceChange > 0) {
+                    changeClass = 'positive';
+                } else if (priceChange < 0) {
+                    changeClass = 'negative';
+                }
+
+                const stockItem = document.createElement('div');
+                stockItem.className = `cyber-panel p-4 flex justify-between items-center cursor-pointer hover:bg-gray-800 transition-colors duration-200 ${selectedStock && selectedStock.symbol === stock.symbol ? 'border-2 border-purple-500 shadow-lg' : ''}`;
+                stockItem.innerHTML = `
+                    <div>
+                        <h3 class="text-xl font-bold text-white">${stock.name} (${stock.symbol})</h3>
+                        <p class="text-gray-400">Цена: <span class="text-white">$${stock.currentPrice.toFixed(2)}</span></p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm ${changeClass}">${priceChange > 0 ? '+' : ''}${priceChange.toFixed(2)}</p>
+                        <p class="text-sm ${changeClass}">${percentageChange > 0 ? '+' : ''}${percentageChange.toFixed(2)}%</p>
+                    </div>
+                `;
+                stockItem.addEventListener('click', () => {
+                    selectedStock = stock;
+                    selectedStockNameElem.textContent = `${stock.name} (${stock.symbol})`;
+                    updateUI();
+                });
+                stockListDiv.appendChild(stockItem);
+            });
+        }
+
+        function renderPortfolio() {
+            portfolioListDiv.innerHTML = '';
+            if (playerPortfolio.length === 0) {
+                portfolioListDiv.innerHTML = '<p class="text-center text-gray-500">Ваш спотовый портфель пуст.</p>';
+                return;
+            }
+
+            playerPortfolio.forEach(holding => {
+                const currentStock = stocks.find(s => s.symbol === holding.symbol);
+                if (!currentStock) return; // Should not happen
+
+                const currentValue = currentStock.currentPrice * holding.shares;
+                const purchaseValue = holding.purchasePrice * holding.shares;
+                const profitLoss = currentValue - purchaseValue;
+                const profitLossPercentage = (profitLoss / purchaseValue) * 100;
+
+                let profitLossClass = 'neutral';
+                if (profitLoss > 0) {
+                    profitLossClass = 'positive';
+                } else if (profitLoss < 0) {
+                    profitLossClass = 'negative';
+                }
+
+                const portfolioItem = document.createElement('div');
+                portfolioItem.className = 'cyber-panel p-4 flex justify-between items-center';
+                portfolioItem.innerHTML = `
+                    <div>
+                        <h3 class="text-xl font-bold text-white">${currentStock.name} (${holding.symbol})</h3>
+                        <p class="text-gray-400">Акций: <span class="text-white">${holding.shares}</span></p>
+                        <p class="text-gray-400">Цена покупки: <span class="text-white">$${holding.purchasePrice.toFixed(2)}</span></p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-gray-400">Текущая цена: <span class="text-white">$${currentStock.currentPrice.toFixed(2)}</span></p>
+                        <p class="text-gray-400">Прибыль/Убыток: <span class="${profitLossClass}">${profitLoss > 0 ? '+' : ''}${profitLoss.toFixed(2)} (${profitLossPercentage > 0 ? '+' : ''}${profitLossPercentage.toFixed(2)}%)</span></p>
+                    </div>
+                `;
+                portfolioListDiv.appendChild(portfolioItem);
+            });
+        }
+
+        function renderFuturesPortfolio() {
+            futuresPortfolioListDiv.innerHTML = '';
+            if (futuresPositions.length === 0) {
+                futuresPortfolioListDiv.innerHTML = '<p class="text-center text-gray-500">Нет открытых фьючерсных позиций.</p>';
+                return;
+            }
+
+            futuresPositions.forEach((position, index) => {
+                const currentStock = stocks.find(s => s.symbol === position.symbol);
+                if (!currentStock) return;
+
+                let profitLoss = 0;
+                if (position.type === 'long') {
+                    profitLoss = (currentStock.currentPrice - position.entryPrice) * position.shares * LEVERAGE;
+                } else { // short
+                    profitLoss = (position.entryPrice - currentStock.currentPrice) * position.shares * LEVERAGE;
+                }
+
+                const currentMargin = position.margin + profitLoss;
+                const liquidationPrice = calculateLiquidationPrice(position, currentStock.currentPrice);
+
+                let profitLossClass = 'neutral';
+                if (profitLoss > 0) {
+                    profitLossClass = 'positive';
+                } else if (profitLoss < 0) {
+                    profitLossClass = 'negative';
+                }
+
+                const positionItem = document.createElement('div');
+                positionItem.className = 'cyber-panel p-4 flex justify-between items-center';
+                positionItem.innerHTML = `
+                    <div>
+                        <h3 class="text-xl font-bold text-white">${currentStock.name} (${position.symbol}) - ${position.type === 'long' ? 'Лонг' : 'Шорт'}</h3>
+                        <p class="text-gray-400">Акций: <span class="text-white">${position.shares}</span></p>
+                        <p class="text-gray-400">Цена входа: <span class="text-white">$${position.entryPrice.toFixed(2)}</span></p>
+                        <p class="text-gray-400">Текущая цена: <span class="text-white">$${currentStock.currentPrice.toFixed(2)}</span></p>
+                        <p class="text-gray-400">Маржа: <span class="text-white">$${currentMargin.toFixed(2)}</span></p>
+                        <p class="text-gray-400">Цена ликвидации: <span class="text-white">$${liquidationPrice.toFixed(2)}</span></p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-gray-400">Прибыль/Убыток: <span class="${profitLossClass}">${profitLoss > 0 ? '+' : ''}${profitLoss.toFixed(2)}</span></p>
+                        <button class="cyber-button text-sm px-3 py-1 mt-2 bg-red-800 hover:bg-red-900" data-index="${index}" data-type="futures-close">Закрыть</button>
+                    </div>
+                `;
+                futuresPortfolioListDiv.appendChild(positionItem);
+            });
+
+            // Add event listeners for close buttons
+            futuresPortfolioListDiv.querySelectorAll('[data-type="futures-close"]').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const index = parseInt(event.target.dataset.index);
+                    closeFuturesPosition(index);
+                });
+            });
+        }
+
+        function renderPendingOrders() {
+            pendingOrdersListDiv.innerHTML = '';
+            if (pendingOrders.length === 0) {
+                pendingOrdersListDiv.innerHTML = '<p class="text-center text-gray-500">Нет активных отложенных ордеров.</p>';
+                return;
+            }
+
+            pendingOrders.forEach((order, index) => {
+                const currentStock = stocks.find(s => s.symbol === order.symbol);
+                if (!currentStock) return;
+
+                const orderItem = document.createElement('div');
+                orderItem.className = 'cyber-panel p-4 flex justify-between items-center';
+                orderItem.innerHTML = `
+                    <div>
+                        <h3 class="text-xl font-bold text-white">${currentStock.name} (${order.symbol}) - ${order.type === 'buy' ? 'Покупка' : 'Продажа'}</h3>
+                        <p class="text-gray-400">Количество: <span class="text-white">${order.quantity}</span></p>
+                        <p class="text-gray-400">Целевая цена: <span class="text-white">$${order.targetPrice.toFixed(2)}</span></p>
+                        <p class="text-gray-400">Тип ордера: <span class="text-white">${order.orderType === 'limit' ? 'Лимит' : 'Стоп'}</span></p>
+                        ${order.type === 'sell' && order.reservedShares > 0 ? `<p class="text-gray-400">Зарезервировано: <span class="text-white">${order.reservedShares}</span></p>` : ''}
+                    </div>
+                    <div class="text-right">
+                        <p class="text-gray-400">Текущая цена: <span class="text-white">$${currentStock.currentPrice.toFixed(2)}</span></p>
+                        <button class="cyber-button text-sm px-3 py-1 mt-2 bg-gray-600 hover:bg-gray-700" data-index="${index}" data-type="cancel-order">Отменить</button>
+                    </div>
+                `;
+                pendingOrdersListDiv.appendChild(orderItem);
+            });
+
+            // Add event listeners for cancel buttons
+            pendingOrdersListDiv.querySelectorAll('[data-type="cancel-order"]').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const index = parseInt(event.target.dataset.index);
+                    cancelPendingOrder(index);
+                });
+            });
+        }
+
+        function updateTotalProfitLoss() {
+            let totalInitialSpotValue = 0;
+            let totalCurrentSpotValue = 0;
+            let totalFuturesProfitLoss = 0;
+
+            playerPortfolio.forEach(holding => {
+                const currentStock = stocks.find(s => s.symbol === holding.symbol);
+                if (currentStock) {
+                    totalInitialSpotValue += holding.purchasePrice * holding.shares;
+                    totalCurrentSpotValue += currentStock.currentPrice * holding.shares;
+                }
+            });
+
+            futuresPositions.forEach(position => {
+                const currentStock = stocks.find(s => s.symbol === position.symbol);
+                if (currentStock) {
+                    if (position.type === 'long') {
+                        totalFuturesProfitLoss += (currentStock.currentPrice - position.entryPrice) * position.shares * LEVERAGE;
+                    } else { // short
+                        totalFuturesProfitLoss += (position.entryPrice - currentStock.currentPrice) * position.shares * LEVERAGE;
+                    }
+                }
+            });
+
+            const overallProfitLoss = (totalCurrentSpotValue - totalInitialSpotValue) + totalFuturesProfitLoss;
+            let overallProfitLossPercentage = 0;
+            if (totalInitialSpotValue > 0) {
+                overallProfitLossPercentage = (overallProfitLoss / totalInitialSpotValue) * 100;
+            } else if (totalFuturesProfitLoss !== 0) {
+                // If no spot positions, calculate percentage based on futures profit/loss relative to initial cash
+                overallProfitLossPercentage = (overallProfitLoss / 10000) * 100; // Assuming initial cash is 10000
+            }
+
+
+            let profitLossClass = 'neutral';
+            if (overallProfitLoss > 0) {
+                profitLossClass = 'positive';
+            } else if (overallProfitLoss < 0) {
+                profitLossClass = 'negative';
+            }
+
+            totalProfitLossElem.className = `text-xl font-bold ${profitLossClass}`;
+            totalProfitLossElem.textContent = `$${overallProfitLoss.toFixed(2)} (${overallProfitLossPercentage.toFixed(2)}%)`;
+        }
+
+        // --- Trading Functions ---
+
+        function showMessage(msg, type = 'positive') {
+            messageBox.textContent = msg;
+            messageBox.className = `mt-4 text-center text-sm ${type}`;
+            setTimeout(() => {
+                messageBox.textContent = '';
+            }, 3000); // Clear message after 3 seconds
+        }
+
+        // Spot Trading
+        buySpotButton.addEventListener('click', () => {
+            if (!selectedStock) {
+                showMessage('Выберите акцию для покупки.', 'negative');
+                return;
+            }
+            const quantity = parseInt(spotQuantityInput.value);
+            if (isNaN(quantity) || quantity <= 0) {
+                showMessage('Введите действительное количество.', 'negative');
+                return;
+            }
+
+            const cost = selectedStock.currentPrice * quantity;
+            const commission = cost * TRANSACTION_COMMISSION;
+            const totalCost = cost + commission;
+
+            if (playerCash >= totalCost) {
+                playerCash -= totalCost;
+                const existingHolding = playerPortfolio.find(h => h.symbol === selectedStock.symbol);
+
+                if (existingHolding) {
+                    const totalShares = existingHolding.shares + quantity;
+                    existingHolding.purchasePrice = ((existingHolding.purchasePrice * existingHolding.shares) + cost) / totalShares;
+                    existingHolding.shares = totalShares;
+                } else {
+                    playerPortfolio.push({
+                        symbol: selectedStock.symbol,
+                        shares: quantity,
+                        purchasePrice: selectedStock.currentPrice
+                    });
+                }
+                showMessage(`Вы купили ${quantity} акций ${selectedStock.name} за $${cost.toFixed(2)} (комиссия: $${commission.toFixed(2)}).`, 'positive');
+                saveGameState();
+                updateUI();
+            } else {
+                showMessage('Недостаточно наличных.', 'negative');
+            }
+        });
+
+        sellSpotButton.addEventListener('click', () => {
+            if (!selectedStock) {
+                showMessage('Выберите акцию для продажи.', 'negative');
+                return;
+            }
+            const quantity = parseInt(spotQuantityInput.value);
+            if (isNaN(quantity) || quantity <= 0) {
+                showMessage('Введите действительное количество.', 'negative');
+                return;
+            }
+
+            const existingHoldingIndex = playerPortfolio.findIndex(h => h.symbol === selectedStock.symbol);
+
+            if (existingHoldingIndex !== -1) {
+                const existingHolding = playerPortfolio[existingHoldingIndex];
+                if (existingHolding.shares >= quantity) {
+                    const revenue = selectedStock.currentPrice * quantity;
+                    const commission = revenue * TRANSACTION_COMMISSION;
+                    const netRevenue = revenue - commission;
+
+                    playerCash += netRevenue;
+                    existingHolding.shares -= quantity;
+
+                    if (existingHolding.shares === 0) {
+                        playerPortfolio.splice(existingHoldingIndex, 1); // Remove if no shares left
+                    }
+                    showMessage(`Вы продали ${quantity} акций ${selectedStock.name} за $${revenue.toFixed(2)} (комиссия: $${commission.toFixed(2)}).`, 'positive');
+                    saveGameState();
+                    updateUI();
+                } else {
+                    showMessage(`У вас только ${existingHolding.shares} акций ${selectedStock.name}.`, 'negative');
+                }
+            } else {
+                showMessage('У вас нет акций этой компании.', 'negative');
+            }
+        });
+
+        // Futures Trading
+        buyFuturesButton.addEventListener('click', () => {
+            if (!selectedStock) {
+                showMessage('Выберите акцию для открытия фьючерсной позиции.', 'negative');
+                return;
+            }
+            const quantity = parseInt(futuresQuantityInput.value);
+            if (isNaN(quantity) || quantity <= 0) {
+                showMessage('Введите действительное количество.', 'negative');
+                return;
+            }
+
+            const totalValue = selectedStock.currentPrice * quantity * LEVERAGE;
+            const initialMargin = totalValue / LEVERAGE; // Margin is 1/LEVERAGE of total value
+            const commission = initialMargin * TRANSACTION_COMMISSION; // Commission on margin
+
+            if (playerCash >= (initialMargin + commission)) {
+                playerCash -= (initialMargin + commission);
+                futuresPositions.push({
+                    symbol: selectedStock.symbol,
+                    type: 'long',
+                    shares: quantity,
+                    entryPrice: selectedStock.currentPrice,
+                    margin: initialMargin
+                });
+                showMessage(`Открыта лонг-позиция по ${selectedStock.name} (${quantity} акций) с маржой $${initialMargin.toFixed(2)} (комиссия: $${commission.toFixed(2)}).`, 'positive');
+                saveGameState();
+                updateUI();
+            } else {
+                showMessage(`Недостаточно наличных для маржи ($${initialMargin.toFixed(2)}) и комиссии.`, 'negative');
+            }
+        });
+
+        sellFuturesButton.addEventListener('click', () => {
+            if (!selectedStock) {
+                showMessage('Выберите акцию для открытия фьючерсной позиции.', 'negative');
+                return;
+            }
+            const quantity = parseInt(futuresQuantityInput.value);
+            if (isNaN(quantity) || quantity <= 0) {
+                showMessage('Введите действительное количество.', 'negative');
+                return;
+            }
+
+            const totalValue = selectedStock.currentPrice * quantity * LEVERAGE;
+            const initialMargin = totalValue / LEVERAGE; // Margin is 1/LEVERAGE of total value
+            const commission = initialMargin * TRANSACTION_COMMISSION; // Commission on margin
+
+            if (playerCash >= (initialMargin + commission)) {
+                playerCash -= (initialMargin + commission);
+                futuresPositions.push({
+                    symbol: selectedStock.symbol,
+                    type: 'short',
+                    shares: quantity,
+                    entryPrice: selectedStock.currentPrice,
+                    margin: initialMargin
+                });
+                showMessage(`Открыта шорт-позиция по ${selectedStock.name} (${quantity} акций) с маржой $${initialMargin.toFixed(2)} (комиссия: $${commission.toFixed(2)}).`, 'positive');
+                saveGameState();
+                updateUI();
+            } else {
+                showMessage(`Недостаточно наличных для маржи ($${initialMargin.toFixed(2)}) и комиссии.`, 'negative');
+            }
+        });
+
+        function closeFuturesPosition(index) {
+            const position = futuresPositions[index];
+            if (!position) return;
+
+            const currentStock = stocks.find(s => s.symbol === position.symbol);
+            if (!currentStock) {
+                showMessage('Ошибка: Акция для фьючерсной позиции не найдена.', 'negative');
+                return;
+            }
+
+            let profitLoss = 0;
+            if (position.type === 'long') {
+                profitLoss = (currentStock.currentPrice - position.entryPrice) * position.shares * LEVERAGE;
+            } else { // short
+                profitLoss = (position.entryPrice - currentStock.currentPrice) * position.shares * LEVERAGE;
+            }
+
+            playerCash += (position.margin + profitLoss); // Return margin + profit/loss
+            futuresPositions.splice(index, 1); // Remove position
+
+            showMessage(`Фьючерсная позиция по ${position.symbol} закрыта. Прибыль/убыток: $${profitLoss.toFixed(2)}.`, profitLoss >= 0 ? 'positive' : 'negative');
+            saveGameState();
+            updateUI();
+        }
+
+        function calculateLiquidationPrice(position, currentPrice) {
+            const initialMargin = position.margin;
+            const liqMarginLevel = initialMargin * LIQUIDATION_THRESHOLD_PERCENT;
+
+            if (position.type === 'long') {
+                // Price drops, margin decreases. Liquidation when current margin <= liqMarginLevel
+                // initialMargin + (currentPrice - entryPrice) * shares * LEVERAGE = liqMarginLevel
+                // (currentPrice - entryPrice) * shares * LEVERAGE = liqMarginLevel - initialMargin
+                // currentPrice - entryPrice = (liqMarginLevel - initialMargin) / (shares * LEVERAGE)
+                // currentPrice = entryPrice + (liqMarginLevel - initialMargin) / (shares * LEVERAGE)
+                return position.entryPrice + (liqMarginLevel - initialMargin) / (position.shares * LEVERAGE);
+            } else { // short
+                // Price rises, margin decreases. Liquidation when current margin <= liqMarginLevel
+                // initialMargin + (entryPrice - currentPrice) * shares * LEVERAGE = liqMarginLevel
+                // (entryPrice - currentPrice) * shares * LEVERAGE = liqMarginLevel - initialMargin
+                // entryPrice - currentPrice = (liqMarginLevel - initialMargin) / (shares * LEVERAGE)
+                // currentPrice = entryPrice - (liqMarginLevel - initialMargin) / (shares * LEVERAGE)
+                return position.entryPrice - (liqMarginLevel - initialMargin) / (position.shares * LEVERAGE);
+            }
+        }
+
+        function checkFuturesLiquidation() {
+            for (let i = futuresPositions.length - 1; i >= 0; i--) {
+                const position = futuresPositions[i];
+                const currentStock = stocks.find(s => s.symbol === position.symbol);
+                if (!currentStock) continue;
+
+                let currentProfitLoss = 0;
+                if (position.type === 'long') {
+                    currentProfitLoss = (currentStock.currentPrice - position.entryPrice) * position.shares * LEVERAGE;
+                } else { // short
+                    currentProfitLoss = (position.entryPrice - currentStock.currentPrice) * position.shares * LEVERAGE;
+                }
+                const currentMargin = position.margin + currentProfitLoss;
+
+                if (currentMargin <= (position.margin * LIQUIDATION_THRESHOLD_PERCENT)) {
+                    const loss = position.margin - currentMargin; // How much was lost from initial margin
+                    playerCash -= loss; // Deduct the lost margin from player cash
+                    futuresPositions.splice(i, 1); // Remove liquidated position
+                    showMessage(`Фьючерсная позиция по ${position.symbol} ликвидирована! Убыток: $${loss.toFixed(2)}.`, 'negative');
+                }
+            }
+        }
+
+        // Limit Orders
+        placeLimitOrderButton.addEventListener('click', () => {
+            if (!selectedStock) {
+                showMessage('Выберите акцию для размещения ордера.', 'negative');
+                return;
+            }
+            const quantity = parseInt(limitQuantityInput.value);
+            const targetPrice = parseFloat(limitPriceInput.value);
+            const type = limitTypeSelect.value;
+
+            if (isNaN(quantity) || quantity <= 0) {
+                showMessage('Введите действительное количество.', 'negative');
+                return;
+            }
+            if (isNaN(targetPrice) || targetPrice <= 0) {
+                showMessage('Введите действительную целевую цену.', 'negative');
+                return;
+            }
+
+            const orderCost = targetPrice * quantity;
+            const commission = orderCost * TRANSACTION_COMMISSION;
+
+            if (type === 'buy') {
+                if (playerCash < (orderCost + commission)) {
+                    showMessage('Недостаточно наличных для размещения этого лимитного ордера на покупку.', 'negative');
+                    return;
+                }
+                pendingOrders.push({
+                    id: crypto.randomUUID(), // Unique ID for the order
+                    symbol: selectedStock.symbol,
+                    type: type,
+                    targetPrice: targetPrice,
+                    quantity: quantity,
+                    orderType: 'limit',
+                    reservedShares: 0 // No reserved shares for buy orders
+                });
+            } else { // type === 'sell'
+                const existingHolding = playerPortfolio.find(h => h.symbol === selectedStock.symbol);
+                if (!existingHolding || existingHolding.shares < quantity) {
+                    showMessage('Недостаточно акций для размещения этого лимитного ордера на продажу.', 'negative');
+                    return;
+                }
+                // Reserve shares by reducing from playerPortfolio
+                existingHolding.shares -= quantity;
+                pendingOrders.push({
+                    id: crypto.randomUUID(),
+                    symbol: selectedStock.symbol,
+                    type: type,
+                    targetPrice: targetPrice,
+                    quantity: quantity,
+                    orderType: 'limit',
+                    reservedShares: quantity // Mark these shares as reserved
+                });
+            }
+            showMessage(`Отложенный ордер на ${type === 'buy' ? 'покупку' : 'продажу'} ${quantity} акций ${selectedStock.name} по $${targetPrice.toFixed(2)} размещен.`, 'positive');
+            saveGameState();
+            updateUI();
+        });
+
+        function cancelPendingOrder(index) {
+            if (index >= 0 && index < pendingOrders.length) {
+                const cancelledOrder = pendingOrders.splice(index, 1)[0]; // Get the removed order
+                // If it was a sell order with reserved shares, return them to portfolio
+                if (cancelledOrder.type === 'sell' && cancelledOrder.reservedShares > 0) {
+                    const existingHolding = playerPortfolio.find(h => h.symbol === cancelledOrder.symbol);
+                    if (existingHolding) {
+                        existingHolding.shares += cancelledOrder.reservedShares;
+                    } else {
+                        // This case should ideally not happen if shares were reserved correctly,
+                        // but as a fallback, add a new holding.
+                        playerPortfolio.push({
+                            symbol: cancelledOrder.symbol,
+                            shares: cancelledOrder.reservedShares,
+                            purchasePrice: 0 // These shares are being "returned", not bought at a new price
+                        });
+                    }
+                }
+                showMessage(`Отложенный ордер по ${cancelledOrder.symbol} отменен.`, 'neutral');
+                saveGameState();
+                updateUI();
+            }
+        }
+
+        function checkPendingOrders() {
+            for (let i = pendingOrders.length - 1; i >= 0; i--) {
+                const order = pendingOrders[i];
+                const currentStock = stocks.find(s => s.symbol === order.symbol);
+                if (!currentStock) continue;
+
+                let orderExecuted = false;
+                const transactionCost = order.targetPrice * order.quantity;
+                const commission = transactionCost * TRANSACTION_COMMISSION;
+
+                if (order.type === 'buy' && currentStock.currentPrice <= order.targetPrice) {
+                    if (playerCash >= (transactionCost + commission)) {
+                        playerCash -= (transactionCost + commission);
+                        const existingHolding = playerPortfolio.find(h => h.symbol === order.symbol);
+                        if (existingHolding) {
+                            const totalShares = existingHolding.shares + order.quantity;
+                            existingHolding.purchasePrice = ((existingHolding.purchasePrice * existingHolding.shares) + transactionCost) / totalShares;
+                            existingHolding.shares = totalShares;
+                        } else {
+                            playerPortfolio.push({
+                                symbol: order.symbol,
+                                shares: order.quantity,
+                                purchasePrice: order.targetPrice
+                            });
+                        }
+                        showMessage(`Лимитный ордер на покупку ${order.quantity} акций ${order.symbol} исполнен по $${order.targetPrice.toFixed(2)}!`, 'positive');
+                        orderExecuted = true;
+                    } else {
+                        // Not enough cash when order triggers - cancel it
+                        showMessage(`Недостаточно наличных для исполнения лимитного ордера на покупку ${order.symbol}. Ордер отменен.`, 'negative');
+                        orderExecuted = true; // Still remove the order
+                    }
+                } else if (order.type === 'sell' && currentStock.currentPrice >= order.targetPrice) {
+                    // For sell orders, shares were reserved when the order was placed
+                    if (order.reservedShares && order.reservedShares === order.quantity) {
+                        const revenue = order.targetPrice * order.quantity;
+                        const netRevenue = revenue - commission;
+                        playerCash += netRevenue;
+                        // Shares were already deducted from playerPortfolio when order was placed
+                        showMessage(`Лимитный ордер на продажу ${order.quantity} акций ${order.symbol} исполнен по $${order.targetPrice.toFixed(2)}!`, 'positive');
+                        orderExecuted = true;
+                    } else {
+                        // This order is problematic (shares not reserved or quantity mismatch), cancel it
+                        // This might happen if there was a bug or if the user somehow manipulated the state
+                        showMessage(`Ошибка в ордере на продажу ${order.symbol}. Ордер отменен.`, 'negative');
+                        orderExecuted = true;
+                    }
+                }
+
+                if (orderExecuted) {
+                    pendingOrders.splice(i, 1); // Remove executed or cancelled order
+                }
+            }
+        }
+
+
+        // --- News Generation ---
+        const newsHeadlines = [
+            { text: "Arasaka объявляет о рекордных прибылях в секторе кибернетики. Акции растут!", sentiment: 'positive' },
+            { text: "Militech представляет новое поколение боевых дронов. Ожидается рост цен.", sentiment: 'positive' },
+            { text: "Kang Tao сталкивается с задержками в производстве из-за хакерской атаки. Акции падают.", sentiment: 'negative' },
+            { text: "Biotechnica анонсирует прорыв в генной инженерии. Рынок реагирует позитивно.", sentiment: 'positive' },
+            { text: "Trauma Team расширяет покрытие в Ночном Городе. Стабильный рост.", sentiment: 'neutral' },
+            { text: "Глобальный экономический спад: Корпорации ожидают трудные времена. Общее падение рынка.", sentiment: 'negative' },
+            { text: "Новый ИИ-вирус распространяется по сетям. Технологические акции под давлением.", sentiment: 'negative' },
+            { text: "Прорыв в синтезе еды от неизвестного стартапа. Угроза для агро-корпораций.", sentiment: 'negative' },
+            { text: "Международный альянс заявляет о стабильности рынка. Ожидается боковое движение.", sentiment: 'neutral' },
+            { text: "Слухи о слиянии Arasaka и Kang Tao. Неопределенность на рынке.", sentiment: 'neutral' },
+            { text: "Массовые беспорядки в секторе 7. Акции Trauma Team резко растут.", sentiment: 'positive' },
+            { text: "Правительство ужесточает регулирование кибернетики. Акции Arasaka под давлением.", sentiment: 'negative' },
+            { text: "Новые контракты для Militech в пограничных конфликтах. Укрепление позиций.", sentiment: 'positive' },
+            { text: "Биотехнологический скандал с участием Biotechnica. Серьезное падение акций.", sentiment: 'negative' },
+            { text: "Открытие новых месторождений редкоземельных металлов. Позитивно для промышленности.", sentiment: 'positive' },
+            { text: "Крупная корпорация объявляет о дефолте. Эффект домино на рынке.", sentiment: 'negative' },
+            { text: "Внедрение нового протокола безопасности. Укрепление кибер-акций.", sentiment: 'positive' },
+            { text: "Протесты против корпоративного контроля. Негативное влияние на все секторы.", sentiment: 'negative' }
+        ];
+
+        function generateNews() {
+            const randomIndex = Math.floor(Math.random() * newsHeadlines.length);
+            const news = newsHeadlines[randomIndex];
+
+            const newsItem = document.createElement('p');
+            newsItem.className = `text-gray-300 ${news.sentiment === 'positive' ? 'positive' : news.sentiment === 'negative' ? 'negative' : 'neutral'}`;
+            newsItem.textContent = `[${new Date().toLocaleTimeString()}] ${news.text}`;
+
+            // Add to top of news feed
+            if (newsFeedDiv.firstChild) {
+                newsFeedDiv.insertBefore(newsItem, newsFeedDiv.firstChild);
+            } else {
+                newsFeedDiv.appendChild(newsItem);
+            }
+
+            // Keep only a certain number of news items
+            while (newsFeedDiv.children.length > 10) {
+                newsFeedDiv.removeChild(newsFeedDiv.lastChild);
+            }
+
+            // Apply sentiment to overall market trends (subtly)
+            stocks.forEach(stock => {
+                if (news.sentiment === 'positive') {
+                    stock.trend += 0.0005; // Small positive bias
+                } else if (news.sentiment === 'negative') {
+                    stock.trend -= 0.0005; // Small negative bias
+                }
+                // Clamp trend to prevent extreme values
+                stock.trend = Math.max(-0.005, Math.min(0.005, stock.trend));
+            });
+        }
+
+        let newsInterval;
+        function startNewsGeneration() {
+            if (newsInterval) clearInterval(newsInterval);
+            generateNews(); // Generate first news immediately
+            newsInterval = setInterval(generateNews, 15000); // Generate news every 15 seconds
+        }
+
+        // --- Simulation Loop ---
+        let simulationInterval;
+        function startSimulationLoop() {
+            if (simulationInterval) clearInterval(simulationInterval); // Clear any existing interval
+            simulationInterval = setInterval(updateStockPrices, 2000); // Update every 2 seconds
+        }
+
+        // --- Tab Switching Logic ---
+        function switchTab(tabId) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            // Deactivate all tab buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+
+            // Show active tab content
+            document.getElementById(tabId).classList.add('active');
+            // Activate clicked button
+            document.getElementById(tabId.replace('-content', '-button')).classList.add('active');
+        }
+
+        spotTabButton.addEventListener('click', () => switchTab('spot-trading-content'));
+        futuresTabButton.addEventListener('click', () => switchTab('futures-trading-content'));
+        limitTabButton.addEventListener('click', () => switchTab('limit-trading-content'));
+
+
+        // Initialize on window load
+        window.onload = async function() {
+            await initializeAuth(); // Initialize Firebase Auth to get userId
+            // loadGameState and simulation loops will start once auth is ready
+        };
+
+        // Handle window resize for chart responsiveness
+        window.addEventListener('resize', () => {
+            drawChart();
+        });
+
+    </script>
+</body>
+</html>
