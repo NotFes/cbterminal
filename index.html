@@ -642,8 +642,8 @@
                             </div>
 
                             <div class="md:col-span-2">
-                                <label for="balance" class="block text-gray-400 text-sm font-medium mb-2">Активы:</label>
-                                <textarea id="balance" rows="3" readonly class="input-cyber w-full resize-none"></textarea>
+                                <label for="finances" class="block text-gray-400 text-sm font-medium mb-2">Активы:</label>
+                                <textarea id="finances" rows="3" readonly class="input-cyber w-full resize-none"></textarea>
                                 <div id="finances-message" class="cabinet-message"></div>
                             </div>
                         </div>
@@ -905,7 +905,7 @@
             const personalInfoDisplay = document.getElementById('personal-info');
             if (personalInfoDisplay) personalInfoDisplay.value = data.page_content.cabinet.sections.personal_info.initial_content;
 
-            // Updated for 'balance' textarea
+            // Updated for 'finances' textarea
             const balanceDisplay = document.getElementById('balance');
             if (balanceDisplay) balanceDisplay.value = data.page_content.cabinet.sections.finances.initial_content; // Still using 'finances' key for initial content
 
@@ -1347,7 +1347,7 @@
             const userAvatar = document.getElementById('user-avatar'); // User avatar image
             const tasksTextarea = document.getElementById('tasks');
             const personalInfoTextarea = document.getElementById('personal-info');
-            const balanceTextarea = document.getElementById('balance'); // Changed to balance
+            const balanceTextarea = document.getElementById('finances'); // Changed to balance
             const editProfileButton = document.getElementById('edit-profile-button');
 
             if (currentCabinetLogin) {
@@ -1485,8 +1485,8 @@
                             password: password,
                             tasks: currentTerminalData.page_content.cabinet.sections.tasks.initial_content,
                             personal_info: currentTerminalData.page_content.cabinet.sections.personal_info.initial_content,
-                            // Use 'balance' for the new field
-                            balance: currentTerminalData.page_content.cabinet.sections.finances.initial_content,
+                            // Use 'finances' for the new field
+                            finances: currentTerminalData.page_content.cabinet.sections.finances.initial_content,
                             avatar: 'https://placehold.co/200x200/0a0a0a/0ff?text=Аватар' // Default avatar
                         }
                     ])
@@ -1600,8 +1600,8 @@
                 password: cabinetPassword,
                 tasks: tasksTextarea ? tasksTextarea.value.trim() : '',
                 personal_info: personalInfoTextarea ? personalInfoTextarea.value.trim() : '',
-                // Use 'balance' for the new field
-                balance: balanceTextarea ? balanceTextarea.value.trim() : '',
+                // Use 'finances' for the new field
+                finances: balanceTextarea ? balanceTextarea.value.trim() : '',
                 avatar: avatarUrlInput ? avatarUrlInput.value.trim() : 'https://placehold.co/200x200/0a0a0a/0ff?text=Аватар' // Save avatar URL
             };
 
