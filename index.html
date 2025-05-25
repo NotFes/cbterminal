@@ -648,7 +648,7 @@
                                 <label for="tasks" class="block text-gray-400 text-sm font-medium mb-2">Активные Задачи:</label>
                                 <textarea id="tasks" rows="3" readonly class="input-cyber w-full resize-none"></textarea>
                                 <div id="task-message" class="cabinet-message"></div>
-                            </div>
+                                </div>
 
                             <div class="md:col-span-2">
                                 <label for="personal-info" class="block text-gray-400 text-sm font-medium mb-2">Персональные Данные:</label>
@@ -704,7 +704,7 @@
                 <h2 class="text-2xl" id="map-section-title"></h2>
                 <p id="map-intro-text"></p>
                 <a href="#" target="_blank" id="map-image-link">
-                    <img src="https://placehold.co/800x600/0a0a0a/0ff?text=Карта+Недоступна" alt="Карта" class="map-image" id="map-image">
+                    <img src="https://placehold.co/800x600/0a0a0a/0ff?text=Карта+Недоступна" alt="[Image of map]" class="map-image" id="map-image">
                 </a>
                 <p class="mt-4" id="map-description-heading"></p>
                 <div id="map-locations-container">
@@ -1124,7 +1124,8 @@
                 currentTerminalData = data.config;
                 console.log("Terminal data loaded from Supabase:", currentTerminalData);
                 populateUI(currentTerminalData);
-            } catch (e) {
+            }
+            catch (e) {
                 console.error(`Failed to load data for terminal ${terminal.name} from Supabase.`, e);
                 if (loginMessage) loginMessage.textContent = `Ошибка: Не удалось загрузить данные для терминала "${terminal.name}". Проверьте консоль.`;
                 if (terminalSelectionScreen) terminalSelectionScreen.style.display = 'flex';
@@ -1505,6 +1506,10 @@
                     throw checkError;
                 }
 
+                // Get the initial balance value, remove " CR", and parse as float
+                const initialBalanceString = currentTerminalData.page_content.cabinet.sections.financial_balance ? currentTerminalData.page_content.cabinet.sections.financial_balance.initial_content : "0.00 CR";
+                const initialBalanceNumeric = parseFloat(initialBalanceString.replace(' CR', ''));
+
                 const { data, error } = await supabase
                     .from('cabinet_accounts')
                     .insert([
@@ -1517,7 +1522,7 @@
                             // 'Активы' (assets-description) uses 'finances' column
                             finances: currentTerminalData.page_content.cabinet.sections.finances.initial_content,
                             // 'Баланс' (financial-balance) uses 'balance' column
-                            balance: currentTerminalData.page_content.cabinet.sections.financial_balance ? currentTerminalData.page_content.cabinet.sections.financial_balance.initial_content : "0.00 CR",
+                            balance: initialBalanceNumeric, // Use the parsed numeric value here
                             avatar: 'https://placehold.co/200x200/0a0a0a/0ff?text=Аватар' // Default avatar
                         }
                     ])
@@ -1591,7 +1596,7 @@
                     if (tasksTextarea) tasksTextarea.value = data.tasks || currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
                     if (personalInfoTextarea) personalInfoTextarea.value = data.personal_info || currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
                     if (assetsDescriptionTextarea) assetsDescriptionTextarea.value = data.finances || currentTerminalData.page_content.cabinet.sections.finances.initial_content; // 'Активы' from 'finances'
-                    if (financialBalanceInput) financialBalanceInput.value = data.balance || (currentTerminalData.page_content.cabinet.sections.financial_balance ? currentTerminalData.page_content.cabinet.sections.financial_balance.initial_content : "0.00 CR"); // 'Баланс' from 'balance'
+                    if (financialBalanceInput) financialBalanceInput.value = data.balance !== null ? `${data.balance} CR` : (currentTerminalData.page_content.cabinet.sections.financial_balance ? currentTerminalData.page_content.cabinet.sections.financial_balance.initial_content : "0.00 CR"); // 'Баланс' from 'balance'
                     if (cabinetPasswordInput) cabinetPasswordInput.value = data.password || '';
                     if (cabinetPasswordMessage && currentTerminalData) cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.loaded_success.replace('{account_id}', currentCabinetLogin);
                 } else {
@@ -1635,12 +1640,16 @@
 
             const cabinetPassword = cabinetPasswordInput ? cabinetPasswordInput.value.trim() : '';
 
+            // Get the current balance value from the input, remove " CR", and parse as float
+            const currentBalanceString = financialBalanceInput ? financialBalanceInput.value.trim() : '';
+            const currentBalanceNumeric = parseFloat(currentBalanceString.replace(' CR', ''));
+
             const dataToUpdate = {
                 password: cabinetPassword,
                 tasks: tasksTextarea ? tasksTextarea.value.trim() : '',
                 personal_info: personalInfoTextarea ? personalInfoTextarea.value.trim() : '',
                 finances: assetsDescriptionTextarea ? assetsDescriptionTextarea.value.trim() : '', // 'Активы' to 'finances'
-                balance: financialBalanceInput ? financialBalanceInput.value.trim() : '', // 'Баланс' to 'balance'
+                balance: currentBalanceNumeric, // Use the parsed numeric value here
                 avatar: avatarUrlInput ? avatarUrlInput.value.trim() : 'https://placehold.co/200x200/0a0a0a/0ff?text=Аватар'
             };
 
@@ -2062,6 +2071,7 @@
 
             const sendMessageButton = document.getElementById('send-message-button');
             const exchangeButton = document.getElementById('exchange-button');
+            // Removed LLM button declaration: const breakDownTasksButton = document.getElementById('break-down-tasks-button');
 
             const filterAllButton = document.getElementById('filter-all-messages');
             const filterIncomingButton = document.getElementById('filter-incoming-messages');
@@ -2354,6 +2364,7 @@
                     }
                 });
             }
+            // Removed LLM button event listener: if (breakDownTasksButton) breakDownTasksButton.addEventListener('click', breakDownTasks);
 
             // Message filter buttons
             if (filterAllButton) filterAllButton.addEventListener('click', () => {
