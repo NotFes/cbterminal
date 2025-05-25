@@ -1316,8 +1316,9 @@
                     const impactDataMatch = rawNewsText.match(/\{Stock:\s*([A-Z]+),\s*Impact:\s*(positive|negative|neutral),\s*Type:\s*(major|minor)\}/);
                     
                     let newsTextForDisplay = rawNewsText; // Default to raw text
+                    let newsParsedSuccessfully = false; // Flag for successful parsing
+
                     if (impactDataMatch) {
-                        // Remove the structured data from the news text for display
                         newsTextForDisplay = rawNewsText.replace(/\{Stock:\s*([A-Z]+),\s*Impact:\s*(positive|negative|neutral),\s*Type:\s*(major|minor)\}/, '').trim();
 
                         const newsSymbol = impactDataMatch[1];
@@ -1354,21 +1355,22 @@
                             targetStock.newsEffectDurationCounter = 2; // Lasts for 2 price updates (4 seconds)
                             targetStock.trend += trendChange; // Added to existing trend, long-term influence
                             console.log(`News impact applied to ${targetStock.symbol}: magnitude=${effectMagnitude}, изменение_тренда=${trendChange}`);
+                            newsParsedSuccessfully = true; // Set flag to true
                         } else {
                             console.warn(`Affected stock ${newsSymbol} not found for news impact.`);
                         }
                     } else {
                         console.warn("Failed to parse news impact data from LLM response:", rawNewsText);
-                        // If parsing fails, display the raw text and log a clear message
                         newsFeedDiv.innerHTML = `<p class="text-gray-400">Не удалось распознать влияние новости (отсутствует формат): "${rawNewsText}"</p>` + newsFeedDiv.innerHTML;
-                        // Skip adding to news feed below, as it's already added with warning
-                        return; 
                     }
                     
-                    newsFeedDiv.innerHTML = `<p class="text-gray-300 neutral">${newsTextForDisplay}</p>` + newsFeedDiv.innerHTML;
-                    // Keep only the latest 5 news items
-                    while (newsFeedDiv.children.length > 5) {
-                        newsFeedDiv.removeChild(newsFeedDiv.lastChild);
+                    // Only add to news feed and trim if parsing was successful
+                    if (newsParsedSuccessfully) {
+                        newsFeedDiv.innerHTML = `<p class="text-gray-300 neutral">${newsTextForDisplay}</p>` + newsFeedDiv.innerHTML;
+                        // Keep only the latest 5 news items
+                        while (newsFeedDiv.children.length > 5) {
+                            newsFeedDiv.removeChild(newsFeedDiv.lastChild);
+                        }
                     }
 
                 } else {
