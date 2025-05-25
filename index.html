@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" sizes="120x120" href="apple-icon-120x120.png">
     <link rel="apple-touch-icon" sizes="144x144" href="apple-icon-144x144.png">
     <link rel="apple-touch-icon" sizes="152x152" href="apple-icon-152x152.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="180x180" href="apple-icon-180x180.png">
     <link rel="icon" type="image/png" sizes="192x192"  href="android-icon-192x192.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
@@ -47,14 +47,14 @@
 
         /* Стиль для неонового текста - обновлен для более мягкого оттенка */
         .neon-text {
-            color: #00e6e6; /* Более мягкий сине-зеленый неон */
-            text-shadow: 0 0 4px #00e6e6, 0 0 8px #00e6e6, 0 0 15px #00e6e6, 0 0 30px #00e6e6; /* Эффект свечения */
+            color: #00cccc; /* Более мягкий сине-зеленый неон */
+            text-shadow: 0 0 4px #00cccc, 0 0 8px #00cccc, 0 0 15px #00cccc, 0 0 30px #00cccc; /* Эффект свечения */
         }
 
         /* Стиль для неоновой рамки */
         .neon-border {
-            border-color: #00e6e6; /* Более мягкий сине-зеленый неон */
-            box-shadow: 0 0 5px #00e6e6, 0 0 10px #00e6e6; /* Эффект свечения для границ */
+            border-color: #00cccc; /* Более мягкий сине-зеленый неон */
+            box-shadow: 0 0 5px #00cccc, 0 0 10px #00cccc; /* Эффект свечения для границ */
         }
 
         /* Стиль для киберпанк-полей ввода */
@@ -70,33 +70,33 @@
 
         .input-cyber:focus {
             outline: none;
-            border-color: #00e6e6; /* Неоновая рамка при фокусе */
-            box-shadow: 0 0 8px #00e6e6; /* Неоновое свечение при фокусе */
+            border-color: #00cccc; /* Неоновая рамка при фокусе */
+            box-shadow: 0 0 8px #00cccc; /* Неоновое свечение при фокусе */
             background-color: #2a2a2a; /* Чуть светлее при фокусе для визуальной обратной связи */
         }
 
         /* Стиль для киберпанк-кнопок */
         .button-cyber {
-            background-color: #00e6e6; /* Неоновый фон кнопки */
+            background-color: #00cccc; /* Неоновый фон кнопки */
             color: #0a0a0a; /* Темный текст на кнопке для контраста */
             font-weight: bold;
             padding: 12px 24px;
             border-radius: 8px;
             transition: all 0.3s ease; /* Плавный переход для интерактивных элементов */
-            box-shadow: 0 0 10px #00e6e6; /* Неоновое свечение кнопки */
+            box-shadow: 0 0 10px #00cccc; /* Неоновое свечение кнопки */
             font-family: 'Inter', sans-serif; /* Используем Inter для кнопок */
         }
 
         .button-cyber:hover {
-            background-color: #00cccc; /* Чуть темнее при наведении */
-            box-shadow: 0 0 15px #00e6e6; /* Более интенсивное свечение при наведении */
+            background-color: #00b3b3; /* Чуть темнее при наведении */
+            box-shadow: 0 0 15px #00cccc; /* Более интенсивное свечение при наведении */
             transform: translateY(-2px); /* Небольшой эффект поднятия для интерактивности */
         }
 
         /* Анимация для заголовка, имитирующая мерцание старого экрана */
         @keyframes flicker {
             0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
-                text-shadow: 0 0 4px #00e6e6, 0 0 8px #00e6e6, 0 0 15px #00e6e6, 0 0 30px #00e6e6;
+                text-shadow: 0 0 4px #00cccc, 0 0 8px #00cccc, 0 0 15px #00cccc, 0 0 30px #00cccc;
             }
             20%, 24%, 55% {
                 text-shadow: none; /* Кратковременное исчезновение тени для эффекта мерцания */
@@ -114,8 +114,8 @@
             height: 200px;
             border-radius: 12px; /* Скругленные углы для квадратной формы */
             overflow: hidden; /* Обрезка содержимого по форме */
-            border: 3px solid #00e6e6; /* Неоновая рамка */
-            box-shadow: 0 0 15px #00e6e6, 0 0 25px rgba(0, 230, 230, 0.5); /* Неоновое свечение вокруг фото */
+            border: 3px solid #00cccc; /* Неоновая рамка */
+            box-shadow: 0 0 15px #00cccc, 0 0 25px rgba(0, 204, 204, 0.5); /* Неоновое свечение вокруг фото */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -133,7 +133,7 @@
         /* Дополнительные стили для декоративных эффектов */
         .gradient-line {
             height: 2px;
-            background: linear-gradient(to right, #00e6e6, #f0f, #00e6e6); /* Градиентная линия для разделения секций */
+            background: linear-gradient(to right, #00cccc, #f0f, #00cccc); /* Градиентная линия для разделения секций */
             width: 100%;
             margin: 20px 0;
         }
@@ -629,6 +629,21 @@
                                 <div id="avatar-message" class="cabinet-message"></div>
                             </div>
 
+                            <div class="md:col-span-2 flex items-end">
+                                <div class="flex-grow">
+                                    <label for="financial-balance" class="block text-gray-400 text-sm font-medium mb-2">Баланс:</label>
+                                    <input type="text" id="financial-balance" value="0.00 CR" readonly class="input-cyber w-full">
+                                    <div id="financial-balance-message" class="cabinet-message"></div>
+                                </div>
+                                <button id="exchange-button" class="button-cyber ml-2 px-6 py-3">Биржа</button>
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label for="assets-description" class="block text-gray-400 text-sm font-medium mb-2">Активы:</label>
+                                <textarea id="assets-description" rows="3" readonly class="input-cyber w-full resize-none"></textarea>
+                                <div id="assets-description-message" class="cabinet-message"></div>
+                            </div>
+
                             <div class="md:col-span-2">
                                 <label for="tasks" class="block text-gray-400 text-sm font-medium mb-2">Активные Задачи:</label>
                                 <textarea id="tasks" rows="3" readonly class="input-cyber w-full resize-none"></textarea>
@@ -639,12 +654,6 @@
                                 <label for="personal-info" class="block text-gray-400 text-sm font-medium mb-2">Персональные Данные:</label>
                                 <textarea id="personal-info" rows="3" readonly class="input-cyber w-full resize-none"></textarea>
                                 <div id="personal-info-message" class="cabinet-message"></div>
-                            </div>
-
-                            <div class="md:col-span-2">
-                                <label for="finances" class="block text-gray-400 text-sm font-medium mb-2">Активы:</label>
-                                <textarea id="finances" rows="3" readonly class="input-cyber w-full resize-none"></textarea>
-                                <div id="finances-message" class="cabinet-message"></div>
                             </div>
                         </div>
 
@@ -905,9 +914,20 @@
             const personalInfoDisplay = document.getElementById('personal-info');
             if (personalInfoDisplay) personalInfoDisplay.value = data.page_content.cabinet.sections.personal_info.initial_content;
 
-            // Updated for 'finances' textarea
-            const balanceDisplay = document.getElementById('balance');
-            if (balanceDisplay) balanceDisplay.value = data.page_content.cabinet.sections.finances.initial_content; // Still using 'finances' key for initial content
+            // 'Активы' now maps to 'finances' in config
+            const assetsDescriptionDisplay = document.getElementById('assets-description');
+            if (assetsDescriptionDisplay) assetsDescriptionDisplay.value = data.page_content.cabinet.sections.finances.initial_content;
+
+            // 'Баланс' now maps to a new 'financial_balance' in config
+            const financialBalanceInput = document.getElementById('financial-balance');
+            if (financialBalanceInput) {
+                // Check if financial_balance section exists, otherwise use a default
+                if (data.page_content.cabinet.sections.financial_balance) {
+                    financialBalanceInput.value = data.page_content.cabinet.sections.financial_balance.initial_content;
+                } else {
+                    financialBalanceInput.value = "0.00 CR"; // Default if not in config
+                }
+            }
 
             const charactersSectionTitle = document.getElementById('characters-section-title');
             if (charactersSectionTitle) charactersSectionTitle.textContent = data.page_content.characters.title;
@@ -1119,7 +1139,8 @@
             const cabinetPasswordMessage = document.getElementById('cabinet-password-message');
             const taskMessage = document.getElementById('task-message');
             const personalInfoMessage = document.getElementById('personal-info-message');
-            const financesMessage = document.getElementById('finances-message'); // This is for the old finances field, might be unused
+            const assetsDescriptionMessage = document.getElementById('assets-description-message');
+            const financialBalanceMessage = document.getElementById('financial-balance-message');
             const messagesStatus = document.getElementById('messages-status');
 
             pageSections.forEach(section => {
@@ -1347,7 +1368,8 @@
             const userAvatar = document.getElementById('user-avatar'); // User avatar image
             const tasksTextarea = document.getElementById('tasks');
             const personalInfoTextarea = document.getElementById('personal-info');
-            const balanceTextarea = document.getElementById('finances'); // Changed to balance
+            const assetsDescriptionTextarea = document.getElementById('assets-description'); // Changed to assets-description
+            const financialBalanceInput = document.getElementById('financial-balance'); // New input for financial balance
             const editProfileButton = document.getElementById('edit-profile-button');
 
             if (currentCabinetLogin) {
@@ -1367,7 +1389,8 @@
                 if (avatarUrlInput) avatarUrlInput.readOnly = true; // New
                 if (tasksTextarea) tasksTextarea.readOnly = true;
                 if (personalInfoTextarea) personalInfoTextarea.readOnly = true;
-                if (balanceTextarea) balanceTextarea.readOnly = true; // Changed to balance
+                if (assetsDescriptionTextarea) assetsDescriptionTextarea.readOnly = true; // Changed to assets-description
+                if (financialBalanceInput) financialBalanceInput.readOnly = true; // New
                 if (editProfileButton) editProfileButton.textContent = 'Редактировать Профиль';
                 isProfileEditing = false;
             } else {
@@ -1388,13 +1411,19 @@
                 if (avatarUrlInput) avatarUrlInput.value = ''; // Reset avatar input
                 if (tasksTextarea && currentTerminalData) tasksTextarea.value = currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
                 if (personalInfoTextarea && currentTerminalData) personalInfoTextarea.value = currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
-                if (balanceTextarea && currentTerminalData) balanceTextarea.value = currentTerminalData.page_content.cabinet.sections.finances.initial_content; // Changed to balance
+                if (assetsDescriptionTextarea && currentTerminalData) assetsDescriptionTextarea.value = currentTerminalData.page_content.cabinet.sections.finances.initial_content; // assets_description uses finances
+                if (financialBalanceInput && currentTerminalData && currentTerminalData.page_content.cabinet.sections.financial_balance) { // Check for existence
+                    financialBalanceInput.value = currentTerminalData.page_content.cabinet.sections.financial_balance.initial_content;
+                } else if (financialBalanceInput) {
+                    financialBalanceInput.value = "0.00 CR"; // Default if config missing
+                }
 
                 // Reset editing state and button text
                 if (avatarUrlInput) avatarUrlInput.readOnly = true; // New
                 if (tasksTextarea) tasksTextarea.readOnly = true;
                 if (personalInfoTextarea) personalInfoTextarea.readOnly = true;
-                if (balanceTextarea) balanceTextarea.readOnly = true; // Changed to balance
+                if (assetsDescriptionTextarea) assetsDescriptionTextarea.readOnly = true; // Changed to assets-description
+                if (financialBalanceInput) financialBalanceInput.readOnly = true; // New
                 if (editProfileButton) editProfileButton.textContent = 'Редактировать Профиль';
                 isProfileEditing = false;
 
@@ -1485,8 +1514,10 @@
                             password: password,
                             tasks: currentTerminalData.page_content.cabinet.sections.tasks.initial_content,
                             personal_info: currentTerminalData.page_content.cabinet.sections.personal_info.initial_content,
-                            // Use 'finances' for the new field
+                            // 'Активы' (assets-description) uses 'finances' column
                             finances: currentTerminalData.page_content.cabinet.sections.finances.initial_content,
+                            // 'Баланс' (financial-balance) uses 'balance' column
+                            balance: currentTerminalData.page_content.cabinet.sections.financial_balance ? currentTerminalData.page_content.cabinet.sections.financial_balance.initial_content : "0.00 CR",
                             avatar: 'https://placehold.co/200x200/0a0a0a/0ff?text=Аватар' // Default avatar
                         }
                     ])
@@ -1525,12 +1556,13 @@
             const cabinetPasswordMessage = document.getElementById('cabinet-password-message');
             const tasksTextarea = document.getElementById('tasks');
             const personalInfoTextarea = document.getElementById('personal-info');
-            const balanceTextarea = document.getElementById('balance'); // Changed to balance
+            const assetsDescriptionTextarea = document.getElementById('assets-description');
+            const financialBalanceInput = document.getElementById('financial-balance');
             const cabinetPasswordInput = document.getElementById('cabinet-password');
             const userIdInput = document.getElementById('user-id');
             const terminalIdDisplayInput = document.getElementById('terminal-id-display');
-            const avatarUrlInput = document.getElementById('avatar-url'); // New avatar input
-            const userAvatar = document.getElementById('user-avatar'); // User avatar image
+            const avatarUrlInput = document.getElementById('avatar-url');
+            const userAvatar = document.getElementById('user-avatar');
 
             if (cabinetPasswordMessage && currentTerminalData) cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.loading;
 
@@ -1554,22 +1586,28 @@
                 if (data) {
                     if (userIdInput) userIdInput.value = data.id || 'N/A';
                     if (terminalIdDisplayInput) terminalIdDisplayInput.value = data.terminal_id || 'N/A';
-                    if (userAvatar) userAvatar.src = data.avatar || 'https://placehold.co/200x200/0a0a0a/0ff?text=Аватар'; // Set avatar src
-                    if (avatarUrlInput) avatarUrlInput.value = data.avatar || ''; // Set avatar input value
+                    if (userAvatar) userAvatar.src = data.avatar || 'https://placehold.co/200x200/0a0a0a/0ff?text=Аватар';
+                    if (avatarUrlInput) avatarUrlInput.value = data.avatar || '';
                     if (tasksTextarea) tasksTextarea.value = data.tasks || currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
                     if (personalInfoTextarea) personalInfoTextarea.value = data.personal_info || currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
-                    if (balanceTextarea) balanceTextarea.value = data.balance || currentTerminalData.page_content.cabinet.sections.finances.initial_content; // Changed to balance
+                    if (assetsDescriptionTextarea) assetsDescriptionTextarea.value = data.finances || currentTerminalData.page_content.cabinet.sections.finances.initial_content; // 'Активы' from 'finances'
+                    if (financialBalanceInput) financialBalanceInput.value = data.balance || (currentTerminalData.page_content.cabinet.sections.financial_balance ? currentTerminalData.page_content.cabinet.sections.financial_balance.initial_content : "0.00 CR"); // 'Баланс' from 'balance'
                     if (cabinetPasswordInput) cabinetPasswordInput.value = data.password || '';
                     if (cabinetPasswordMessage && currentTerminalData) cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.loaded_success.replace('{account_id}', currentCabinetLogin);
                 } else {
                     if (cabinetPasswordMessage && currentTerminalData) cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.not_found.replace('{account_id}', currentCabinetLogin);
                     if (userIdInput) userIdInput.value = 'CYBR-734-ALPHA';
                     if (terminalIdDisplayInput) terminalIdDisplayInput.value = 'NEON-GRID-007';
-                    if (userAvatar) userAvatar.src = 'https://placehold.co/200x200/0a0a0a/0ff?text=Аватар'; // Reset avatar
-                    if (avatarUrlInput) avatarUrlInput.value = ''; // Reset avatar input
+                    if (userAvatar) userAvatar.src = 'https://placehold.co/200x200/0a0a0a/0ff?text=Аватар';
+                    if (avatarUrlInput) avatarUrlInput.value = '';
                     if (tasksTextarea && currentTerminalData) tasksTextarea.value = currentTerminalData.page_content.cabinet.sections.tasks.initial_content;
                     if (personalInfoTextarea && currentTerminalData) personalInfoTextarea.value = currentTerminalData.page_content.cabinet.sections.personal_info.initial_content;
-                    if (balanceTextarea && currentTerminalData) balanceTextarea.value = currentTerminalData.page_content.cabinet.sections.finances.initial_content; // Changed to balance
+                    if (assetsDescriptionTextarea && currentTerminalData) assetsDescriptionTextarea.value = currentTerminalData.page_content.cabinet.sections.finances.initial_content; // 'Активы' from 'finances'
+                    if (financialBalanceInput && currentTerminalData && currentTerminalData.page_content.cabinet.sections.financial_balance) {
+                        financialBalanceInput.value = currentTerminalData.page_content.cabinet.sections.financial_balance.initial_content;
+                    } else if (financialBalanceInput) {
+                        financialBalanceInput.value = "0.00 CR"; // Default if config missing
+                    }
                     if (cabinetPasswordInput) cabinetPasswordInput.value = '';
                 }
             }
@@ -1584,8 +1622,9 @@
             const cabinetPasswordInput = document.getElementById('cabinet-password');
             const tasksTextarea = document.getElementById('tasks');
             const personalInfoTextarea = document.getElementById('personal-info');
-            const balanceTextarea = document.getElementById('balance'); // Changed to balance
-            const avatarUrlInput = document.getElementById('avatar-url'); // New avatar input
+            const assetsDescriptionTextarea = document.getElementById('assets-description');
+            const financialBalanceInput = document.getElementById('financial-balance');
+            const avatarUrlInput = document.getElementById('avatar-url');
 
             if (cabinetPasswordMessage && currentTerminalData) cabinetPasswordMessage.textContent = currentTerminalData.page_content.cabinet.sections.password.messages.saving;
 
@@ -1600,9 +1639,9 @@
                 password: cabinetPassword,
                 tasks: tasksTextarea ? tasksTextarea.value.trim() : '',
                 personal_info: personalInfoTextarea ? personalInfoTextarea.value.trim() : '',
-                // Use 'finances' for the new field
-                finances: balanceTextarea ? balanceTextarea.value.trim() : '',
-                avatar: avatarUrlInput ? avatarUrlInput.value.trim() : 'https://placehold.co/200x200/0a0a0a/0ff?text=Аватар' // Save avatar URL
+                finances: assetsDescriptionTextarea ? assetsDescriptionTextarea.value.trim() : '', // 'Активы' to 'finances'
+                balance: financialBalanceInput ? financialBalanceInput.value.trim() : '', // 'Баланс' to 'balance'
+                avatar: avatarUrlInput ? avatarUrlInput.value.trim() : 'https://placehold.co/200x200/0a0a0a/0ff?text=Аватар'
             };
 
             try {
@@ -1616,7 +1655,6 @@
                 if (error) throw error;
                 console.log("Cabinet data saved to Supabase:", data);
                 if (cabinetPasswordMessage) cabinetPasswordMessage.textContent = `Данные для аккаунта "${currentCabinetLogin}" успешно сохранены в Supabase.`;
-                // Update avatar display immediately after saving
                 const userAvatar = document.getElementById('user-avatar');
                 if (userAvatar) userAvatar.src = dataToUpdate.avatar;
             } catch (e) {
@@ -1625,18 +1663,19 @@
             }
         }
 
-        // Refactored toggleEditMode for the single "Редактировать Профиль" button
         function toggleProfileEditMode() {
             const tasksTextarea = document.getElementById('tasks');
             const personalInfoTextarea = document.getElementById('personal-info');
-            const balanceTextarea = document.getElementById('balance'); // Changed to balance
-            const avatarUrlInput = document.getElementById('avatar-url'); // New avatar input
+            const assetsDescriptionTextarea = document.getElementById('assets-description');
+            const financialBalanceInput = document.getElementById('financial-balance');
+            const avatarUrlInput = document.getElementById('avatar-url');
             const editProfileButton = document.getElementById('edit-profile-button');
 
             const taskMessage = document.getElementById('task-message');
             const personalInfoMessage = document.getElementById('personal-info-message');
-            const financesMessage = document.getElementById('finances-message'); // Still using finances message for balance
-            const avatarMessage = document.getElementById('avatar-message'); // New avatar message
+            const assetsDescriptionMessage = document.getElementById('assets-description-message');
+            const financialBalanceMessage = document.getElementById('financial-balance-message');
+            const avatarMessage = document.getElementById('avatar-message');
 
             if (!currentCabinetLogin) {
                 showNotification('Войдите в Кабинет, чтобы редактировать данные профиля.', 3000);
@@ -1645,10 +1684,11 @@
 
             isProfileEditing = !isProfileEditing;
 
-            if (avatarUrlInput) avatarUrlInput.readOnly = !isProfileEditing; // New
+            if (avatarUrlInput) avatarUrlInput.readOnly = !isProfileEditing;
             if (tasksTextarea) tasksTextarea.readOnly = !isProfileEditing;
             if (personalInfoTextarea) personalInfoTextarea.readOnly = !isProfileEditing;
-            if (balanceTextarea) balanceTextarea.readOnly = !isProfileEditing; // Changed to balance
+            if (assetsDescriptionTextarea) assetsDescriptionTextarea.readOnly = !isProfileEditing;
+            if (financialBalanceInput) financialBalanceInput.readOnly = !isProfileEditing;
 
             if (editProfileButton && currentTerminalData) {
                 editProfileButton.textContent = isProfileEditing ? 'Сохранить Профиль' : 'Редактировать Профиль';
@@ -1656,15 +1696,15 @@
 
             if (isProfileEditing) {
                 showNotification('Режим редактирования профиля включен.', 2000);
-                if (avatarUrlInput) avatarUrlInput.focus(); // Focus on avatar input first
-                // Clear previous messages
+                if (avatarUrlInput) avatarUrlInput.focus();
                 if (taskMessage) taskMessage.textContent = '';
                 if (personalInfoMessage) personalInfoMessage.textContent = '';
-                if (financesMessage) financesMessage.textContent = '';
-                if (avatarMessage) avatarMessage.textContent = ''; // New
+                if (assetsDescriptionMessage) assetsDescriptionMessage.textContent = '';
+                if (financialBalanceMessage) financialBalanceMessage.textContent = '';
+                if (avatarMessage) avatarMessage.textContent = '';
             } else {
                 showNotification('Сохранение изменений профиля...', 2000);
-                saveCabinetData(); // Save changes when exiting edit mode
+                saveCabinetData();
             }
         }
 
@@ -1690,7 +1730,7 @@
             const recipientLogin = messageRecipientIdInput ? messageRecipientIdInput.value.trim() : '';
             const subject = messageSubjectInput ? messageSubjectInput.value.trim() : '';
             const content = messageContentTextarea ? messageContentTextarea.value.trim() : '';
-            const senderName = senderLogin; // For now, sender_name is the same as sender_id
+            const senderName = senderLogin;
 
             if (!recipientLogin || !subject || !content) {
                 if (sendMessageStatus) sendMessageStatus.textContent = 'Заполните все поля для отправки сообщения.';
@@ -2010,7 +2050,8 @@
             const cabinetPasswordMessage = document.getElementById('cabinet-password-message');
             const taskMessage = document.getElementById('task-message');
             const personalInfoMessage = document.getElementById('personal-info-message');
-            const financesMessage = document.getElementById('finances-message');
+            const assetsDescriptionMessage = document.getElementById('assets-description-message');
+            const financialBalanceMessage = document.getElementById('financial-balance-message');
             const messagesStatus = document.getElementById('messages-status');
 
             const cabinetEnterButton = document.getElementById('cabinet-enter-button');
@@ -2020,6 +2061,7 @@
             const editProfileButton = document.getElementById('edit-profile-button');
 
             const sendMessageButton = document.getElementById('send-message-button');
+            const exchangeButton = document.getElementById('exchange-button');
 
             const filterAllButton = document.getElementById('filter-all-messages');
             const filterIncomingButton = document.getElementById('filter-incoming-messages');
@@ -2169,7 +2211,8 @@
                                     if (cabinetPasswordMessage) cabinetPasswordMessage.textContent = '';
                                     if (taskMessage) taskMessage.textContent = '';
                                     if (personalInfoMessage) personalInfoMessage.textContent = '';
-                                    if (financesMessage) financesMessage.textContent = '';
+                                    if (assetsDescriptionMessage) assetsDescriptionMessage.textContent = '';
+                                    if (financialBalanceMessage) financialBalanceMessage.textContent = '';
                                 }
                                 if (pageId === 'messages' && messagesStatus) {
                                     messagesStatus.textContent = '';
@@ -2301,6 +2344,16 @@
             if (editProfileButton) editProfileButton.addEventListener('click', toggleProfileEditMode);
 
             if (sendMessageButton) sendMessageButton.addEventListener('click', sendMessage);
+            if (exchangeButton) {
+                exchangeButton.addEventListener('click', () => {
+                    if (currentCabinetLogin) {
+                        const exchangeUrl = `https://notfes.github.io/cbterminal/actions?cabinet_id=${currentCabinetLogin}`;
+                        window.open(exchangeUrl, '_blank');
+                    } else {
+                        showNotification('Войдите в Кабинет, чтобы перейти на биржу.', 3000);
+                    }
+                });
+            }
 
             // Message filter buttons
             if (filterAllButton) filterAllButton.addEventListener('click', () => {
