@@ -1150,7 +1150,7 @@
             showMessage(`Позиция ${pos.symbol} (${pos.type}) закрыта. PNL: $${pnl.toFixed(2)}, Комиссия: $${commission.toFixed(2)}. Возвращено: $${netReturn.toFixed(2)}.`, 'positive');
             updateUI();
             saveGameState();
-        });
+        };
 
         placeLimitOrderButton.addEventListener('click', () => {
             if (!selectedStock) {
